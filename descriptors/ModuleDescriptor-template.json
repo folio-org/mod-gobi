@@ -1,0 +1,23 @@
+{
+  "id": "${artifactId}-${version}",
+  "name": "GOBI® Module",
+  "provides": [
+    {
+      "id": "gobi",
+      "version": "1.0",
+      "handlers": [
+      ]
+    }
+  ],
+  "requires": [
+  ],
+  "permissionSets": [
+  ],
+  "launchDescriptor": {
+    "dockerImage": "${artifactId}:${version}",
+    "dockerArgs": {
+      "HostConfig": { "PortBindings": { "8081/tcp":  [{ "HostPort": "%p" }] } }
+    },
+    "dockerPull" : false
+  }
+}
