@@ -6,12 +6,37 @@
       "id": "gobi",
       "version": "1.0",
       "handlers": [
+        {
+          "methods": ["GET"],
+          "pathPattern": "/gobi/validate",
+          "permissionsRequired": ["gobi.item.post"]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/gobi/orders",
+          "permissionsRequired": ["gobi.item.post"],
+          "modulePermissions": [
+          ]
+        }
       ]
     }
   ],
   "requires": [
   ],
   "permissionSets": [
+    {
+      "permissionName": "gobi.item.post",
+      "displayName": "gobi - post order",
+      "description": "Creates an order"
+    },
+    {
+      "permissionName": "gobi.all",
+      "displayName": "gobi - all permissions",
+      "description": "Entire set of permissions needed to use gobi",
+      "subPermissions": [
+        "gobi.item.post"
+      ]
+    }
   ],
   "launchDescriptor": {
     "dockerImage": "${artifactId}:${version}",
