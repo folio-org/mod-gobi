@@ -1,6 +1,8 @@
 package org.folio.rest.impl;
 
+import java.io.Reader;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.ws.rs.core.Response;
 
@@ -26,9 +28,9 @@ public class GOBIIntegrationServiceResourceImpl
 
   @Validate
   @Override
-  public void postGobiOrders(Map<String, String> okapiHeaders,
+  public void postGobiOrders(Reader entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext)
       throws Exception {
-    asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withJsonCreated(new Order())));
+    asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withJsonCreated(new Order().withId(UUID.randomUUID().toString()))));
   }
 }
