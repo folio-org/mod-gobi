@@ -10,7 +10,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
-import org.folio.rest.model.PurchaseOrder;
+import org.folio.rest.jaxrs.model.PurchaseOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,5 +62,4 @@ public class PurchaseOrderParser {
 
     return purchaseOrder;
   }
-
 }

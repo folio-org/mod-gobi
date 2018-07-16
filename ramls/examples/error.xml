@@ -1,0 +1,6 @@
+<Response>
+  <Error>
+    <Code>API_KEY_INVALID</Code>
+    <Message>The API "12345678910" is an Invalid API Key.</Message>
+  </Error>
+</Response>
