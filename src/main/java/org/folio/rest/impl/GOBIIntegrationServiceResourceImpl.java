@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import javax.ws.rs.core.Response;
 
+import org.folio.gobi.PurchaseOrderParser;
+import org.folio.gobi.PurchaseOrderParserException;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.jaxrs.model.Order;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource;
@@ -31,6 +33,15 @@ public class GOBIIntegrationServiceResourceImpl
   public void postGobiOrders(Reader entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext)
       throws Exception {
+    final PurchaseOrderParser parser = PurchaseOrderParser.getParser();
+
+    try {
+      parser.parse(entity);
+    } catch (PurchaseOrderParserException e) {
+      asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withPlainBadRequest(e.getMessage())));
+      return;
+    }
+
     asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withJsonCreated(new Order().withId(UUID.randomUUID().toString()))));
   }
 }
