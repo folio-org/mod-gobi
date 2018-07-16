@@ -12,15 +12,8 @@ documentation:
       books for libraries. This module allows GOBI initiated orders to be
       fulfilled by FOLIO.
 
-schemas:
-  - order: !include order.json
-  - errors: !include raml-util/schemas/errors.schema
-  - error.schema: !include raml-util/schemas/error.schema
-  - parameters.schema: !include raml-util/schemas/parameters.schema
-
 traits:
   - secured: !include raml-util/traits/auth.raml
-  - validate: !include raml-util/traits/validation.raml
 
 /gobi:
   displayName: GOBI Integration Service
@@ -55,21 +48,24 @@ traits:
     description: Fulfill an order that is delivered in GOBI format
     post:
       description: Fulfill an order that is delivered in GOBI format
-      is: [secured, validate]
+      is: [secured]
       body:
-        application/xml: !!null
+        application/xml:
+          schema: !!null
+          example: !include examples/po.xml
       responses:
         201:
           description: Creates a new order within FOLIO
           body:
-            application/json:
-              schema: order
-              example: !include examples/order.json
+            application/xml:
+              schema: !!null
+              example: !include examples/response.xml
         400:
           description: Bad request
           body:
-            text/plain:
-              example: unable to process request -- constraint violation
+            application/xml:
+              schema: !!null
+              example: !include examples/error.xml
         401:
           description: Not authorized to perform requested action
           body:

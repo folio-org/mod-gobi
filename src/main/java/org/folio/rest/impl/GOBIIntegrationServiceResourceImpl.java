@@ -2,14 +2,16 @@ package org.folio.rest.impl;
 
 import java.io.Reader;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
+import org.folio.gobi.GOBIResponseWriter;
 import org.folio.gobi.PurchaseOrderParser;
 import org.folio.gobi.PurchaseOrderParserException;
-import org.folio.rest.annotations.Validate;
-import org.folio.rest.jaxrs.model.Order;
+import org.folio.rest.jaxrs.model.GOBIResponse;
+import org.folio.rest.jaxrs.model.ResponseError;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource;
 
 import io.vertx.core.AsyncResult;
@@ -20,7 +22,6 @@ import io.vertx.core.Handler;
 public class GOBIIntegrationServiceResourceImpl
     implements GOBIIntegrationServiceResource {
 
-  @Validate
   @Override
   public void getGobiValidate(Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext)
@@ -28,20 +29,27 @@ public class GOBIIntegrationServiceResourceImpl
     asyncResultHandler.handle(Future.succeededFuture(GetGobiValidateResponse.withNoContent()));
   }
 
-  @Validate
   @Override
   public void postGobiOrders(Reader entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext)
       throws Exception {
+    final GOBIResponse response = new GOBIResponse();
     final PurchaseOrderParser parser = PurchaseOrderParser.getParser();
 
     try {
       parser.parse(entity);
     } catch (PurchaseOrderParserException e) {
-      asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withPlainBadRequest(e.getMessage())));
+      final ResponseError re = new ResponseError();
+      re.setCode("INVALID_XML");
+      re.setMessage(e.getMessage().substring(0, Math.min(e.getMessage().length(), 500)));
+      response.setError(re);
+      asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withXmlBadRequest(GOBIResponseWriter.getWriter().write(response))));
       return;
     }
 
-    asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withJsonCreated(new Order().withId(UUID.randomUUID().toString()))));
+    final String poLineNumber = new Random().ints(30, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining());
+    response.setPoLineNumber(poLineNumber);
+
+    asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withXmlCreated(GOBIResponseWriter.getWriter().write(response))));
   }
 }

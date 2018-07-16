@@ -1,10 +1,8 @@
 package org.folio.rest.impl;
 
-import java.util.UUID;
-
 import org.apache.commons.io.IOUtils;
 import org.folio.rest.RestVerticle;
-import org.folio.rest.jaxrs.model.Order;
+import org.folio.rest.jaxrs.model.GOBIResponse;
 import org.folio.rest.tools.PomReader;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.hamcrest.Matchers;
@@ -16,6 +14,7 @@ import org.junit.runner.RunWith;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
+import io.restassured.mapper.ObjectMapperType;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -109,7 +108,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicMonographPath));
 
-    final Order order = RestAssured
+    final GOBIResponse order = RestAssured
       .given()
         .header(tenantHeader)
         .header(contentTypeHeaderXML)
@@ -118,20 +117,12 @@ public class GOBIIntegrationServiceResourceImplTest {
         .post(ordersPath)
       .then()
         .statusCode(201)
-        .contentType(ContentType.JSON)
+        .contentType(ContentType.XML)
         .extract()
           .body()
-            .as(Order.class);
+            .as(GOBIResponse.class, ObjectMapperType.JAXB);
 
-    boolean success;
-    try {
-      UUID.fromString(order.getId());
-      success = true;
-    } catch (IllegalArgumentException e) {
-      success = false;
-    }
-
-    context.assertTrue(success);
+    context.assertNotNull(order.getPoLineNumber());
 
     asyncLocal.complete();
 
@@ -146,29 +137,21 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicSerialPath));
 
-    final Order order = RestAssured
-      .given()
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
-        .body(body)
-      .when()
-        .post(ordersPath)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.JSON)
-        .extract()
-          .body()
-            .as(Order.class);
+    final GOBIResponse order = RestAssured
+        .given()
+          .header(tenantHeader)
+          .header(contentTypeHeaderXML)
+          .body(body)
+        .when()
+          .post(ordersPath)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+            .body()
+              .as(GOBIResponse.class, ObjectMapperType.JAXB);
 
-    boolean success;
-    try {
-      UUID.fromString(order.getId());
-      success = true;
-    } catch (IllegalArgumentException e) {
-      success = false;
-    }
-
-    context.assertTrue(success);
+    context.assertNotNull(order.getPoLineNumber());
 
     asyncLocal.complete();
 
@@ -183,29 +166,21 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonographPath));
 
-    final Order order = RestAssured
-      .given()
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
-        .body(body)
-      .when()
-        .post(ordersPath)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.JSON)
-        .extract()
-          .body()
-            .as(Order.class);
+    final GOBIResponse order = RestAssured
+        .given()
+          .header(tenantHeader)
+          .header(contentTypeHeaderXML)
+          .body(body)
+        .when()
+          .post(ordersPath)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+            .body()
+              .as(GOBIResponse.class, ObjectMapperType.JAXB);
 
-    boolean success;
-    try {
-      UUID.fromString(order.getId());
-      success = true;
-    } catch (IllegalArgumentException e) {
-      success = false;
-    }
-
-    context.assertTrue(success);
+    context.assertNotNull(order.getPoLineNumber());
 
     asyncLocal.complete();
 
@@ -220,29 +195,21 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintSerialPath));
 
-    final Order order = RestAssured
-      .given()
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
-        .body(body)
-      .when()
-        .post(ordersPath)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.JSON)
-        .extract()
-          .body()
-            .as(Order.class);
+    final GOBIResponse order = RestAssured
+        .given()
+          .header(tenantHeader)
+          .header(contentTypeHeaderXML)
+          .body(body)
+        .when()
+          .post(ordersPath)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+            .body()
+              .as(GOBIResponse.class, ObjectMapperType.JAXB);
 
-    boolean success;
-    try {
-      UUID.fromString(order.getId());
-      success = true;
-    } catch (IllegalArgumentException e) {
-      success = false;
-    }
-
-    context.assertTrue(success);
+    context.assertNotNull(order.getPoLineNumber());
 
     asyncLocal.complete();
 
@@ -257,29 +224,21 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poUnlistedPrintMonographPath));
 
-    final Order order = RestAssured
-      .given()
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
-        .body(body)
-      .when()
-        .post(ordersPath)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.JSON)
-        .extract()
-          .body()
-            .as(Order.class);
+    final GOBIResponse order = RestAssured
+        .given()
+          .header(tenantHeader)
+          .header(contentTypeHeaderXML)
+          .body(body)
+        .when()
+          .post(ordersPath)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+            .body()
+              .as(GOBIResponse.class, ObjectMapperType.JAXB);
 
-    boolean success;
-    try {
-      UUID.fromString(order.getId());
-      success = true;
-    } catch (IllegalArgumentException e) {
-      success = false;
-    }
-
-    context.assertTrue(success);
+    context.assertNotNull(order.getPoLineNumber());
 
     asyncLocal.complete();
 
@@ -294,29 +253,21 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poUnlistedPrintSerialPath));
 
-    final Order order = RestAssured
-      .given()
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
-        .body(body)
-      .when()
-        .post(ordersPath)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.JSON)
-        .extract()
-          .body()
-            .as(Order.class);
+    final GOBIResponse order = RestAssured
+        .given()
+          .header(tenantHeader)
+          .header(contentTypeHeaderXML)
+          .body(body)
+        .when()
+          .post(ordersPath)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+            .body()
+              .as(GOBIResponse.class, ObjectMapperType.JAXB);
 
-    boolean success;
-    try {
-      UUID.fromString(order.getId());
-      success = true;
-    } catch (IllegalArgumentException e) {
-      success = false;
-    }
-
-    context.assertTrue(success);
+    context.assertNotNull(order.getPoLineNumber());
 
     asyncLocal.complete();
 
@@ -331,7 +282,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicMonographBadDataPath));
 
-    final String error = RestAssured
+    final GOBIResponse error = RestAssured
       .given()
         .header(tenantHeader)
         .header(contentTypeHeaderXML)
@@ -340,12 +291,15 @@ public class GOBIIntegrationServiceResourceImplTest {
         .post(ordersPath)
       .then()
         .statusCode(400)
-        .contentType(ContentType.TEXT)
+        .contentType(ContentType.XML)
         .extract()
           .body()
-            .asString();
+            .as(GOBIResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(error);
+    context.assertNotNull(error.getError());
+    context.assertEquals("INVALID_XML", error.getError().getCode());
+    context.assertNotNull(error.getError().getMessage());
 
     asyncLocal.complete();
 
