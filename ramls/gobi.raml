@@ -51,20 +51,17 @@ traits:
       is: [secured]
       body:
         application/xml:
-          schema: !!null
           example: !include examples/po.xml
       responses:
         201:
           description: Creates a new order within FOLIO
           body:
             application/xml:
-              schema: !!null
               example: !include examples/response.xml
         400:
           description: Bad request
           body:
             application/xml:
-              schema: !!null
               example: !include examples/error.xml
         401:
           description: Not authorized to perform requested action
