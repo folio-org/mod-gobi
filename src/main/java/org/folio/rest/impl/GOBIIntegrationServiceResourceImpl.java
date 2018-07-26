@@ -47,7 +47,7 @@ public class GOBIIntegrationServiceResourceImpl
       return;
     }
 
-    final String poLineNumber = new Random().ints(30, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining());
+    final String poLineNumber = new Random().ints(16, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining());
     response.setPoLineNumber(poLineNumber);
 
     asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withXmlCreated(GOBIResponseWriter.getWriter().write(response))));
