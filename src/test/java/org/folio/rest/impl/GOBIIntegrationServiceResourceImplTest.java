@@ -377,12 +377,11 @@ public class GOBIIntegrationServiceResourceImplTest {
   public final void testGetUuidWithInvalidOkapiToken(TestContext context) throws IllegalArgumentException {
     logger.info("Begin: Testing for IllegalArgumentException to be thrown when calling getUuid with NULL or empty okapi token");
 
-      GOBIIntegrationServiceResourceImpl impl = new  GOBIIntegrationServiceResourceImpl();
       String okapiToken = null;
       String expectedMessage = "x-okapi-tenant is NULL or empty";
 
       try{
-        impl.getUuid(okapiToken);
+        GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
         fail("Expected IllegalArgumentException to be thrown");
       }
       catch (IllegalArgumentException e){
@@ -391,7 +390,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       okapiToken =  "";
       try{
-        impl.getUuid(okapiToken);
+        GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
         fail("Expected IllegalArgumentException to be thrown");
       }
       catch (IllegalArgumentException e){
@@ -403,12 +402,11 @@ public class GOBIIntegrationServiceResourceImplTest {
   public final void testGetUuidWithValidOkapiTokenMissingContentPart(TestContext context) throws IllegalArgumentException {
     logger.info("Begin: Testing for IllegalArgumentException to be thrown when calling getUuid with invalid okapi token");
 
-    GOBIIntegrationServiceResourceImpl impl = new  GOBIIntegrationServiceResourceImpl();
     String okapiToken = "eyJhbGciOiJIUzUxMiJ9.";
     String expectedMessage = "user_id is not found in x-okapi-tenant";
 
     try{
-      impl.getUuid(okapiToken);
+      GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
       fail("Expected IllegalArgumentException to be thrown");
     }
     catch (IllegalArgumentException e){
@@ -417,7 +415,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     okapiToken = "eyJhbGciOiJIUzUxMiJ9";
     try{
-      impl.getUuid(okapiToken);
+      GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
       fail("Expected IllegalArgumentException to be thrown");
     }
     catch (IllegalArgumentException e){
@@ -429,14 +427,13 @@ public class GOBIIntegrationServiceResourceImplTest {
   public final void testGetUuidWithValidOkapiTokenMissingUuid(TestContext context) throws IllegalArgumentException {
     logger.info("Begin: Testing for IllegalArgumentException to be thrown when calling getUuid with okapi token missing UUID");
 
-    GOBIIntegrationServiceResourceImpl impl = new  GOBIIntegrationServiceResourceImpl();
     String expectedMessage = "user_id is not found in x-okapi-tenant";
 
     //Missing UUID
     String okapiToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInRlbmFudCI6ImZzMDAwMDAwMDAifQ.dpljk7LAzgM_a1fD0jAqVUE4HhxKKeXmE2lrTmyf-HOxUyPf2Byj0OIN2fn3eUdQnt1_ABZTTxafceyt7Rj3mg";
 
     try{
-      impl.getUuid(okapiToken);
+      GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
       fail("Expected IllegalArgumentException to be thrown");
     }
     catch (IllegalArgumentException e){
@@ -447,7 +444,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     okapiToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.PabbXTw5TqrrOxeKOEac5WkmmAOL4f8UoWKPCqCINvmuZCLLC0197CfVq0CBv2MjSwxU-3nf_TkwhM4mVmHnyA";
 
     try{
-      impl.getUuid(okapiToken);
+      GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
       fail("Expected IllegalArgumentException to be thrown");
     }
     catch (IllegalArgumentException e){
@@ -458,7 +455,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     okapiToken = "eyJhbGciOiJIUzUxMiJ9.e30.ToOwht_WTL7ib-z-u0Bg4UmSIZ8qOsTCnX7IhPMbQghCGBzCJMzfu_w9VZPzA9JOk1g2GnH0_ujnhMorxK2LJw";
 
     try{
-      impl.getUuid(okapiToken);
+      GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
       fail("Expected IllegalArgumentException to be thrown");
     }
     catch (IllegalArgumentException e){
@@ -470,13 +467,12 @@ public class GOBIIntegrationServiceResourceImplTest {
   public final void testGetUuidWithValidOkapiToken(TestContext context) throws IllegalArgumentException {
     logger.info("Begin: Testing for valid UUID from valid OkapiToken");
 
-    GOBIIntegrationServiceResourceImpl impl = new  GOBIIntegrationServiceResourceImpl();
     String expectedMessage = "user_id is not found in x-okapi-tenant";
 
     String okapiToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg";
 
     try{
-      String uuid = impl.getUuid(okapiToken);
+      String uuid = GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
       assertEquals("ef676db9-d231-479a-aa91-f65eb4b17872", uuid);
     }
     catch (IllegalArgumentException e){

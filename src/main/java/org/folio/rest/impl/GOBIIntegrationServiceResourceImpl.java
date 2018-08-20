@@ -40,7 +40,7 @@ public class GOBIIntegrationServiceResourceImpl
 
     try {
       parser.parse(entity);
-      String uuid = getUuid(okapiHeaders.get(("x-okapi-tenant")));
+      getUuid(okapiHeaders.get(("x-okapi-tenant")));
 
     } catch (PurchaseOrderParserException e) {
       final ResponseError re = new ResponseError();
@@ -65,9 +65,9 @@ public class GOBIIntegrationServiceResourceImpl
     asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withXmlCreated(GOBIResponseWriter.getWriter().write(response))));
   }
 
-  public String getUuid(String okapiTenant) {
+  public static String getUuid(String okapiTenant) {
 
-    if (okapiTenant == null || okapiTenant == "") {
+    if (okapiTenant == null || okapiTenant.equals("") ){
       throw new IllegalArgumentException("x-okapi-tenant is NULL or empty");
     }
 
@@ -75,7 +75,7 @@ public class GOBIIntegrationServiceResourceImpl
     if (tokenJson != null) {
       String userId = tokenJson.getString("user_id");
 
-      if (userId  == null || userId == ""){
+      if (userId  == null || userId.equals("") ){
         throw new IllegalArgumentException("user_id is not found in x-okapi-tenant");
       }
       return userId;
@@ -85,7 +85,7 @@ public class GOBIIntegrationServiceResourceImpl
     }
   }
 
-  private JsonObject getClaims(String tenantToken){
+  public static JsonObject getClaims(String tenantToken){
     String[] tokenPieces = tenantToken.split("\\.");
     if (tokenPieces.length > 1){
       String encodedJson = tokenPieces[1];
