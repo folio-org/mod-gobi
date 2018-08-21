@@ -40,7 +40,7 @@ public class GOBIIntegrationServiceResourceImpl
 
     try {
       parser.parse(entity);
-      getUuid(okapiHeaders.get(("x-okapi-tenant")));
+      getUuid(okapiHeaders.get(("x-okapi-token")));
 
     } catch (PurchaseOrderParserException e) {
       final ResponseError re = new ResponseError();
@@ -65,28 +65,28 @@ public class GOBIIntegrationServiceResourceImpl
     asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.withXmlCreated(GOBIResponseWriter.getWriter().write(response))));
   }
 
-  public static String getUuid(String okapiTenant) {
+  public static String getUuid(String okapiToken) {
 
-    if (okapiTenant == null || okapiTenant.equals("") ){
+    if (okapiToken == null || okapiToken.equals("") ){
       throw new IllegalArgumentException("x-okapi-tenant is NULL or empty");
     }
 
-    JsonObject tokenJson = getClaims(okapiTenant);
+    JsonObject tokenJson = getClaims(okapiToken);
     if (tokenJson != null) {
       String userId = tokenJson.getString("user_id");
 
       if (userId  == null || userId.equals("") ){
-        throw new IllegalArgumentException("user_id is not found in x-okapi-tenant");
+        throw new IllegalArgumentException("user_id is not found in x-okapi-token");
       }
       return userId;
 
     } else {
-      throw new IllegalArgumentException("user_id is not found in x-okapi-tenant");
+      throw new IllegalArgumentException("user_id is not found in x-okapi-token");
     }
   }
 
-  public static JsonObject getClaims(String tenantToken){
-    String[] tokenPieces = tenantToken.split("\\.");
+  public static JsonObject getClaims(String token){
+    String[] tokenPieces = token.split("\\.");
     if (tokenPieces.length > 1){
       String encodedJson = tokenPieces[1];
       if (encodedJson == null) {
