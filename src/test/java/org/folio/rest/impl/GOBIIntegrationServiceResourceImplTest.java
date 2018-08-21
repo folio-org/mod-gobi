@@ -35,7 +35,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final int okapiPort = NetworkUtils.nextFreePort();
 //  private final int serverPort = NetworkUtils.nextFreePort();
   private final Header tenantHeader = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
-  private final Header realTenantHeader = new Header ("X-Okapi-Tenant", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
+  private final Header tokenHeadner = new Header ("X-Okapi-Token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
 //  private final Header urlHeader = new Header("X-Okapi-Url", "http://localhost:" + serverPort);
   private final Header contentTypeHeaderJSON = new Header("Content-Type", "application/json");
   private final Header contentTypeHeaderXML = new Header("Content-Type", "application/xml");
@@ -116,7 +116,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GOBIResponse order = RestAssured
       .given()
-        .header(realTenantHeader)
+        .header(tokenHeadner)
+        .header(tenantHeader)
         .header(contentTypeHeaderXML)
         .body(body)
       .when()
@@ -145,7 +146,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GOBIResponse order = RestAssured
         .given()
-          .header(realTenantHeader)
+          .header(tokenHeadner)
+          .header(tenantHeader)
           .header(contentTypeHeaderXML)
           .body(body)
         .when()
@@ -174,7 +176,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GOBIResponse order = RestAssured
         .given()
-          .header(realTenantHeader)
+          .header(tokenHeadner)
+          .header(tenantHeader)
           .header(contentTypeHeaderXML)
           .body(body)
         .when()
@@ -203,7 +206,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GOBIResponse order = RestAssured
         .given()
-          .header(realTenantHeader)
+          .header(tokenHeadner)
+          .header(tenantHeader)
           .header(contentTypeHeaderXML)
           .body(body)
         .when()
@@ -232,7 +236,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GOBIResponse order = RestAssured
         .given()
-          .header(realTenantHeader)
+          .header(tokenHeadner)
+          .header(tenantHeader)
           .header(contentTypeHeaderXML)
           .body(body)
         .when()
@@ -261,7 +266,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GOBIResponse order = RestAssured
         .given()
-          .header(realTenantHeader)
+          .header(tokenHeadner)
+          .header(tenantHeader)
           .header(contentTypeHeaderXML)
           .body(body)
         .when()
@@ -322,7 +328,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GOBIResponse order = RestAssured
       .given()
-      .header(realTenantHeader)
+      .header(tokenHeadner)
+      .header(tenantHeader)
       .header(contentTypeHeaderXML)
       .body(body)
       .when()
@@ -403,7 +410,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("Begin: Testing for IllegalArgumentException to be thrown when calling getUuid with invalid okapi token");
 
     String okapiToken = "eyJhbGciOiJIUzUxMiJ9.";
-    String expectedMessage = "user_id is not found in x-okapi-tenant";
+    String expectedMessage = "user_id is not found in x-okapi-token";
 
     try{
       GOBIIntegrationServiceResourceImpl.getUuid(okapiToken);
@@ -427,7 +434,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   public final void testGetUuidWithValidOkapiTokenMissingUuid(TestContext context) throws IllegalArgumentException {
     logger.info("Begin: Testing for IllegalArgumentException to be thrown when calling getUuid with okapi token missing UUID");
 
-    String expectedMessage = "user_id is not found in x-okapi-tenant";
+    String expectedMessage = "user_id is not found in x-okapi-token";
 
     //Missing UUID
     String okapiToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInRlbmFudCI6ImZzMDAwMDAwMDAifQ.dpljk7LAzgM_a1fD0jAqVUE4HhxKKeXmE2lrTmyf-HOxUyPf2Byj0OIN2fn3eUdQnt1_ABZTTxafceyt7Rj3mg";
@@ -466,8 +473,6 @@ public class GOBIIntegrationServiceResourceImplTest {
   @Test
   public final void testGetUuidWithValidOkapiToken(TestContext context) throws IllegalArgumentException {
     logger.info("Begin: Testing for valid UUID from valid OkapiToken");
-
-    String expectedMessage = "user_id is not found in x-okapi-tenant";
 
     String okapiToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg";
 
