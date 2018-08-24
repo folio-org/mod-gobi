@@ -10,35 +10,35 @@ import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
-import org.folio.rest.jaxrs.model.GOBIResponse;
+import org.folio.rest.gobi.model.Response;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GOBIResponseWriter {
-  private static final Logger LOG = LoggerFactory.getLogger(GOBIResponseWriter.class);
+public class ResponseWriter {
+  private static final Logger logger = LoggerFactory.getLogger(ResponseWriter.class);
   private static final String RESPONSE_SCHEMA = "Response.xsd";
+  private static final ResponseWriter INSTANCE = new ResponseWriter();
 
   private Marshaller jaxbMarshaller;
 
-  private static final GOBIResponseWriter INSTANCE = new GOBIResponseWriter();
-
-  public static GOBIResponseWriter getWriter() {
+  public static ResponseWriter getWriter() {
     return INSTANCE;
   }
 
-  public GOBIResponseWriter() {
+  public ResponseWriter() {
     try {
-      JAXBContext jaxbContext = JAXBContext.newInstance(GOBIResponse.class);
+      JAXBContext jaxbContext = JAXBContext.newInstance(Response.class);
       jaxbMarshaller = jaxbContext.createMarshaller();
-      jaxbMarshaller.setSchema(SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI).newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(RESPONSE_SCHEMA))));
+      jaxbMarshaller.setSchema(SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI)
+        .newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(RESPONSE_SCHEMA))));
     } catch (Exception e) {
-      LOG.error("Unable to create GOBIResponseWriter", e);
+      logger.error("Unable to create ResponseWriter", e);
       jaxbMarshaller = null;
     }
   }
 
-  public BinaryOutStream write(GOBIResponse response) {
+  public BinaryOutStream write(Response response) {
     if (jaxbMarshaller == null) {
       throw new IllegalStateException("Marshaller is not available");
     }
@@ -47,7 +47,7 @@ public class GOBIResponseWriter {
     try {
       jaxbMarshaller.marshal(response, baos);
     } catch (JAXBException e) {
-      LOG.error("Marshalling failed", e);
+      logger.error("Marshalling failed", e);
     }
 
     final BinaryOutStream outStream = new BinaryOutStream();
