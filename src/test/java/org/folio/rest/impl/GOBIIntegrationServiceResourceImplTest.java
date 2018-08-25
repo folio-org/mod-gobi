@@ -1,17 +1,20 @@
 package org.folio.rest.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.apache.commons.io.IOUtils;
-import org.drools.core.command.assertion.AssertEquals;
 import org.folio.rest.RestVerticle;
-import org.folio.rest.jaxrs.model.GOBIResponse;
+import org.folio.rest.gobi.model.Response;
 import org.folio.rest.tools.PomReader;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.hamcrest.Matchers;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -20,17 +23,13 @@ import io.restassured.mapper.ObjectMapperType;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
+  
   private final Logger logger = LoggerFactory.getLogger(GOBIIntegrationServiceResourceImplTest.class);
   private final int okapiPort = NetworkUtils.nextFreePort();
 //  private final int serverPort = NetworkUtils.nextFreePort();
@@ -114,7 +113,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicMonographPath));
 
-    final GOBIResponse order = RestAssured
+    final Response order = RestAssured
       .given()
         .header(tokenHeadner)
         .header(tenantHeader)
@@ -127,7 +126,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .contentType(ContentType.XML)
         .extract()
           .body()
-            .as(GOBIResponse.class, ObjectMapperType.JAXB);
+            .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -144,7 +143,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicSerialPath));
 
-    final GOBIResponse order = RestAssured
+    final Response order = RestAssured
         .given()
           .header(tokenHeadner)
           .header(tenantHeader)
@@ -157,7 +156,7 @@ public class GOBIIntegrationServiceResourceImplTest {
           .contentType(ContentType.XML)
           .extract()
             .body()
-              .as(GOBIResponse.class, ObjectMapperType.JAXB);
+              .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -174,7 +173,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonographPath));
 
-    final GOBIResponse order = RestAssured
+    final Response order = RestAssured
         .given()
           .header(tokenHeadner)
           .header(tenantHeader)
@@ -187,7 +186,7 @@ public class GOBIIntegrationServiceResourceImplTest {
           .contentType(ContentType.XML)
           .extract()
             .body()
-              .as(GOBIResponse.class, ObjectMapperType.JAXB);
+              .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -204,7 +203,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintSerialPath));
 
-    final GOBIResponse order = RestAssured
+    final Response order = RestAssured
         .given()
           .header(tokenHeadner)
           .header(tenantHeader)
@@ -217,7 +216,7 @@ public class GOBIIntegrationServiceResourceImplTest {
           .contentType(ContentType.XML)
           .extract()
             .body()
-              .as(GOBIResponse.class, ObjectMapperType.JAXB);
+              .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -234,7 +233,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poUnlistedPrintMonographPath));
 
-    final GOBIResponse order = RestAssured
+    final Response order = RestAssured
         .given()
           .header(tokenHeadner)
           .header(tenantHeader)
@@ -247,7 +246,7 @@ public class GOBIIntegrationServiceResourceImplTest {
           .contentType(ContentType.XML)
           .extract()
             .body()
-              .as(GOBIResponse.class, ObjectMapperType.JAXB);
+              .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -264,7 +263,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poUnlistedPrintSerialPath));
 
-    final GOBIResponse order = RestAssured
+    final Response order = RestAssured
         .given()
           .header(tokenHeadner)
           .header(tenantHeader)
@@ -277,7 +276,7 @@ public class GOBIIntegrationServiceResourceImplTest {
           .contentType(ContentType.XML)
           .extract()
             .body()
-              .as(GOBIResponse.class, ObjectMapperType.JAXB);
+              .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -294,7 +293,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicMonographBadDataPath));
 
-    final GOBIResponse error = RestAssured
+    final Response error = RestAssured
       .given()
         .header(tenantHeader)
         .header(contentTypeHeaderXML)
@@ -306,7 +305,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .contentType(ContentType.XML)
         .extract()
           .body()
-            .as(GOBIResponse.class, ObjectMapperType.JAXB);
+            .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(error);
     context.assertNotNull(error.getError());
@@ -326,7 +325,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonographPath));
 
-    final GOBIResponse order = RestAssured
+    final Response order = RestAssured
       .given()
       .header(tokenHeadner)
       .header(tenantHeader)
@@ -339,7 +338,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       .contentType(ContentType.XML)
       .extract()
       .body()
-      .as(GOBIResponse.class, ObjectMapperType.JAXB);
+      .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -356,7 +355,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonographPath));
 
-    final GOBIResponse error = RestAssured
+    final Response error = RestAssured
       .given()
       .header(tenantHeader)
       .header(contentTypeHeaderXML)
@@ -368,7 +367,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       .contentType(ContentType.XML)
       .extract()
       .body()
-      .as(GOBIResponse.class, ObjectMapperType.JAXB);
+      .as(Response.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(error);
     context.assertNotNull(error.getError());
