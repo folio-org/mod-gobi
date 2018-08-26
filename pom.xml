@@ -153,6 +153,7 @@
             <configuration>
               <sources>
                 <source>${project.build.directory}/generated-sources/raml-jaxrs</source>
+                <source>${project.build.directory}/generated-sources/jaxb</source>
               </sources>
             </configuration>
           </execution>
