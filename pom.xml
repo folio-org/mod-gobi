@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-gobi</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
 
   <name>GOBI Integration</name>
   <description>GOBI® (Global Online Bibliographic Information) is the leading web-based acquisitions tool for finding, ordering and managing e-books and print books for libraries. This module allows GOBI initiated orders to be fulfilled by FOLIO.</description>
