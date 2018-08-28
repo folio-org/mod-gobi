@@ -31,6 +31,10 @@ public class PostGobiOrdersHelper {
 
   private static final Logger logger = Logger.getLogger(PostGobiOrdersHelper.class);
 
+  public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
+  public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
+  public static final String CODE_INVALID_XML = "INVALID_XML";
+
   private final HttpClientInterface httpClient;
   private final Context ctx;
   private final Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler;
@@ -149,7 +153,7 @@ public class PostGobiOrdersHelper {
       case 400:
         GobiResponse response = new GobiResponse();
         response.setError(new ResponseError());
-        response.getError().setCode("BAD_REQUEST");
+        response.getError().setCode(CODE_BAD_REQUEST);
         response.getError().setMessage(truncate(t.getMessage(), 500));
         result = Future
           .succeededFuture(PostGobiOrdersResponse.withXmlBadRequest(GobiResponseWriter.getWriter().write(response)));
@@ -166,14 +170,14 @@ public class PostGobiOrdersHelper {
     } else if (t instanceof GobiPurchaseOrderParserException) {
       GobiResponse response = new GobiResponse();
       response.setError(new ResponseError());
-      response.getError().setCode("INVALID_XML");
+      response.getError().setCode(CODE_INVALID_XML);
       response.getError().setMessage(truncate(t.getMessage(), 500));
       result = Future
         .succeededFuture(PostGobiOrdersResponse.withXmlBadRequest(GobiResponseWriter.getWriter().write(response)));
     } else if (t instanceof InvalidTokenException) {
       GobiResponse response = new GobiResponse();
       response.setError(new ResponseError());
-      response.getError().setCode("INVALID_TOKEN");
+      response.getError().setCode(CODE_INVALID_TOKEN);
       response.getError().setMessage(truncate(t.getMessage(), 500));
       result = Future
         .succeededFuture(PostGobiOrdersResponse.withXmlBadRequest(GobiResponseWriter.getWriter().write(response)));
@@ -181,7 +185,9 @@ public class PostGobiOrdersHelper {
       result = Future.succeededFuture(PostGobiOrdersResponse.withPlainInternalServerError(throwable.getMessage()));
     }
 
-    httpClient.closeClient();
+    if (httpClient != null) {
+      httpClient.closeClient();
+    }
 
     asyncResultHandler.handle(result);
 

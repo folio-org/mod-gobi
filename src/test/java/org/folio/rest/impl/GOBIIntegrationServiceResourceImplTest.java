@@ -1,17 +1,14 @@
 package org.folio.rest.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_TOKEN;
+import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
-import org.folio.gobi.exceptions.InvalidTokenException;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.tools.PomReader;
@@ -47,7 +44,6 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final Logger logger = LoggerFactory.getLogger(GOBIIntegrationServiceResourceImplTest.class);
 
   private static final String APPLICATION_JSON = "application/json";
-  private static final String TEXT_PLAIN = "text/plain";
 
   private static final int okapiPort = NetworkUtils.nextFreePort();
   private static final int mockPort = NetworkUtils.nextFreePort();
@@ -57,7 +53,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final Header tokenHeader = new Header("X-Okapi-Token",
       "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
   private final Header urlHeader = new Header("X-Okapi-Url", "http://localhost:" + mockPort);
-  
+
   private final Header contentTypeHeaderJSON = new Header("Content-Type", "application/json");
   private final Header contentTypeHeaderXML = new Header("Content-Type", "application/xml");
 
@@ -105,7 +101,12 @@ public class GOBIIntegrationServiceResourceImplTest {
   @AfterClass
   public static void tearDownOnce(TestContext context) {
     logger.info("GOBI Integration Service Testing Complete");
-    vertx.close(context.asyncAssertSuccess());
+    Async async = context.async();
+    vertx.close(v -> {
+      mockServer.close();
+      async.complete();
+    });
+    async.awaitSuccess();
   }
 
   @Test
@@ -136,8 +137,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils
-      .toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicMonographPath));
+    final String body = getMockData(poListedElectronicMonographPath);
 
     final GobiResponse order = RestAssured
       .given()
@@ -168,8 +168,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils
-      .toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicSerialPath));
+    final String body = getMockData(poListedElectronicSerialPath);
 
     final GobiResponse order = RestAssured
       .given()
@@ -200,8 +199,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils
-      .toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonographPath));
+    final String body = getMockData(poListedPrintMonographPath);
 
     final GobiResponse order = RestAssured
       .given()
@@ -232,7 +230,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintSerialPath));
+    final String body = getMockData(poListedPrintSerialPath);
 
     final GobiResponse order = RestAssured
       .given()
@@ -251,7 +249,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
-    
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed print serial");
@@ -263,8 +261,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils
-      .toString(this.getClass().getClassLoader().getResourceAsStream(poUnlistedPrintMonographPath));
+    final String body = getMockData(poUnlistedPrintMonographPath);
 
     final GobiResponse order = RestAssured
       .given()
@@ -295,8 +292,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils
-      .toString(this.getClass().getClassLoader().getResourceAsStream(poUnlistedPrintSerialPath));
+    final String body = getMockData(poUnlistedPrintSerialPath);
 
     final GobiResponse order = RestAssured
       .given()
@@ -327,8 +323,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils
-      .toString(this.getClass().getClassLoader().getResourceAsStream(poListedElectronicMonographBadDataPath));
+    final String body = getMockData(poListedElectronicMonographBadDataPath);
 
     final GobiResponse error = RestAssured
       .given()
@@ -347,7 +342,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     context.assertNotNull(error);
     context.assertNotNull(error.getError());
-    context.assertEquals("INVALID_XML", error.getError().getCode());
+    context.assertEquals(CODE_INVALID_XML, error.getError().getCode());
     context.assertNotNull(error.getError().getMessage());
 
     asyncLocal.complete();
@@ -361,8 +356,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils
-      .toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonographPath));
+    final String body = getMockData(poListedPrintMonographPath);
 
     final GobiResponse order = RestAssured
       .given()
@@ -393,8 +387,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = IOUtils
-      .toString(this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonographPath));
+    final String body = getMockData(poListedPrintMonographPath);
 
     final GobiResponse error = RestAssured
       .given()
@@ -413,7 +406,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     context.assertNotNull(error);
     context.assertNotNull(error.getError());
-    context.assertEquals("INVALID_TOKEN", error.getError().getCode());
+    context.assertEquals(CODE_INVALID_TOKEN, error.getError().getCode());
     context.assertNotNull(error.getError().getMessage());
 
     asyncLocal.complete();
@@ -421,111 +414,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("End: Testing for 400 - posted order with invalid token");
   }
 
-  @Test
-  public final void testGetUuidWithInvalidOkapiToken(TestContext context) throws InvalidTokenException {
-    logger.info(
-        "Begin: Testing for InvalidTokenException to be thrown when calling getUuid with NULL or empty okapi token");
-
-    String okapiToken = null;
-    String expectedMessage = "x-okapi-tenant is NULL or empty";
-
-    try {
-      PostGobiOrdersHelper.getUuid(okapiToken);
-      fail("Expected InvalidTokenException to be thrown");
-    } catch (InvalidTokenException e) {
-      assertEquals(expectedMessage, e.getMessage());
-    }
-
-    okapiToken = "";
-    try {
-      PostGobiOrdersHelper.getUuid(okapiToken);
-      fail("Expected InvalidTokenException to be thrown");
-    } catch (InvalidTokenException e) {
-      assertEquals(expectedMessage, e.getMessage());
-    }
-  }
-
-  @Test
-  public final void testGetUuidWithValidOkapiTokenMissingContentPart(TestContext context) throws InvalidTokenException {
-    logger.info("Begin: Testing for InvalidTokenException to be thrown when calling getUuid with invalid okapi token");
-
-    String okapiToken = "eyJhbGciOiJIUzUxMiJ9.";
-    String expectedMessage = "user_id is not found in x-okapi-token";
-
-    try {
-      PostGobiOrdersHelper.getUuid(okapiToken);
-      fail("Expected InvalidTokenException to be thrown");
-    } catch (InvalidTokenException e) {
-      assertEquals(expectedMessage, e.getMessage());
-    }
-
-    okapiToken = "eyJhbGciOiJIUzUxMiJ9";
-    try {
-      PostGobiOrdersHelper.getUuid(okapiToken);
-      fail("Expected InvalidTokenException to be thrown");
-    } catch (InvalidTokenException e) {
-      assertEquals(expectedMessage, e.getMessage());
-    }
-  }
-
-  @Test
-  public final void testGetUuidWithValidOkapiTokenMissingUuid(TestContext context) throws InvalidTokenException {
-    logger
-      .info("Begin: Testing for InvalidTokenException to be thrown when calling getUuid with okapi token missing UUID");
-
-    String expectedMessage = "user_id is not found in x-okapi-token";
-
-    // Missing UUID
-    String okapiToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInRlbmFudCI6ImZzMDAwMDAwMDAifQ.dpljk7LAzgM_a1fD0jAqVUE4HhxKKeXmE2lrTmyf-HOxUyPf2Byj0OIN2fn3eUdQnt1_ABZTTxafceyt7Rj3mg";
-
-    try {
-      PostGobiOrdersHelper.getUuid(okapiToken);
-      fail("Expected InvalidTokenException to be thrown");
-    } catch (InvalidTokenException e) {
-      assertEquals(expectedMessage, e.getMessage());
-    }
-
-    // empty UUID
-    okapiToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.PabbXTw5TqrrOxeKOEac5WkmmAOL4f8UoWKPCqCINvmuZCLLC0197CfVq0CBv2MjSwxU-3nf_TkwhM4mVmHnyA";
-
-    try {
-      PostGobiOrdersHelper.getUuid(okapiToken);
-      fail("Expected InvalidTokenException to be thrown");
-    } catch (InvalidTokenException e) {
-      assertEquals(expectedMessage, e.getMessage());
-    }
-
-    // empty Payload
-    okapiToken = "eyJhbGciOiJIUzUxMiJ9.e30.ToOwht_WTL7ib-z-u0Bg4UmSIZ8qOsTCnX7IhPMbQghCGBzCJMzfu_w9VZPzA9JOk1g2GnH0_ujnhMorxK2LJw";
-
-    try {
-      PostGobiOrdersHelper.getUuid(okapiToken);
-      fail("Expected InvalidTokenException to be thrown");
-    } catch (InvalidTokenException e) {
-      assertEquals(expectedMessage, e.getMessage());
-    }
-  }
-
-  @Test
-  public final void testGetUuidWithValidOkapiToken(TestContext context) throws InvalidTokenException {
-    logger.info("Begin: Testing for valid UUID from valid OkapiToken");
-
-    String okapiToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg";
-
-    try {
-      String uuid = PostGobiOrdersHelper.getUuid(okapiToken);
-      assertEquals("ef676db9-d231-479a-aa91-f65eb4b17872", uuid);
-    } catch (InvalidTokenException e) {
-      fail("InvalidTokenException was not expected to be thrown");
-    }
-  }
-
   public static class MockServer {
 
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
-
     private static final Random rand = new Random(System.nanoTime());
-    
+
     public final int port;
     public final Vertx vertx;
 
@@ -538,7 +431,6 @@ public class GOBIIntegrationServiceResourceImplTest {
       vertx.close(res -> {
         if (res.failed()) {
           logger.error("Failed to shut down mock server", res.cause());
-          fail(res.cause().getMessage());
         } else {
           logger.info("Successfully shut down mock server");
         }
@@ -574,14 +466,15 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       JsonObject compPO = ctx.getBodyAsJson();
       JsonObject po = compPO.getJsonObject("purchase_order");
+
       po.put("id", UUID.randomUUID().toString());
-      String poNumber = "PO_" + rand.ints(10, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining());
+      String poNumber = "PO_" + randomDigits(10);
       po.put("po_number", poNumber);
       compPO.getJsonArray("po_lines").forEach(line -> {
         JsonObject poLine = (JsonObject) line;
         poLine.put("id", UUID.randomUUID().toString());
         poLine.put("purchase_order_id", po.getString("id"));
-        poLine.put("barcode", rand.ints(10, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining()));
+        poLine.put("barcode", randomDigits(10));
       });
 
       ctx.response()
@@ -589,11 +482,13 @@ public class GOBIIntegrationServiceResourceImplTest {
         .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
         .end(compPO.encodePrettily());
     }
+
+    private String randomDigits(int len) {
+      return rand.ints(len, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining());
+    }
   }
 
-  public static String getMockData(String path) throws IOException {
-    StringBuilder sb = new StringBuilder();
-    Files.lines(Paths.get(path)).forEach(sb::append);
-    return sb.toString();
+  private String getMockData(String path) throws IOException {
+    return IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(path));
   }
 }
