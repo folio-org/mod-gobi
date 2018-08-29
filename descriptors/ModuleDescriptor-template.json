@@ -15,13 +15,16 @@
           "methods": ["POST"],
           "pathPattern": "/gobi/orders",
           "permissionsRequired": ["gobi.item.post"],
-          "modulePermissions": [
-          ]
+          "modulePermissions": [ "orders.item.post" ]
         }
       ]
     }
   ],
   "requires": [
+    {
+      "id": "orders",
+      "version": "1.0"
+    }
   ],
   "permissionSets": [
     {
