@@ -365,21 +365,4 @@ public class PostGobiOrdersHelperTest {
     assertEquals(vendorId + "0", extracteVendorId );
 
   }
-
-  @Test
-  public void testsGetVendorId(){
-
-    PostGobiOrdersHelper gobiOrdersHelper = new PostGobiOrdersHelper(null, null, null);
-    Map<String, String> headers = new HashedMap<String, String>();
-    headers.put("x-okapi-token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
-    headers.put("x-okapi-tenant", "f00000000");
-    headers.put("x-okapi-Url" , "http://internal-fse-lb-pub-1206708558.us-east-1.elb.amazonaws.com:9130");
-
-    try {
-      CompletableFuture<String> complVendorId = gobiOrdersHelper.getVendorId("EBR", headers);
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
 }
