@@ -75,16 +75,13 @@ public class PostGobiOrdersHelper {
       JsonObject line = new JsonObject();
       line.put("account_number", gobiPO.getCustomerDetail().getSubAccount());
       line.put("barcode", "");
-     // line.put("vendor", getVendorId(gobiPO.getOrder().getListedElectronicMonograph().getOrderDetail().getPurchaseOption().getVendorCode(), okapiHeaders));
 
       poLines.add(line);
 
       compPO.put("purchase_order", po);
       compPO.put("po_lines", poLines);
-    } catch (InvalidTokenException e) {
-      future.completeExceptionally(e);
-    }
-    catch (Exception e){
+    } catch ( InvalidTokenException e ) {
+      logger.error("Exception mapping fields", e);
       future.completeExceptionally(e);
     }
 
@@ -99,7 +96,8 @@ public class PostGobiOrdersHelper {
         .thenApply(this::extractVendorId);
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Exception calling getVendorId", e);
+
       throw e;
     }
   }
@@ -107,8 +105,7 @@ public class PostGobiOrdersHelper {
   public String extractVendorId(JsonObject obj) {
     JsonArray jsonArray = obj.getJsonArray("vendors");
     JsonObject item = jsonArray.getJsonObject(0);
-    String id = item.getString("id");
-    return id;
+    return item.getString("id");
   }
 
 
