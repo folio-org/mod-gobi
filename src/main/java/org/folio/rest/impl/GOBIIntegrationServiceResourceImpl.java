@@ -4,22 +4,29 @@ import java.io.Reader;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.*;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.folio.gobi.GOBIResponseWriter;
+import org.folio.gobi.HttpException;
 import org.folio.gobi.PurchaseOrderParser;
 import org.folio.gobi.PurchaseOrderParserException;
+import org.folio.rest.RestVerticle;
 import org.folio.rest.jaxrs.model.GOBIResponse;
+import org.folio.rest.jaxrs.model.PurchaseOrder;
 import org.folio.rest.jaxrs.model.ResponseError;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import org.folio.rest.tools.client.HttpClientFactory;
+import org.folio.rest.tools.client.interfaces.HttpClientInterface;
+import org.folio.rest.tools.utils.TenantTool;
 
 public class GOBIIntegrationServiceResourceImpl
     implements GOBIIntegrationServiceResource {
@@ -39,8 +46,9 @@ public class GOBIIntegrationServiceResourceImpl
     final PurchaseOrderParser parser = PurchaseOrderParser.getParser();
 
     try {
-      parser.parse(entity);
+      PurchaseOrder order = parser.parse(entity);
       getUuid(okapiHeaders.get(("x-okapi-token")));
+      getVendorId(order.getOrder().getListedElectronicMonograph().getOrderDetail().getPurchaseOption().getVendorCode(), okapiHeaders);
 
     } catch (PurchaseOrderParserException e) {
       final ResponseError re = new ResponseError();
@@ -97,5 +105,53 @@ public class GOBIIntegrationServiceResourceImpl
       return new JsonObject(decodedJson);
     }
     return null;
+  }
+
+  public CompletableFuture<String> getVendorId(String vendorCode, Map<String, String>  headers) throws Exception {
+
+    if (vendorCode == null || vendorCode.equals("")){
+      throw new IllegalArgumentException("vendor code is NULL or empty");
+    }
+
+    if (headers == null || headers.isEmpty()){
+      throw new IllegalArgumentException("headers is NULL or empty");
+    }
+
+    HttpClientInterface httpClient = getHttpClient(headers);
+
+    try {
+      return httpClient.request("/vendor?query=code==" + vendorCode, headers)
+        .thenApply(this::verifyAndExtractBody)
+          .thenApply(this::extractVendorId);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+    }
+    finally {
+      httpClient.closeClient(); //or pass it in
+    }
+  }
+
+  public String extractVendorId(JsonObject obj) {
+    JsonArray jsonArray = obj.getJsonArray("vendors");
+    JsonObject item = jsonArray.getJsonObject(0);
+    String id = item.getString("id");
+    return id;
+  }
+
+  private HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {
+    final String okapiURL = okapiHeaders.getOrDefault("X-Okapi-Url", "");
+    final String tenantId = TenantTool.calculateTenantId(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TENANT));
+
+    return HttpClientFactory.getHttpClient(okapiURL, tenantId);
+  }
+
+  private JsonObject verifyAndExtractBody(org.folio.rest.tools.client.Response response) {
+    if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
+      throw new CompletionException(new HttpException(response.getCode(), response.getError().toString()));
+    }
+
+    return response.getBody();
   }
 }
