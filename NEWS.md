@@ -1,3 +1,7 @@
+## 1.0.1 Unreleased
+ * [MODGOBI-4](https://issues.folio.org/browse/MODGOBI-4)
+ * [MODGOBI-14](https://issues.folio.org/browse/MODGOBI-14)
+
 ## 1.0.0 Unreleased
  * [MODGOBI-3](https://issues.folio.org/browse/MODGOBI-3)
  * [MODGOBI-2](https://issues.folio.org/browse/MODGOBI-2)
