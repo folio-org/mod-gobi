@@ -10,25 +10,25 @@ import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
-import org.folio.rest.gobi.model.Response;
+import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ResponseWriter {
-  private static final Logger logger = LoggerFactory.getLogger(ResponseWriter.class);
+public class GobiResponseWriter {
+  private static final Logger logger = LoggerFactory.getLogger(GobiResponseWriter.class);
   private static final String RESPONSE_SCHEMA = "Response.xsd";
-  private static final ResponseWriter INSTANCE = new ResponseWriter();
+  private static final GobiResponseWriter INSTANCE = new GobiResponseWriter();
 
   private Marshaller jaxbMarshaller;
 
-  public static ResponseWriter getWriter() {
+  public static GobiResponseWriter getWriter() {
     return INSTANCE;
   }
 
-  public ResponseWriter() {
+  public GobiResponseWriter() {
     try {
-      JAXBContext jaxbContext = JAXBContext.newInstance(Response.class);
+      JAXBContext jaxbContext = JAXBContext.newInstance(GobiResponse.class);
       jaxbMarshaller = jaxbContext.createMarshaller();
       jaxbMarshaller.setSchema(SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI)
         .newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(RESPONSE_SCHEMA))));
@@ -38,7 +38,7 @@ public class ResponseWriter {
     }
   }
 
-  public BinaryOutStream write(Response response) {
+  public BinaryOutStream write(GobiResponse response) {
     if (jaxbMarshaller == null) {
       throw new IllegalStateException("Marshaller is not available");
     }

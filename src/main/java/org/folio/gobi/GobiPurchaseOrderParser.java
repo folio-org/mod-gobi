@@ -17,26 +17,27 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.folio.rest.gobi.model.PurchaseOrder;
+import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
+import org.folio.rest.gobi.model.GobiPurchaseOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
-public class PurchaseOrderParser {
-  private static final Logger logger = LoggerFactory.getLogger(PurchaseOrderParser.class);
+public class GobiPurchaseOrderParser {
+  private static final Logger logger = LoggerFactory.getLogger(GobiPurchaseOrderParser.class);
   private static final String PURCHASE_ORDER_SCHEMA = "GobiPurchaseOrder.xsd";
-  private static final PurchaseOrderParser INSTANCE = new PurchaseOrderParser();
+  private static final GobiPurchaseOrderParser INSTANCE = new GobiPurchaseOrderParser();
 
   private Unmarshaller jaxbUnmarshaller;
 
-  public static PurchaseOrderParser getParser() {
+  public static GobiPurchaseOrderParser getParser() {
     return INSTANCE;
   }
 
-  private PurchaseOrderParser() {
+  private GobiPurchaseOrderParser() {
     try {
-      JAXBContext jaxbContext = JAXBContext.newInstance(PurchaseOrder.class);
+      JAXBContext jaxbContext = JAXBContext.newInstance(GobiPurchaseOrder.class);
       SchemaFactory schemaFactory = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
       schemaFactory.setResourceResolver(new ResourceResolver());
       Schema schema = schemaFactory
@@ -44,20 +45,20 @@ public class PurchaseOrderParser {
       jaxbUnmarshaller = jaxbContext.createUnmarshaller();
       jaxbUnmarshaller.setSchema(schema);
     } catch (Exception e) {
-      logger.error("Unable to create PurchaseOrderParser", e);
+      logger.error("Unable to create GobiPurchaseOrderParser", e);
       jaxbUnmarshaller = null;
     }
   }
 
-  public PurchaseOrder parse(Reader data) throws PurchaseOrderParserException {
+  public GobiPurchaseOrder parse(Reader data) throws GobiPurchaseOrderParserException {
     if (jaxbUnmarshaller == null) {
       throw new IllegalStateException("Unmarshaller is not available");
     }
 
-    PurchaseOrder purchaseOrder;
+    GobiPurchaseOrder purchaseOrder;
 
     try {
-      purchaseOrder = (PurchaseOrder) jaxbUnmarshaller.unmarshal(new StreamSource(data));
+      purchaseOrder = (GobiPurchaseOrder) jaxbUnmarshaller.unmarshal(new StreamSource(data));
     } catch (JAXBException e) {
       logger.error("Parsing failed", e);
 
@@ -69,7 +70,7 @@ public class PurchaseOrderParser {
         message = e.getMessage();
       }
 
-      throw new PurchaseOrderParserException(message, e);
+      throw new GobiPurchaseOrderParserException(message, e);
     }
 
     return purchaseOrder;

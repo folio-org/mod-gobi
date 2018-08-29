@@ -90,6 +90,11 @@
       <version>${raml-module-builder.version}</version>
     </dependency>
     <dependency>
+      <groupId>me.escoffier.vertx</groupId>
+      <artifactId>vertx-completable-future</artifactId>
+      <version>0.1.2</version>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-unit</artifactId>
       <version>3.5.1</version>
@@ -450,6 +455,9 @@
           <sources>
             <source>ramls/schemas</source>
           </sources>
+          <xjbSources>
+            <xjbSource>ramls/bindings</xjbSource>
+          </xjbSources>
           <!-- The package of your generated sources -->
           <packageName>org.folio.rest.gobi.model</packageName>
         </configuration>
