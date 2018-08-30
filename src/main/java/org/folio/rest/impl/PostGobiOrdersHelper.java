@@ -4,6 +4,7 @@ import java.io.Reader;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.apache.log4j.Logger;
 import org.folio.gobi.GobiPurchaseOrderParser;
@@ -74,16 +75,39 @@ public class PostGobiOrdersHelper {
       JsonObject line = new JsonObject();
       line.put("account_number", gobiPO.getCustomerDetail().getSubAccount());
       line.put("barcode", "");
+
       poLines.add(line);
 
       compPO.put("purchase_order", po);
       compPO.put("po_lines", poLines);
-    } catch (InvalidTokenException e) {
+    } catch ( InvalidTokenException e ) {
+      logger.error("Exception mapping fields", e);
       future.completeExceptionally(e);
     }
+
     future.complete(compPO);
     return future;
   }
+  public CompletableFuture<String> getVendorId(String vendorCode, Map<String, String>  headers) throws Exception {
+
+    try {
+      return httpClient.request("/vendor?query=code==" + vendorCode, headers)
+        .thenApply(this::verifyAndExtractBody)
+        .thenApply(this::extractVendorId);
+
+    } catch (Exception e) {
+      logger.error("Exception calling getVendorId", e);
+
+      throw e;
+    }
+  }
+
+  public String extractVendorId(JsonObject obj) {
+    JsonArray jsonArray = obj.getJsonArray("vendors");
+    JsonObject item = jsonArray.getJsonObject(0);
+    return item.getString("id");
+  }
+
 
   public CompletableFuture<String> placeOrder(JsonObject compPO) {
     VertxCompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
@@ -197,4 +221,13 @@ public class PostGobiOrdersHelper {
   private String truncate(String message, int limit) {
     return message.substring(0, Math.min(message.length(), limit));
   }
+
+  private JsonObject verifyAndExtractBody(org.folio.rest.tools.client.Response response) {
+    if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
+      throw new CompletionException(new HttpException(response.getCode(), response.getError().toString()));
+    }
+
+    return response.getBody();
+  }
+
 }
