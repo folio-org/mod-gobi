@@ -1,9 +1,9 @@
 ## 1.0.1 Unreleased
+ * [MODGOBI-17](https://issues.folio.org/browse/MODGOBI-17)
  * [MODGOBI-14](https://issues.folio.org/browse/MODGOBI-14)
+ * [MODGOBI-10](https://issues.folio.org/browse/MODGOBI-10)
  * [MODGOBI-7](https://issues.folio.org/browse/MODGOBI-7)
  * [MODGOBI-4](https://issues.folio.org/browse/MODGOBI-4)
-
-## 1.0.0 Unreleased
  * [MODGOBI-3](https://issues.folio.org/browse/MODGOBI-3)
  * [MODGOBI-2](https://issues.folio.org/browse/MODGOBI-2)
  * Added the GOBI `PurchaseOrder.xsd` for validation and code generation.
