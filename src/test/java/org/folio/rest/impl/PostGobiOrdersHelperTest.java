@@ -328,7 +328,7 @@ public class PostGobiOrdersHelperTest {
 
     vendorResponse.put("vendors", vendorArray );
 
-     PostGobiOrdersHelper gobiOrdersHelper = new PostGobiOrdersHelper(null, null, null);
+     PostGobiOrdersHelper gobiOrdersHelper = new PostGobiOrdersHelper(null, null, null, null);
      String extracteVendorId = gobiOrdersHelper.extractVendorId(vendorResponse);
      assertEquals(vendorId, extracteVendorId );
 
@@ -357,7 +357,7 @@ public class PostGobiOrdersHelperTest {
 
     vendorResponse.put("vendors", vendorArray );
 
-    PostGobiOrdersHelper gobiOrdersHelper = new PostGobiOrdersHelper(null, null, null);
+    PostGobiOrdersHelper gobiOrdersHelper = new PostGobiOrdersHelper(null, null, null, null);
     String extracteVendorId = gobiOrdersHelper.extractVendorId(vendorResponse);
     assertEquals(vendorId + "0", extracteVendorId );
 
