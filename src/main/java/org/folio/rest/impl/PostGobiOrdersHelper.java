@@ -37,12 +37,14 @@ public class PostGobiOrdersHelper {
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
+  private final Map<String, String> okapiHeaders;
   private final Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler;
 
   public PostGobiOrdersHelper(HttpClientInterface httpClient,
-      Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context ctx) {
+      Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Map<String, String> okapiHeaders, Context ctx) {
     this.httpClient = httpClient;
     this.ctx = ctx;
+    this.okapiHeaders = okapiHeaders;
     this.asyncResultHandler = asyncResultHandler;
   }
 
@@ -59,7 +61,7 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
-  public CompletableFuture<JsonObject> map(GobiPurchaseOrder gobiPO, Map<String, String> okapiHeaders) {
+  public CompletableFuture<JsonObject> map(GobiPurchaseOrder gobiPO) {
     VertxCompletableFuture<JsonObject> future = new VertxCompletableFuture<>(ctx);
     JsonObject compPO = new JsonObject();
     try {
@@ -88,7 +90,7 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> placeOrder(JsonObject compPO) {
     VertxCompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
     try {
-      httpClient.request(HttpMethod.POST, compPO.toBuffer(), "/orders", null)
+      httpClient.request(HttpMethod.POST, compPO.toBuffer(), "/orders", okapiHeaders)
         .thenApply(GOBIIntegrationServiceResourceImpl::verifyAndExtractBody)
         .thenAccept(body -> {
           logger.info("Response from mod-orders: " + body.encodePrettily());

@@ -41,13 +41,13 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
       throws Exception {
 
     HttpClientInterface httpClient = getHttpClient(okapiHeaders);
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler,
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders,
         vertxContext);
 
     logger.info("Parsing Request...");
     helper.parse(entity).thenAccept(gobiPO -> {
       logger.info("Mapping Request...");
-      helper.map(gobiPO, okapiHeaders).thenAccept(compPO -> {
+      helper.map(gobiPO).thenAccept(compPO -> {
         logger.info("Calling mod-orders...");
         helper.placeOrder(compPO).thenAccept(poLineNumber -> {
           GobiResponse gobiResponse = new GobiResponse();
