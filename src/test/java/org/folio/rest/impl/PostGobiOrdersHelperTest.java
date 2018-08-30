@@ -75,7 +75,7 @@ public class PostGobiOrdersHelperTest {
       }
     };
 
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
     helper.handleError(new CompletionException(new HttpException(400, t)));
   }
 
@@ -103,7 +103,7 @@ public class PostGobiOrdersHelperTest {
       }
     };
 
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
     helper.handleError(new CompletionException(new GobiPurchaseOrderParserException(msg)));
   }
 
@@ -131,7 +131,7 @@ public class PostGobiOrdersHelperTest {
       }
     };
 
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
     helper.handleError(new CompletionException(new InvalidTokenException(msg)));
   }
 
@@ -150,7 +150,7 @@ public class PostGobiOrdersHelperTest {
       }
     };
 
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
     helper.handleError(new CompletionException(new HttpException(401, msg)));
   }
 
@@ -169,7 +169,7 @@ public class PostGobiOrdersHelperTest {
       }
     };
 
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
     helper.handleError(new CompletionException(new HttpException(500, msg)));
   }
 
@@ -188,7 +188,7 @@ public class PostGobiOrdersHelperTest {
       }
     };
 
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
     helper.handleError(new CompletionException(new HttpException(501, msg)));
   }
 
@@ -207,7 +207,7 @@ public class PostGobiOrdersHelperTest {
       }
     };
 
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
     helper.handleError(expected);
   }
 
