@@ -10,26 +10,27 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.stream.Collectors;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
-import org.folio.rest.gobi.model.GobiPurchaseOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.InputSource;
 
 public class GobiPurchaseOrderParser {
   private static final Logger logger = LoggerFactory.getLogger(GobiPurchaseOrderParser.class);
   private static final String PURCHASE_ORDER_SCHEMA = "GobiPurchaseOrder.xsd";
   private static final GobiPurchaseOrderParser INSTANCE = new GobiPurchaseOrderParser();
 
-  private Unmarshaller jaxbUnmarshaller;
+  private Validator validator;
 
   public static GobiPurchaseOrderParser getParser() {
     return INSTANCE;
@@ -37,29 +38,23 @@ public class GobiPurchaseOrderParser {
 
   private GobiPurchaseOrderParser() {
     try {
-      JAXBContext jaxbContext = JAXBContext.newInstance(GobiPurchaseOrder.class);
       SchemaFactory schemaFactory = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
       schemaFactory.setResourceResolver(new ResourceResolver());
       Schema schema = schemaFactory
         .newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(PURCHASE_ORDER_SCHEMA)));
-      jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-      jaxbUnmarshaller.setSchema(schema);
+
+      validator = schema.newValidator();
     } catch (Exception e) {
       logger.error("Unable to create GobiPurchaseOrderParser", e);
-      jaxbUnmarshaller = null;
     }
   }
 
-  public GobiPurchaseOrder parse(Reader data) throws GobiPurchaseOrderParserException {
-    if (jaxbUnmarshaller == null) {
-      throw new IllegalStateException("Unmarshaller is not available");
-    }
-
-    GobiPurchaseOrder purchaseOrder;
-
+  public Document parse(Reader data) throws GobiPurchaseOrderParserException {
+    Document doc = null;
     try {
-      purchaseOrder = (GobiPurchaseOrder) jaxbUnmarshaller.unmarshal(new StreamSource(data));
-    } catch (JAXBException e) {
+      doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(data));
+      validator.validate(new DOMSource(doc));
+    } catch (Exception e) {
       logger.error("Parsing failed", e);
 
       final Throwable cause = e.getCause();
@@ -72,8 +67,7 @@ public class GobiPurchaseOrderParser {
 
       throw new GobiPurchaseOrderParserException(message, e);
     }
-
-    return purchaseOrder;
+    return doc;
   }
 
   public static class ResourceResolver implements LSResourceResolver {
