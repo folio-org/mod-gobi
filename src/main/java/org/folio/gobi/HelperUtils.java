@@ -18,6 +18,10 @@ public class HelperUtils {
   }
 
   public static JsonObject verifyAndExtractBody(org.folio.rest.tools.client.Response response) {
+    if(response == null) {
+      throw new CompletionException(new NullPointerException("response is null")); 
+    }
+    
     if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
       throw new CompletionException(new HttpException(response.getCode(), response.getError().toString()));
     }
@@ -38,6 +42,9 @@ public class HelperUtils {
   }
 
   public static String extractIdOfFirst(JsonObject obj, String arrField) {
+    if(obj == null || arrField == null || arrField.isEmpty()) {
+      return null;  
+    }    
     JsonArray jsonArray = obj.getJsonArray(arrField);
     if (jsonArray == null) {
       return null;
