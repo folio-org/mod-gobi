@@ -13,8 +13,8 @@ public class HelperUtils {
 
   }
 
-  public static String truncate(String message, int limit) {
-    return message.substring(0, Math.min(message.length(), limit));
+  public static String truncate(String message, int limit) {    
+    return (message != null && limit > 0) ? message.substring(0, Math.min(message.length(), limit)) : message;
   }
 
   public static JsonObject verifyAndExtractBody(org.folio.rest.tools.client.Response response) {
