@@ -45,6 +45,9 @@
     <aspectj.version>1.8.9</aspectj.version>
     <module_name>mod-gobi</module_name>
     <http.port>8081</http.port>
+    <generated_sources_dir>${project.build.directory}/generated-sources</generated_sources_dir>
+    <jsonschema2pojo_output_dir>${generated_sources_dir}/jsonschema2pojo</jsonschema2pojo_output_dir>
+    <jaxb_output_dir>${generated_sources_dir}/jaxb</jaxb_output_dir>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <ramlfiles_util_path>${ramlfiles_path}/raml-util</ramlfiles_util_path>
     <raml-module-builder.version>19.1.5</raml-module-builder.version>
@@ -158,7 +161,8 @@
             <configuration>
               <sources>
                 <source>${project.build.directory}/generated-sources/raml-jaxrs</source>
-                <source>${project.build.directory}/generated-sources/jaxb</source>
+                <source>${jaxb_output_dir}</source>
+                <source>${jsonschema2pojo_output_dir}</source>
               </sources>
             </configuration>
           </execution>
@@ -460,7 +464,26 @@
           </xjbSources>
           <!-- The package of your generated sources -->
           <packageName>org.folio.rest.gobi.model</packageName>
+          <outputDirectory>${jaxb_output_dir}</outputDirectory>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jsonschema2pojo</groupId>
+        <artifactId>jsonschema2pojo-maven-plugin</artifactId>
+        <version>0.4.37</version>
+        <configuration>
+          <sourceDirectory>${basedir}/ramls/acq-models</sourceDirectory>
+          <includes>*.json</includes>
+          <outputDirectory>${jsonschema2pojo_output_dir}</outputDirectory>
+          <targetPackage>org.folio.rest.acq.model</targetPackage>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

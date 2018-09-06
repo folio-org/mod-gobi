@@ -1,59 +1,68 @@
 <PurchaseOrder>
   <CustomerDetail>
-    <BaseAccount>5095</BaseAccount>
-    <SubAccount>509518</SubAccount>
+    <BaseAccount>8910</BaseAccount>
+    <SubAccount>891010</SubAccount>
   </CustomerDetail>
   <Order>
     <ListedPrintMonograph>
       <collection>
         <record>
-          <leader>00391nam  22001453  4500</leader>
-          <controlfield tag="001"></controlfield>
+          <leader>00000nam a2200000u  4500</leader>
+          <controlfield tag="001">99974828320</controlfield>
           <controlfield tag="003">NhCcYBP</controlfield>
-          <controlfield tag="005">20150813163527.8</controlfield>
-          <controlfield tag="008">150813q2013    xx ||||| |||||0|| 0 eng d</controlfield>
+          <controlfield tag="005">20180830110833.0</controlfield>
+          <controlfield tag="008">180830t20112011xx ||||||||||||||   eng d</controlfield>
           <datafield tag="020" ind1=" " ind2=" ">
-            <subfield code="a">9781608462223</subfield>
+            <subfield code="a">9780230282551</subfield>
+            <subfield code="c">100</subfield>
           </datafield>
           <datafield tag="035" ind1=" " ind2=" ">
-            <subfield code="a">(OCoLC)857663750</subfield>
+            <subfield code="a">(OCoLC)671541011</subfield>
           </datafield>
-          <datafield tag="040" ind1=" " ind2=" ">
-            <subfield code="a">NhCcYBP</subfield>
-            <subfield code="c">NhCcYBP</subfield>
+          <datafield tag="100" ind1="1" ind2=" ">
+            <subfield code="a">BISWAS MELLAMPHY, NANDITA</subfield>
           </datafield>
-          <datafield tag="100" ind1=" " ind2=" ">
-            <subfield code="a">LYDERSEN, KARI</subfield>
-          </datafield>
-          <datafield tag="245" ind1="0" ind2="0">
-            <subfield code="a">MAYOR 1% :</subfield>
-            <subfield code="b">RAHM EMANUEL AND THE RISE OF CHICAGO'S 99%.</subfield>
+          <datafield tag="245" ind1="1" ind2="0">
+            <subfield code="a">THREE STIGMATA OF FRIEDRICH NIETZSCHE: </subfield>
+            <subfield code="b">POLITICAL PHYSIOLOGY IN THE AGE OF NIHILISM.</subfield>
           </datafield>
           <datafield tag="260" ind1=" " ind2=" ">
-            <subfield code="a">CHICAGO :</subfield>
-            <subfield code="b">HAYMARKET BOOKS,</subfield>
-            <subfield code="c">2013.</subfield>
+            <subfield code="a">BASINGSTOKE</subfield>
+            <subfield code="b">PALGRAVE MACMILLAN</subfield>
+            <subfield code="c">2011</subfield>
           </datafield>
         </record>
       </collection>
       <OrderDetail>
-        <BatchPONumber />
-        <ItemPONumber>76288/ID</ItemPONumber>
-        <FundCode>pol</FundCode>
-        <MappedFundCode />
-        <OrderNotes />
-        <OtherLocalId />
-        <Location />
+        <FundCode>AFRICAHIST</FundCode>
+        <Location>KU/CC/DI/2</Location>
         <Quantity>1</Quantity>
-        <YBPOrderKey>99962278218</YBPOrderKey>
-        <OrderPlaced>2015-03-17T17:16:40</OrderPlaced>
+        <YBPOrderKey>99974828320</YBPOrderKey>
+        <OrderPlaced>2018-08-30T11:08:32</OrderPlaced>
+        <Initials>Mark</Initials>
         <ListPrice>
-          <Amount>16</Amount>
+          <Amount>100</Amount>
           <Currency>USD</Currency>
         </ListPrice>
+        <NetPrice>
+          <Amount>88</Amount>
+          <Currency>USD</Currency>
+        </NetPrice>
+        <LocalData>
+          <Description>LocalData1</Description>
+          <Value>Book</Value>
+        </LocalData>
         <LocalData>
           <Description>LocalData2</Description>
-          <Value>B\PR</Value>
+          <Value>Notify requester upon receipt</Value>
+        </LocalData>
+        <LocalData>
+          <Description>LocalData3</Description>
+          <Value>Craig</Value>
+        </LocalData>
+        <LocalData>
+          <Description>LocalData4</Description>
+          <Value>added-copy,course-reserves,priority1</Value>
         </LocalData>
       </OrderDetail>
     </ListedPrintMonograph>

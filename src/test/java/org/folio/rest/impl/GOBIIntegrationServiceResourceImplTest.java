@@ -30,6 +30,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -117,14 +118,14 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     RestAssured
       .given()
-      .header(tenantHeader)
-      .header(urlHeader)
-      .header(contentTypeHeaderJSON)
+        .header(tenantHeader)
+        .header(urlHeader)
+        .header(contentTypeHeaderJSON)
       .when()
-      .get(validatePath)
+        .get(validatePath)
       .then()
-      .statusCode(204)
-      .content(Matchers.equalTo(""));
+        .statusCode(204)
+        .content(Matchers.equalTo(""));
 
     asyncLocal.complete();
 
@@ -141,19 +142,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(tokenHeader)
-      .header(urlHeader)
-      .header(tenantHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tokenHeader)
+        .header(urlHeader)
+        .header(tenantHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -172,19 +173,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(tokenHeader)
-      .header(urlHeader)
-      .header(tenantHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tokenHeader)
+        .header(urlHeader)
+        .header(tenantHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -203,19 +204,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(tokenHeader)
-      .header(urlHeader)
-      .header(tenantHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tokenHeader)
+        .header(urlHeader)
+        .header(tenantHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -234,19 +235,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(tokenHeader)
-      .header(urlHeader)
-      .header(tenantHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tokenHeader)
+        .header(urlHeader)
+        .header(tenantHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -265,19 +266,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(tokenHeader)
-      .header(urlHeader)
-      .header(tenantHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tokenHeader)
+        .header(urlHeader)
+        .header(tenantHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -296,19 +297,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(tokenHeader)
-      .header(tenantHeader)
-      .header(urlHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tokenHeader)
+        .header(tenantHeader)
+        .header(urlHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -327,18 +328,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse error = RestAssured
       .given()
-      .header(tenantHeader)
-      .header(urlHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tenantHeader)
+        .header(tokenHeader)
+        .header(urlHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(400)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(400)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(error);
     context.assertNotNull(error.getError());
@@ -360,19 +362,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(tokenHeader)
-      .header(urlHeader)
-      .header(tenantHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tokenHeader)
+        .header(urlHeader)
+        .header(tenantHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -391,18 +393,18 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse error = RestAssured
       .given()
-      .header(tenantHeader)
-      .header(urlHeader)
-      .header(contentTypeHeaderXML)
-      .body(body)
+        .header(tenantHeader)
+        .header(urlHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
       .when()
-      .post(ordersPath)
+        .post(ordersPath)
       .then()
-      .statusCode(400)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+        .statusCode(400)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(error);
     context.assertNotNull(error.getError());
@@ -442,11 +444,15 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       router.route().handler(BodyHandler.create());
       router.route(HttpMethod.POST, "/orders").handler(this::handlePostPurchaseOrder);
+      router.route(HttpMethod.GET, "/vendor").handler(this::handleGetVendor);
+      router.route(HttpMethod.GET, "/material-type").handler(this::handleGetMaterialType);
+      router.route(HttpMethod.GET, "/location").handler(this::handleGetLocation);
 
       return router;
     }
 
     public void start(TestContext context) {
+      logger.info("Starting mock server on port: " + port);
 
       // Setup Mock Server...
       HttpServer server = vertx.createHttpServer();
@@ -483,6 +489,57 @@ public class GOBIIntegrationServiceResourceImplTest {
         .end(compPO.encodePrettily());
     }
 
+    private void handleGetVendor(RoutingContext ctx) {
+
+      logger.info("got vendor request: " + ctx.request().query());
+
+      JsonObject vendors = new JsonObject()
+        .put("vendors", new JsonArray()
+          .add(new JsonObject()
+            .put("id", UUID.randomUUID().toString())
+            .put("name", "GOBI LIbrary Systems")
+            .put("code", "GOBI")))
+        .put("total_records", 1);
+
+      ctx.response()
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(vendors.encodePrettily());
+    }
+
+    private void handleGetMaterialType(RoutingContext ctx) {
+
+      logger.info("got material-type request: " + ctx.request().query());
+
+      JsonObject mtypes = new JsonObject()
+        .put("mtypes", new JsonArray()
+          .add(new JsonObject()
+            .put("id", UUID.randomUUID().toString())
+            .put("name", ctx.queryParam("query").get(0).split("=")[2])))
+        .put("total_records", 1);
+
+      ctx.response()
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(mtypes.encodePrettily());
+    }
+
+    private void handleGetLocation(RoutingContext ctx) {
+
+      logger.info("got location request: " + ctx.request().query());
+
+      JsonObject locations = new JsonObject()
+        .put("locations", new JsonArray()
+          .add(new JsonObject()
+            .put("id", UUID.randomUUID().toString())
+            .put("code", ctx.queryParam("query").get(0).split("=")[2])))
+        .put("total_records", 1);
+
+      ctx.response()
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(locations.encodePrettily());
+    }
     private String randomDigits(int len) {
       return rand.ints(len, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining());
     }

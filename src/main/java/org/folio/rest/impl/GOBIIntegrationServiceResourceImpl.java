@@ -2,15 +2,12 @@ package org.folio.rest.impl;
 
 import java.io.Reader;
 import java.util.Map;
-import java.util.concurrent.CompletionException;
 
 import org.folio.gobi.GobiResponseWriter;
-import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource;
 import org.folio.rest.tools.client.HttpClientFactory;
-import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.rest.tools.utils.TenantTool;
 import org.slf4j.Logger;
@@ -20,7 +17,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 
 public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServiceResource {
 
@@ -61,14 +57,6 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
         }).exceptionally(helper::handleError);
       }).exceptionally(helper::handleError);
     }).exceptionally(helper::handleError);
-  }
-
-  public static JsonObject verifyAndExtractBody(Response response) {
-    if (!Response.isSuccess(response.getCode())) {
-      throw new CompletionException(
-          new HttpException(response.getCode(), response.getError().getString("errorMessage")));
-    }
-    return response.getBody();
   }
 
   public static HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {
