@@ -8,44 +8,43 @@
       <collection>
         <record>
           <leader>00000nam a2200000u  4500</leader>
-          <controlfield tag="001">99974828320</controlfield>
+          <controlfield tag="001">99974828471</controlfield>
           <controlfield tag="003">NhCcYBP</controlfield>
-          <controlfield tag="005">20180830110833.0</controlfield>
-          <controlfield tag="008">180830t20112011xx ||||||||||||||   eng d</controlfield>
+          <controlfield tag="005">20180905153857.0</controlfield>
+          <controlfield tag="008">180905t20112011xx ||||||||||||||   eng d</controlfield>
           <datafield tag="020" ind1=" " ind2=" ">
-            <subfield code="a">9780230282551</subfield>
-            <subfield code="c">100</subfield>
+            <subfield code="a">9780547572482</subfield>
+            <subfield code="c">14.95</subfield>
           </datafield>
           <datafield tag="035" ind1=" " ind2=" ">
-            <subfield code="a">(OCoLC)671541011</subfield>
+            <subfield code="a">(OCoLC)717297695</subfield>
           </datafield>
           <datafield tag="100" ind1="1" ind2=" ">
-            <subfield code="a">BISWAS MELLAMPHY, NANDITA</subfield>
+            <subfield code="a">DICK, PHILIP K</subfield>
           </datafield>
           <datafield tag="245" ind1="1" ind2="0">
-            <subfield code="a">THREE STIGMATA OF FRIEDRICH NIETZSCHE: </subfield>
-            <subfield code="b">POLITICAL PHYSIOLOGY IN THE AGE OF NIHILISM.</subfield>
+            <subfield code="a">MAN IN THE HIGH CASTLE.</subfield>
           </datafield>
           <datafield tag="260" ind1=" " ind2=" ">
-            <subfield code="a">BASINGSTOKE</subfield>
-            <subfield code="b">PALGRAVE MACMILLAN</subfield>
+            <subfield code="a">BOSTON</subfield>
+            <subfield code="b">MARINER BOOKS</subfield>
             <subfield code="c">2011</subfield>
           </datafield>
         </record>
       </collection>
       <OrderDetail>
-        <FundCode>AFRICAHIST</FundCode>
-        <Location>KU/CC/DI/2</Location>
+        <FundCode>USHIST</FundCode>
+        <Location>KU/CC/DI/A</Location>
         <Quantity>1</Quantity>
-        <YBPOrderKey>99974828320</YBPOrderKey>
-        <OrderPlaced>2018-08-30T11:08:32</OrderPlaced>
+        <YBPOrderKey>99974828471</YBPOrderKey>
+        <OrderPlaced>2018-09-05T15:38:55</OrderPlaced>
         <Initials>Mark</Initials>
         <ListPrice>
-          <Amount>100</Amount>
+          <Amount>14.95</Amount>
           <Currency>USD</Currency>
         </ListPrice>
         <NetPrice>
-          <Amount>88</Amount>
+          <Amount>13.16</Amount>
           <Currency>USD</Currency>
         </NetPrice>
         <LocalData>
@@ -58,11 +57,11 @@
         </LocalData>
         <LocalData>
           <Description>LocalData3</Description>
-          <Value>Craig</Value>
+          <Value>Anne Esterhazy</Value>
         </LocalData>
         <LocalData>
           <Description>LocalData4</Description>
-          <Value>added-copy,course-reserves,priority1</Value>
+          <Value>signed-edition,vip-order</Value>
         </LocalData>
       </OrderDetail>
     </ListedPrintMonograph>
