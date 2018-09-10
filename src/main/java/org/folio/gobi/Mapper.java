@@ -17,6 +17,9 @@ import org.folio.rest.acq.model.Vendor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+
+import scala.math.BigDecimal;
 
 public class Mapper {
 
@@ -36,6 +39,7 @@ public class Mapper {
     RECEIVING_NOTE("receiving_note"),
     REQUESTER("requester"),
     VENDOR_ID("vendor_id"),
+    INSTRUCTIONS("instruction_to_vendor"),
     NOTE_FROM_VENDOR("note_from_vendor"),
     USER_LIMIT("user_limit"),
     LOCATION("location"),
@@ -49,9 +53,9 @@ public class Mapper {
     }
   }
 
-  private final Map<Field, Mapping> mappings;
+  private final Map<Field, DataSource> mappings;
 
-  public Mapper(Map<Field, Mapping> mappings) {
+  public Mapper(Map<Field, DataSource> mappings) {
     this.mappings = mappings;
   }
 
@@ -72,68 +76,75 @@ public class Mapper {
       List<CompletableFuture<?>> futures = new ArrayList<>();
 
       futures.add(mappings.get(Field.CREATED_BY)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> po.setCreatedBy((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.ACCOUNT_NUMBER)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> pol.setAccountNumber((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.ACQUISITION_METHOD)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> pol.setAcquisitionMethod((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.REQUESTER)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> pol.setRequester((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.TITLE)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> detail.setTitle((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.MATERIAL_TYPE)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> detail.setMaterialType((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.RECEIVING_NOTE)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> detail.setReceivingNote((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.PRODUCT_ID)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> detail.setProductId((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.LOCATION)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> location.setId((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.QUANTITY)
-        .map(doc)
-        .thenAccept(o -> cost.setQuantity((Integer) o))
+        .resolve(doc)
+        .thenAccept(o -> {
+          cost.setQuantity((Integer) o);
+          location.setQuantity((Integer) o);
+        })
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.LIST_PRICE)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> cost.setListPrice((Double) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.ESTIMATED_PRICE)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> cost.setEstimatedPrice((Double) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.CURRENCY)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> cost.setCurrency((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.ACCESS_PROVIDER)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> eresource.setAccessProvider((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.USER_LIMIT)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> eresource.setUserLimit((Integer) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.VENDOR_ID)
-        .map(doc)
+        .resolve(doc)
         .thenAccept(o -> vendor.setId((String) o))
+        .exceptionally(Mapper::logException));
+      futures.add(mappings.get(Field.INSTRUCTIONS)
+        .resolve(doc)
+        .thenAccept(o -> vendor.setInstructions((String) o))
         .exceptionally(Mapper::logException));
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()])).thenAccept(v -> {
         pol.setDetails(detail);
@@ -170,7 +181,37 @@ public class Mapper {
     return CompletableFuture.completedFuture(val);
   }
 
+  public static String concat(NodeList nodes) {
+    if (nodes != null) {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < nodes.getLength(); i++) {
+        sb.append(nodes.item(i).getTextContent());
+      }
+      return sb.length() > 0 ? sb.toString() : null;
+    }
+    return null;
+  }
+
+  public static String multiply(NodeList nodes) {
+    if (nodes != null && nodes.getLength() > 1) {
+      BigDecimal product = null;
+      for (int i = 0; i < nodes.getLength(); i++) {
+        if (product == null) {
+          product = BigDecimal.exact(nodes.item(i).getTextContent());
+        } else {
+          product = product.$times(BigDecimal.exact(nodes.item(i).getTextContent()));
+        }
+      }
+      return String.valueOf(product);
+    }
+    return null;
+  }
+
   public static interface Translation<T> {
     public CompletableFuture<T> apply(String s);
+  }
+
+  public static interface NodeCombinator {
+    public String apply(NodeList n);
   }
 }

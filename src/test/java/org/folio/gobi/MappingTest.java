@@ -36,9 +36,8 @@ public class MappingTest {
   public void testBasicXPath() throws Exception {
     logger.info("begin: Test Mapping - xpath evalutation");
 
-    assertEquals("Hello World", new Mapping("//Doo/Dah", null, null).map(doc).get());
-    assertEquals("DIT", new Mapping("//Bar[@attr='dit']", null, null).map(doc).get());
-    assertEquals("DITDATDOT", new Mapping("//Bar", null, null).map(doc).get());
+    assertEquals("Hello World", DataSource.builder().withFrom("//Doo/Dah").build().resolve(doc).get());
+    assertEquals("DIT", DataSource.builder().withFrom("//Bar[@attr='dit']").build().resolve(doc).get());
   }
 
   @Test
@@ -46,50 +45,67 @@ public class MappingTest {
     logger.info("begin: Test Mapping - defaults");
 
     // default to a string literal
-    assertEquals("PKD", new Mapping("//Doo/Dud", "PKD", null).map(doc).get());
+    assertEquals("PKD", DataSource.builder().withFrom("//Doo/Dud").withDefault("PKD").build().resolve(doc).get());
 
     // default to an integer literal
-    assertEquals(1, new Mapping("//Bar[@attr='one']", 1, null).map(doc).get());
+    assertEquals(1, DataSource.builder().withFrom("//Bar[@attr='one']").withDefault(1).build().resolve(doc).get());
 
     // default to another mapping
-    Mapping defMapping = new Mapping("//Bar[@attr='dat']", null, null);
-    assertEquals("DAT", new Mapping("//DAT", defMapping, null).map(doc).get());
+    DataSource defMapping = DataSource.builder().withFrom("//Bar[@attr='dat']").build();
+    assertEquals("DAT", DataSource.builder().withFrom("//DAT").withDefault(defMapping).build().resolve(doc).get());
 
     // default to another mapping (multiple levels)
-    Mapping defMapping1 = new Mapping("//Bar[@attr='dot']", null, null);
-    Mapping defMapping2 = new Mapping("//DAT", defMapping1, null);
-    assertEquals("DOT", new Mapping("//DIT", defMapping2, null).map(doc).get());
+    DataSource defMapping1 = DataSource.builder().withFrom("//Bar[@attr='dot']").build();
+    DataSource defMapping2 = DataSource.builder().withFrom("//DAT").withDefault(defMapping1).build();
+    assertEquals("DOT", DataSource.builder().withFrom("//DIT").withDefault(defMapping2).build().resolve(doc).get());
+  }
+
+  @Test
+  public void testCombinators() throws Exception {
+    logger.info("begin: Test Mapping - combinators");
+
+    assertEquals("DITDATDOT", DataSource.builder().withFrom("//Bar").build().resolve(doc).get());
+    assertEquals(4.5d, DataSource.builder()
+      .withFrom("//Zap | //Zop")
+      .withCombinator(Mapper::multiply)
+      .withTranslation(Mapper::toDouble)
+      .build()
+      .resolve(doc)
+      .get());
   }
 
   @Test
   public void testTranslations() throws Exception {
     logger.info("begin: Test Mapping - translations");
 
-    assertEquals("HELLO WORLD", new Mapping("//Doo/Dah", null, this::toUpper).map(doc).get());
-    assertEquals(1.5d, new Mapping("//Zap", null, Mapper::toDouble).map(doc).get());
-    assertEquals(90210, new Mapping("//Zip", null, Mapper::toInteger).map(doc).get());    
+    assertEquals("HELLO WORLD",
+        DataSource.builder().withFrom("//Doo/Dah").withTranslation(this::toUpper).build().resolve(doc).get());
+    assertEquals(1.5d,
+        DataSource.builder().withFrom("//Zap").withTranslation(Mapper::toDouble).build().resolve(doc).get());
+    assertEquals(90210,
+        DataSource.builder().withFrom("//Zip").withTranslation(Mapper::toInteger).build().resolve(doc).get());
   }
-  
+
   @Test(expected = ExecutionException.class)
   public void testExceptionInTranslator() throws Exception {
     logger.info("begin: Test Exception in applyTranslator()");
 
-    new Mapping("//Zip", null, this::throwException).map(doc).get();    
+    DataSource.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get();
   }
 
   @Test(expected = ExecutionException.class)
   public void testExceptionInApplyDefault() throws Exception {
     logger.info("begin: Test Exception in applyDefault()");
 
-    Mapping defMapping = new Mapping("//Bar[@attr='dat']", null, null);
-    new Mapping(null, defMapping, null).map(null).get();    
+    DataSource defMapping = DataSource.builder().withFrom("//Bar[@attr='dat']").build();
+    DataSource.builder().withDefault(defMapping).build().resolve(null).get();
   }
-  
+
   private CompletableFuture<String> toUpper(String s) {
     String ret = s != null ? s.toUpperCase() : null;
     return CompletableFuture.completedFuture(ret);
   }
-  
+
   private CompletableFuture<String> throwException(String s) {
     CompletableFuture<String> future = new CompletableFuture<>();
     CompletableFuture.runAsync(() -> {
