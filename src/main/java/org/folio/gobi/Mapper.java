@@ -140,7 +140,7 @@ public class Mapper {
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.VENDOR_ID)
         .resolve(doc)
-        .thenAccept(o -> vendor.setId((String) o))
+        .thenAccept(o -> vendor.setRefNumber((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.INSTRUCTIONS)
         .resolve(doc)
