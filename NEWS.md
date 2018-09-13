@@ -1,8 +1,12 @@
 ## 1.0.1 Unreleased
+ * [MODGOBI-23](https://issues.folio.org/browse/MODGOBI-23)
+ * [MODGOBI-22](https://issues.folio.org/browse/MODGOBI-22)
+ * [MODGOBI-19](https://issues.folio.org/browse/MODGOBI-19)
  * [MODGOBI-17](https://issues.folio.org/browse/MODGOBI-17)
  * [MODGOBI-15](https://issues.folio.org/browse/MODGOBI-15)
  * [MODGOBI-14](https://issues.folio.org/browse/MODGOBI-14)
  * [MODGOBI-10](https://issues.folio.org/browse/MODGOBI-10)
+ * [MODGOBI-9](https://issues.folio.org/browse/MODGOBI-9)
  * [MODGOBI-7](https://issues.folio.org/browse/MODGOBI-7)
  * [MODGOBI-4](https://issues.folio.org/browse/MODGOBI-4)
  * [MODGOBI-3](https://issues.folio.org/browse/MODGOBI-3)
