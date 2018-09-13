@@ -1,34 +1,39 @@
 package org.folio.gobi;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class Mapping {
+public class DataSource {
 
   public static final ObjectMapper MAPPER = new ObjectMapper();
 
   public final String from;
   public final Object defValue;
   public final Translation<?> translation;
+  public final NodeCombinator combinator;
   public final boolean translateDefValue;
   private final XPath xpath;
 
-  public Mapping(String from, Object defValue, Translation translation) {
-    this(from, defValue, translation, false);
+  public static Builder builder() {
+    return new Builder();
   }
 
-  public Mapping(String from, Object defValue, Translation translation, boolean translateDefValue) {
+  private DataSource(String from, NodeCombinator combinator, Object defValue, Translation translation,
+      boolean translateDefValue) {
     this.from = from;
+    this.combinator = combinator == null ? Mapper::concat : combinator;
     this.defValue = defValue;
     this.translation = translation;
     this.translateDefValue = translateDefValue;
@@ -36,7 +41,7 @@ public class Mapping {
     xpath = xpathFactory.newXPath();
   }
 
-  public CompletableFuture<Object> map(Document doc) {
+  public CompletableFuture<Object> resolve(Document doc) {
     CompletableFuture<Object> future = new CompletableFuture<>();
 
     if (from != null) {
@@ -68,26 +73,13 @@ public class Mapping {
   }
 
   private CompletableFuture<String> applyXPath(Document doc) {
-    CompletableFuture<String> future = new CompletableFuture<>();
-
-    CompletableFuture.runAsync(() -> {
-      NodeList nodes = null;
+    return CompletableFuture.supplyAsync(() -> {
       try {
-        nodes = (NodeList) xpath.evaluate(from, doc, XPathConstants.NODESET);
-
-        StringBuilder sb = new StringBuilder();
-        if (nodes != null) {
-          for (int i = 0; i < nodes.getLength(); i++) {
-            sb.append(nodes.item(i).getTextContent());
-          }
-        }
-        future.complete(sb.length() > 0 ? sb.toString() : null);
+        return (NodeList) xpath.evaluate(from, doc, XPathConstants.NODESET);
       } catch (XPathExpressionException e) {
-        future.completeExceptionally(e);
+        throw new CompletionException(e);
       }
-    });
-
-    return future;
+    }).thenApply(combinator::apply);
   }
 
   private CompletableFuture<?> applyTranslation(Object o) {
@@ -100,11 +92,11 @@ public class Mapping {
 
   private CompletableFuture<?> applyDefault(Object o, Document doc) {
     if (o == null) {
-      if (defValue instanceof Mapping) {
+      if (defValue instanceof DataSource) {
         if (translateDefValue) {
-          return ((Mapping) defValue).map(doc).thenApply(this::applyTranslation);
+          return ((DataSource) defValue).resolve(doc).thenApply(this::applyTranslation);
         } else {
-          return ((Mapping) defValue).map(doc);
+          return ((DataSource) defValue).resolve(doc);
         }
       } else {
         if (translateDefValue) {
@@ -115,5 +107,42 @@ public class Mapping {
       }
     }
     return CompletableFuture.completedFuture(o);
+  }
+
+  public static class Builder {
+    private String from = null;
+    private Object defValue = null;
+    private Translation<?> translation = null;
+    private NodeCombinator combinator = null;
+    private boolean translateDefValue = false;
+
+    public Builder withFrom(String from) {
+      this.from = from;
+      return this;
+    }
+
+    public Builder withDefault(Object defValue) {
+      this.defValue = defValue;
+      return this;
+    }
+
+    public Builder withTranslation(Translation translation) {
+      this.translation = translation;
+      return this;
+    }
+
+    public Builder withCombinator(NodeCombinator combinator) {
+      this.combinator = combinator;
+      return this;
+    }
+
+    public Builder withTranslateDefault(boolean translateDefValue) {
+      this.translateDefValue = translateDefValue;
+      return this;
+    }
+
+    public DataSource build() {
+      return new DataSource(from, combinator, defValue, translation, translateDefValue);
+    }
   }
 }

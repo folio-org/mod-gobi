@@ -445,8 +445,8 @@ public class GOBIIntegrationServiceResourceImplTest {
       router.route().handler(BodyHandler.create());
       router.route(HttpMethod.POST, "/orders").handler(this::handlePostPurchaseOrder);
       router.route(HttpMethod.GET, "/vendor").handler(this::handleGetVendor);
-      router.route(HttpMethod.GET, "/material-type").handler(this::handleGetMaterialType);
-      router.route(HttpMethod.GET, "/location").handler(this::handleGetLocation);
+      router.route(HttpMethod.GET, "/material-types").handler(this::handleGetMaterialType);
+      router.route(HttpMethod.GET, "/locations").handler(this::handleGetLocation);
 
       return router;
     }
@@ -515,7 +515,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .put("mtypes", new JsonArray()
           .add(new JsonObject()
             .put("id", UUID.randomUUID().toString())
-            .put("name", ctx.queryParam("query").get(0).split("=")[2])))
+            .put("name", ctx.queryParam("query").get(0).split("=")[1])))
         .put("total_records", 1);
 
       ctx.response()
@@ -532,7 +532,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .put("locations", new JsonArray()
           .add(new JsonObject()
             .put("id", UUID.randomUUID().toString())
-            .put("code", ctx.queryParam("query").get(0).split("=")[2])))
+            .put("code", ctx.queryParam("query").get(0).split("=")[1])))
         .put("total_records", 1);
 
       ctx.response()
