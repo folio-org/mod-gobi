@@ -100,6 +100,7 @@ public class PostGobiOrdersHelper {
         .build());
       mappings.put(Field.TITLE, DataSource.builder()
         .withFrom("//datafield[@tag='245']/*")
+        .withCombinator(Mapper::concat)
         .build());
       mappings.put(Field.RECEIVING_NOTE, DataSource.builder()
         .withFrom("//LocalData[Description='LocalData2']/Value")
