@@ -86,6 +86,7 @@ public class PostGobiOrdersHelper {
           .withFrom("//ListPrice/Amount|//Quantity")
           .withCombinator(Mapper::multiply)
           .withDefault(mappings.get(Field.LIST_PRICE))
+          .withTranslation(Mapper::toDouble)
           .build())
         .withTranslation(Mapper::toDouble)
         .build());
@@ -168,7 +169,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupLocationId(String location) {
     try {
-      String query = HelperUtils.encodeValue("code==" + location);
+      String query = HelperUtils.encodeValue(String.format("code=\"%s\"", location));
       return httpClient.request("/locations?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractLocationId)
@@ -184,7 +185,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupMaterialTypeId(String materialType) {
     try {
-      String query = HelperUtils.encodeValue("name==" + materialType);
+      String query = HelperUtils.encodeValue(String.format("name=\"%s\"", materialType));
       return httpClient.request("/material-types?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractMaterialTypeId)
@@ -201,7 +202,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupVendorId(String vendorCode) {
     try {
-      String query = HelperUtils.encodeValue("code==" + vendorCode);
+      String query = HelperUtils.encodeValue(String.format("code=\"%s\"", vendorCode));
       return httpClient.request(HttpMethod.GET, "/vendor?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractVendorId)
