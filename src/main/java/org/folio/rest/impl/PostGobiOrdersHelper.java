@@ -168,7 +168,8 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupLocationId(String location) {
     try {
-      return httpClient.request("/location?query=code==" + location, okapiHeaders)
+      String query = HelperUtils.encodeValue("code==" + location);
+      return httpClient.request("/location?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractLocationId)
         .exceptionally(t -> {
@@ -183,7 +184,8 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupMaterialTypeId(String materialType) {
     try {
-      return httpClient.request("/material-type?query=name==" + materialType, okapiHeaders)
+      String query = HelperUtils.encodeValue("name==" + materialType);
+      return httpClient.request("/material-type?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractMaterialTypeId)
         .exceptionally(t -> {
@@ -199,7 +201,8 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupVendorId(String vendorCode) {
     try {
-      return httpClient.request(HttpMethod.GET, "/vendor?query=code==" + vendorCode, okapiHeaders)
+      String query = HelperUtils.encodeValue("code==" + vendorCode);
+      return httpClient.request(HttpMethod.GET, "/vendor?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractVendorId)
         .exceptionally(t -> {

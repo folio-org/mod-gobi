@@ -109,7 +109,7 @@ public class Mapper {
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.LOCATION)
         .resolve(doc)
-        .thenAccept(o -> location.setId((String) o))
+        .thenAccept(o -> location.setLocationId((String) o))
         .exceptionally(Mapper::logException));
       futures.add(mappings.get(Field.QUANTITY)
         .resolve(doc)
