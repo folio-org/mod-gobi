@@ -7,17 +7,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletionException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.folio.gobi.DataSource;
+import org.folio.gobi.Mapper.Field;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.tools.utils.BinaryOutStream;
+import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -305,5 +312,52 @@ public class PostGobiOrdersHelperTest {
     } catch (InvalidTokenException e) {
       fail("InvalidTokenException was not expected to be thrown");
     }
+  }
+
+  @Test
+  public final void testLookupOrderMappings(TestContext context) throws Exception {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals("/configurations/entries")) {
+        req.response()
+          .setStatusCode(200)
+          .putHeader("content-type", "application/json")
+          .sendFile("ConfigData/success.json");
+      } else {
+        req.response().setStatusCode(500).end("Unexpected call: " + req.path());
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders, vertx.getOrCreateContext());
+      pgoh.lookupOrderMappings()
+        .thenAccept(map -> {
+          context.assertNotNull(map.get(Field.CURRENCY));
+          DataSource ds = map.get(Field.CURRENCY);
+          context.assertEquals("//ListPrice/Currency", ds.from);
+          context.assertEquals("USD", ds.defValue);
+
+          context.assertNotNull(map.get(Field.LIST_PRICE));
+          ds = map.get(Field.LIST_PRICE);
+          context.assertEquals("//ListPrice/Amount", ds.from);
+          context.assertEquals("0", ds.defValue);
+          try {
+            Double result = (Double) ds.translation.apply(ds.defValue.toString()).get();
+            context.assertEquals(0.0, result);
+          } catch (Exception e) {
+            logger.error("Failed to execute translation", e);
+          }
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
   }
 }

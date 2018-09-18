@@ -19,7 +19,8 @@
             "orders.item.post",
             "inventory-storage.material-types.collection.get",
             "inventory-storage.locations.collection.get",
-            "vendor.collection.get"
+            "vendor.collection.get",
+            "configuration.entries.collection.get"
           ]
         }
       ]
@@ -29,6 +30,10 @@
     {
       "id": "orders",
       "version": "1.0"
+    },
+    {
+      "id": "configuration",
+      "version": "2.0"
     }
   ],
   "permissionSets": [

@@ -472,16 +472,29 @@
         <artifactId>jsonschema2pojo-maven-plugin</artifactId>
         <version>0.4.37</version>
         <configuration>
-          <sourceDirectory>${basedir}/ramls/acq-models</sourceDirectory>
           <includes>*.json</includes>
           <outputDirectory>${jsonschema2pojo_output_dir}</outputDirectory>
-          <targetPackage>org.folio.rest.acq.model</targetPackage>
         </configuration>
         <executions>
           <execution>
+            <id>acq-models</id>
             <goals>
               <goal>generate</goal>
             </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/ramls/acq-models</sourceDirectory>
+              <targetPackage>org.folio.rest.acq.model</targetPackage>
+            </configuration>
+          </execution>
+          <execution>
+            <id>mappings-models</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/ramls</sourceDirectory>
+              <targetPackage>org.folio.rest.mappings.model</targetPackage>
+            </configuration>
           </execution>
         </executions>
       </plugin>

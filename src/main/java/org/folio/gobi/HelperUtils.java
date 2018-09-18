@@ -1,16 +1,30 @@
 package org.folio.gobi;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import org.apache.log4j.Logger;
+import org.folio.gobi.Mapper.Field;
+import org.folio.gobi.Mapper.NodeCombinator;
+import org.folio.gobi.Mapper.Translation;
 import org.folio.gobi.exceptions.HttpException;
+import org.folio.rest.mappings.model.Mapping;
+import org.folio.rest.mappings.model.Mappings;
+import org.w3c.dom.NodeList;
 
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class HelperUtils {
+  private static final Logger logger = Logger.getLogger(HelperUtils.class);
 
   private HelperUtils() {
 
@@ -61,5 +75,69 @@ public class HelperUtils {
 
   public static String encodeValue(String value) throws UnsupportedEncodingException {
     return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Map<Field, DataSource> extractOrderMappings(JsonObject jo) {
+    final String mappingsString = jo.getJsonArray("configs").getJsonObject(0).getString("value");
+    final Mappings mappings = Json.decodeValue(mappingsString, Mappings.class);
+
+    final Map<Field, DataSource> map = new EnumMap<>(Field.class);
+
+    List<Mapping> mappingsList = mappings.getMappings();
+    if (mappingsList != null) {
+      for (Mapping mapping : mappingsList) {
+        logger.info("Mapping existis for field: " + mapping.getField());
+        Field field = Field.valueOf(mapping.getField().toString());
+        org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
+        String combinator = ds.getCombinator();
+        NodeCombinator nc = null;
+        if (combinator != null) {
+          try {
+            Method combinatorMethod = Mapper.class.getMethod(combinator, NodeList.class);
+            nc = data -> {
+              try {
+                return (String) combinatorMethod.invoke(null, data);
+              } catch (Exception e) {
+                logger.error("Unable to invoke combinator method: " + combinator, e);
+              }
+              return null;
+            };
+          } catch (NoSuchMethodException e) {
+            logger.error("Combinator method not found: " + combinator, e);
+          }
+        }
+        String translation = ds.getTranslation();
+        Translation<?> t = null;
+        if (translation != null) {
+          try {
+            Method translationMethod = Mapper.class.getMethod(translation, String.class);
+            t = data -> {
+              try {
+                return (CompletableFuture<Object>) translationMethod.invoke(null, data);
+              } catch (Exception e) {
+                logger.error("Unable to invoke translation method: " + translation, e);
+              }
+              return null;
+            };
+          } catch (NoSuchMethodException e) {
+            logger.error("Translation method not found: " + translation, e);
+          }
+        }
+        String from = ds.getFrom();
+        String defaultValue = ds.getDefault();
+        DataSource dataSource = DataSource.builder()
+          .withFrom(from)
+          .withTranslation(t)
+          .withTranslateDefault(true)
+          .withCombinator(nc)
+          .withDefault(defaultValue)
+          .build();
+
+        map.put(field, dataSource);
+      }
+    }
+
+    return map;
   }
 }
