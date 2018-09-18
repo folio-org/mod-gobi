@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "GOBI DataMapping Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "fieldName" : {
+      "type" : "string",
+      "description": "name of the field to map"
+    },
+    "defaultValue" : {
+      "type" : "string",
+      "description": "default value of field"
+    },
+    "fieldPath" : {
+      "type" : "string",
+      "description" : "XPath to extract data from original record"
+    },
+    "fieldType" : {
+      "enum" : [ "Integer", "Double", "String", "Lookup" ],
+      "description" : "The type to translate or convert the field value into"
+    },
+    "combinator" : {
+      "enum" : ["Multiply", "Concatenate"]
+    }
+  },
+
+  "required": [
+    "fieldName",
+    "fieldPath"
+  ]
+}
