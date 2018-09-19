@@ -30,7 +30,7 @@ public class DataSource {
     return new Builder();
   }
 
-  private DataSource(String from, NodeCombinator combinator, Object defValue, Translation translation,
+  private <T> DataSource(String from, NodeCombinator combinator, Object defValue, Translation<T> translation,
       boolean translateDefValue) {
     this.from = from;
     this.combinator = combinator == null ? Mapper::concat : combinator;
@@ -126,7 +126,7 @@ public class DataSource {
       return this;
     }
 
-    public Builder withTranslation(Translation translation) {
+    public <T> Builder withTranslation(Translation<T> translation) {
       this.translation = translation;
       return this;
     }
