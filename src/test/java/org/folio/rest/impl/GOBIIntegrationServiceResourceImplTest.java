@@ -479,6 +479,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       compPO.getJsonArray("po_lines").forEach(line -> {
         JsonObject poLine = (JsonObject) line;
         poLine.put("id", UUID.randomUUID().toString());
+        poLine.put("po_line_number", poNumber + "-1");
         poLine.put("purchase_order_id", po.getString("id"));
         poLine.put("barcode", randomDigits(10));
       });
