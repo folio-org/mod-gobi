@@ -462,6 +462,14 @@
           <xjbSources>
             <xjbSource>ramls/bindings</xjbSource>
           </xjbSources>
+          <xjcSourceExcludeFilters>
+            <filter implementation="org.codehaus.mojo.jaxb2.shared.filters.pattern.PatternFileFilter">
+              <patterns>
+                <pattern>\.json</pattern>
+              </patterns>
+            </filter>
+          </xjcSourceExcludeFilters>
+
           <!-- The package of your generated sources -->
           <packageName>org.folio.rest.gobi.model</packageName>
           <outputDirectory>${jaxb_output_dir}</outputDirectory>
