@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "field": {
+      "type": "string",
+      "description": "Field name of the mapping",
+      "enum": [
+        "ACCOUNT_NUMBER",
+        "ACQUISITION_METHOD",
+        "QUANTITY",
+        "LIST_PRICE",
+        "ESTIMATED_PRICE",
+        "CURRENCY",
+        "FUND_CODE",
+        "CREATED_BY",
+        "TITLE",
+        "MATERIAL_TYPE",
+        "RECEIVING_NOTE",
+        "REQUESTER",
+        "VENDOR_ID",
+        "INSTRUCTIONS",
+        "NOTE_FROM_VENDOR",
+        "USER_LIMIT",
+        "LOCATION",
+        "PRODUCT_ID",
+        "ACCESS_PROVIDER"
+      ]
+    },
+    "dataSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "XPath to the data for the field to map"
+        },
+        "translation": {
+          "type": "string",
+          "description": "Method to translate the specified type"
+        },
+        "combinator": {
+          "type": "string",
+          "description": "Method to combine the specified type with other values"
+        },
+        "default": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "field"
+  ]
+}

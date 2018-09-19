@@ -36,6 +36,10 @@ public class PostGobiOrdersHelper {
 
   private static final Logger logger = Logger.getLogger(PostGobiOrdersHelper.class);
 
+  private static final String CONFIGURATION_MODULE = "GOBI";
+  private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
+  private static final String CONFIGURATION_CODE = "gobi.order.mappings";
+
   public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
@@ -213,6 +217,27 @@ public class PostGobiOrdersHelper {
         });
     } catch (Exception e) {
       logger.error("Exception calling lookupVendorId", e);
+      throw new CompletionException(e);
+    }
+  }
+
+  public CompletableFuture<Map<Field, DataSource>> lookupOrderMappings() {
+    try {
+      final String query = HelperUtils.encodeValue(
+          String.format("(module==%s AND configName==%s AND code==%s)",
+              CONFIGURATION_MODULE,
+              CONFIGURATION_CONFIG_NAME,
+              CONFIGURATION_CODE));
+      return httpClient.request(HttpMethod.GET,
+          "/configurations/entries?query=" + query, okapiHeaders)
+        .thenApply(HelperUtils::verifyAndExtractBody)
+        .thenApply(HelperUtils::extractOrderMappings)
+        .exceptionally(t -> {
+          logger.error("Exception looking up order mappings", t);
+          return null;
+        });
+    } catch (Exception e) {
+      logger.error("Exception calling lookupOrderMappings", e);
       throw new CompletionException(e);
     }
   }
