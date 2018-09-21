@@ -6,7 +6,7 @@
     "code" : "gobi.order.mappings",
     "description" : "GOBI order mappings",
     "enabled" : true,
-    "value" : "{\"mappings\":[{\"field\":\"CURRENCY\",\"dataSource\":{\"from\":\"//ListPrice/Currency\",\"default\":\"USD\"}},{\"field\":\"TITLE\",\"dataSource\":{\"from\":\"//datafield[@tag='245']/*\",\"combinator\":\"concat\"}},{\"field\":\"LIST_PRICE\",\"dataSource\":{\"from\":\"//ListPrice/Amount\",\"default\":\"0\",\"translation\":\"toDouble\"}}]}",
+    "value" : "{\"mappings\":[{\"field\":\"CURRENCY\",\"dataSource\":{\"from\":\"//ListPrice/Currency\",\"default\":\"USD\"}},{\"field\":\"TITLE\",\"dataSource\":{\"from\":\"//datafield[@tag='245']/*\",\"combinator\":\"concat\"}},{\"field\":\"LIST_PRICE\",\"dataSource\":{\"from\":\"//ListPrice/Amount\",\"default\":\"0\",\"translation\": \"toDouble\"}},{\"field\":\"ESTIMATED_PRICE\",\"dataSource\":{\"from\":\"//NetPrice/Amount\",\"default\":{\"from\":\"//ListPrice/Amount|//Quantity\",\"default\":\"0\",\"translation\": \"toDouble\",\"combinator\" : \"multiply\",\"FromOtherField\": \"LIST_PRICE\"},\"translation\": \"toDouble\"}}]}",
     "metadata" : {
       "createdDate" : "2017-11-29T18:39:15.182+0000",
       "createdByUserId" : "1ad737b0-d847-11e6-bf26-cec0c932ce01",

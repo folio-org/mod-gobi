@@ -15,6 +15,7 @@ import org.folio.gobi.Mapper.Field;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.folio.gobi.exceptions.HttpException;
+import org.folio.rest.mappings.model.DefValueMapping;
 import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.Mappings;
 import org.w3c.dom.NodeList;
@@ -77,7 +78,6 @@ public class HelperUtils {
     return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
   }
 
-  @SuppressWarnings("unchecked")
   public static Map<Field, DataSource> extractOrderMappings(JsonObject jo) {
     final String mappingsString = jo.getJsonArray("configs").getJsonObject(0).getString("value");
     final Mappings mappings = Json.decodeValue(mappingsString, Mappings.class);
@@ -90,11 +90,11 @@ public class HelperUtils {
         logger.info("Mapping existis for field: " + mapping.getField());
         Field field = Field.valueOf(mapping.getField().toString());
         org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
-        String combinator = ds.getCombinator();
+        org.folio.rest.mappings.model.DataSource.Combinator combinator = ds.getCombinator();
         NodeCombinator nc = null;
         if (combinator != null) {
           try {
-            Method combinatorMethod = Mapper.class.getMethod(combinator, NodeList.class);
+            Method combinatorMethod = Mapper.class.getMethod(combinator.toString(), NodeList.class);
             nc = data -> {
               try {
                 return (String) combinatorMethod.invoke(null, data);
@@ -107,11 +107,12 @@ public class HelperUtils {
             logger.error("Combinator method not found: " + combinator, e);
           }
         }
-        String translation = ds.getTranslation();
+        org.folio.rest.mappings.model.DataSource.Translation translation = ds.getTranslation();
         Translation<?> t = null;
         if (translation != null) {
           try {
-            Method translationMethod = Mapper.class.getMethod(translation, String.class);
+
+            Method translationMethod = Mapper.class.getMethod(translation.name(), String.class);
             t = data -> {
               try {
                 return (CompletableFuture<Object>) translationMethod.invoke(null, data);
@@ -124,8 +125,20 @@ public class HelperUtils {
             logger.error("Translation method not found: " + translation, e);
           }
         }
+
+        String defaultValue = "";
+
+        if(ds.getDefaultMapping() != null){
+          Map<Field, DataSource> aMap = extractOrderMappings(JsonObject.mapFrom(ds.getDefaultMapping()));
+          defaultValue = aMap.get( Mapping.Field.ESTIMATED_PRICE).defValue.toString();
+        }
+        else
+        {
+          defaultValue = ds.getDefault();
+        }
+
         String from = ds.getFrom();
-        String defaultValue = ds.getDefault();
+
         DataSource dataSource = DataSource.builder()
           .withFrom(from)
           .withTranslation(t)
