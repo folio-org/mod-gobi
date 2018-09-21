@@ -34,6 +34,18 @@
     {
       "id": "configuration",
       "version": "2.0"
+    },
+    {
+      "id": "material-types",
+      "version": "2.2"
+    },
+    {
+      "id": "locations",
+      "version": "2.1"
+    },
+    {
+      "id": "vendor",
+      "version": "1.0"
     }
   ],
   "permissionSets": [
