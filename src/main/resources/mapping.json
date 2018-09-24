@@ -51,9 +51,10 @@
           "$ref" : "#",
           "description" : "default value found from the mapping of another node"
         },
-        "fromOtherField" : {  //in the config json, the order of dataSource is important as this field refers to previous dataSource objects.
+        "fromOtherField" : {
           "$ref" : "#properties/field",
-          "description" : "default value found from another field"
+          "description" : "default value found from another field",
+          "$comment": "in the config json, the order of dataSource is important as this field refers to previous dataSource objects."
         }
       }
     }

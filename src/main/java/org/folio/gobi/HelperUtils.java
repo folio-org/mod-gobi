@@ -23,8 +23,6 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import javax.xml.crypto.Data;
-
 public class HelperUtils {
   private static final Logger logger = Logger.getLogger(HelperUtils.class);
 
@@ -121,7 +119,6 @@ public class HelperUtils {
     Translation<?> t = null;
     if (translation != null) {
       try {
-
         Method translationMethod = Mapper.class.getMethod(translation.toString(), String.class);
         t = data -> {
           try {
@@ -140,19 +137,15 @@ public class HelperUtils {
 
     if (dataSource.getDefault() != null) {
       defaultValue = dataSource.getDefault();
-    }
-    else if (dataSource.getFromOtherField() != null){
+    } else if (dataSource.getFromOtherField() != null){
       String otherField = dataSource.getFromOtherField().value();
       defaultValue = map.get(Field.valueOf(otherField));
-    }
-    else if(dataSource.getDefaultMapping() != null) {
+    } else if(dataSource.getDefaultMapping() != null) {
       defaultValue = extractOrderMapping(dataSource.getDefaultMapping().getDataSource(), map);
     }
 
-    String from = dataSource.getFrom();
-
     DataSource dataSrc = DataSource.builder()
-      .withFrom(from)
+      .withFrom(dataSource.getFrom())
       .withTranslation(t)
       .withTranslateDefault(true)
       .withCombinator(nc)

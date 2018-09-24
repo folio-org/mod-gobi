@@ -7,7 +7,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.StringReader;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
@@ -16,17 +15,12 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.folio.gobi.DataSource;
-import org.folio.gobi.HelperUtils;
 import org.folio.gobi.Mapper.Field;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
 import org.folio.rest.gobi.model.GobiResponse;
-import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.After;
@@ -359,7 +353,7 @@ public class PostGobiOrdersHelperTest {
             Double result = (Double) ds.translation.apply(ds.defValue.toString()).get();
             context.assertEquals(0.0, result);
           } catch (Exception e) {
-            logger.error("Failed to execute translation", e);
+            logger.error("Failed to execute translation LIST_PRICE", e);
           }
 
           context.assertNotNull((map.get(Field.ESTIMATED_PRICE)));
@@ -371,44 +365,15 @@ public class PostGobiOrdersHelperTest {
           context.assertEquals("15.0", defVal.defValue);
           try {
             Double result = (Double) defVal.translation.apply(defVal.defValue.toString()).get();
-            context.assertEquals(15.0, result);
+            context.assertEquals( 15.0, result);
           } catch (Exception e) {
-            logger.error("Failed to execute translation", e);
+            logger.error("Failed to execute translation for ESTIMATED_ PRICE with recursive default mapping", e);
           }
 
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });
     });
-  }
-
-  @Test
-  public final void testextractOrderMappingWithOtherField(TestContext context) throws Exception {
-    org.folio.rest.mappings.model.DataSource jsonDs = new org.folio.rest.mappings.model.DataSource();
-
-    String jsonFrom = "//abc/de/fg";
-    String listPriceFrom = "//hi/jk/l";
-    String listPriceVal = "22.5";
-
-    jsonDs.setFrom(jsonFrom);
-    jsonDs.setFromOtherField(org.folio.rest.mappings.model.DataSource.FromOtherField.LIST_PRICE);
-
-    Map<Field, DataSource> map = new EnumMap<>(Field.class);
-    DataSource dataSrc = DataSource.builder()
-      .withFrom(listPriceFrom)
-      .withDefault(listPriceVal)
-      .build();
-
-    map.put(Field.LIST_PRICE, dataSrc);
-
-    DataSource outputDs = HelperUtils.extractOrderMapping(jsonDs, map);
-    context.assertNotNull(outputDs);
-    context.assertEquals(jsonFrom, outputDs.from);
-
-    context.assertNotNull(outputDs.defValue);
-    DataSource otherFieldDs = (DataSource) outputDs.defValue;
-    context.assertEquals(listPriceVal, otherFieldDs.defValue);
-    context.assertEquals(listPriceFrom, otherFieldDs.from);
   }
 }
 
