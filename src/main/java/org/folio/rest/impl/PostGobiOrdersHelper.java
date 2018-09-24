@@ -140,13 +140,7 @@ public class PostGobiOrdersHelper {
         .build());
       mappings.put(Field.USER_LIMIT, DataSource.builder()
         .withFrom("//PurchaseOption/Code")
-        .withTranslation(s -> {
-          if (s != null) {
-            return CompletableFuture.completedFuture(3);
-          } else {
-            return CompletableFuture.completedFuture(null);
-          }
-        })
+        .withTranslation(this::getPurchaseOptionCode)
         .build());
 
       new Mapper(mappings).map(doc)
@@ -157,6 +151,14 @@ public class PostGobiOrdersHelper {
     }
 
     return future;
+  }
+
+  public CompletableFuture<Integer> getPurchaseOptionCode(Object s){
+    if (s != null) {
+      return CompletableFuture.completedFuture(3);
+    } else {
+      return CompletableFuture.completedFuture(null);
+    }
   }
 
   public CompletableFuture<Document> parse(Reader entity) {

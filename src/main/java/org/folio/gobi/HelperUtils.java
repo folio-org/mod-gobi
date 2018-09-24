@@ -77,7 +77,6 @@ public class HelperUtils {
     return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
   }
 
-  @SuppressWarnings("unchecked")
   public static Map<Field, DataSource> extractOrderMappings(JsonObject jo) {
     final String mappingsString = jo.getJsonArray("configs").getJsonObject(0).getString("value");
     final Mappings mappings = Json.decodeValue(mappingsString, Mappings.class);
@@ -90,54 +89,67 @@ public class HelperUtils {
         logger.info("Mapping existis for field: " + mapping.getField());
         Field field = Field.valueOf(mapping.getField().toString());
         org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
-        String combinator = ds.getCombinator();
-        NodeCombinator nc = null;
-        if (combinator != null) {
-          try {
-            Method combinatorMethod = Mapper.class.getMethod(combinator, NodeList.class);
-            nc = data -> {
-              try {
-                return (String) combinatorMethod.invoke(null, data);
-              } catch (Exception e) {
-                logger.error("Unable to invoke combinator method: " + combinator, e);
-              }
-              return null;
-            };
-          } catch (NoSuchMethodException e) {
-            logger.error("Combinator method not found: " + combinator, e);
-          }
-        }
-        String translation = ds.getTranslation();
-        Translation<?> t = null;
-        if (translation != null) {
-          try {
-            Method translationMethod = Mapper.class.getMethod(translation, String.class);
-            t = data -> {
-              try {
-                return (CompletableFuture<Object>) translationMethod.invoke(null, data);
-              } catch (Exception e) {
-                logger.error("Unable to invoke translation method: " + translation, e);
-              }
-              return null;
-            };
-          } catch (NoSuchMethodException e) {
-            logger.error("Translation method not found: " + translation, e);
-          }
-        }
-        String from = ds.getFrom();
-        String defaultValue = ds.getDefault();
-        DataSource dataSource = DataSource.builder()
-          .withFrom(from)
-          .withTranslation(t)
-          .withTranslateDefault(true)
-          .withCombinator(nc)
-          .withDefault(defaultValue)
-          .build();
-
+        DataSource dataSource = extractOrderMapping(ds, map);
         map.put(field, dataSource);
       }
     }
 
     return map;
+  }
+
+  public static DataSource extractOrderMapping(org.folio.rest.mappings.model.DataSource dataSource, Map<Field, DataSource> map){
+    org.folio.rest.mappings.model.DataSource.Combinator combinator = dataSource.getCombinator();
+    NodeCombinator nc = null;
+    if (combinator != null) {
+      try {
+        Method combinatorMethod = Mapper.class.getMethod(combinator.toString(), NodeList.class);
+        nc = data -> {
+          try {
+            return (String) combinatorMethod.invoke(null, data);
+          } catch (Exception e) {
+            logger.error("Unable to invoke combinator method: " + combinator, e);
+          }
+          return null;
+        };
+      } catch (NoSuchMethodException e) {
+        logger.error("Combinator method not found: " + combinator, e);
+      }
+    }
+    org.folio.rest.mappings.model.DataSource.Translation translation = dataSource.getTranslation();
+    Translation<?> t = null;
+    if (translation != null) {
+      try {
+        Method translationMethod = Mapper.class.getMethod(translation.toString(), String.class);
+        t = data -> {
+          try {
+            return (CompletableFuture<Object>) translationMethod.invoke(null, data);
+          } catch (Exception e) {
+            logger.error("Unable to invoke translation method: " + translation, e);
+          }
+          return null;
+        };
+      } catch (NoSuchMethodException e) {
+        logger.error("Translation method not found: " + translation, e);
+      }
+    }
+
+    Object defaultValue = new Object();
+
+    if (dataSource.getDefault() != null) {
+      defaultValue = dataSource.getDefault();
+    } else if (dataSource.getFromOtherField() != null){
+      String otherField = dataSource.getFromOtherField().value();
+      defaultValue = map.get(Field.valueOf(otherField));
+    } else if(dataSource.getDefaultMapping() != null) {
+      defaultValue = extractOrderMapping(dataSource.getDefaultMapping().getDataSource(), map);
+    }
+
+    return DataSource.builder()
+      .withFrom(dataSource.getFrom())
+      .withTranslation(t)
+      .withTranslateDefault(true)
+      .withCombinator(nc)
+      .withDefault(defaultValue)
+      .build();
   }
 }

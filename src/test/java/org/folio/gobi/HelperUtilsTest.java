@@ -1,6 +1,7 @@
 package org.folio.gobi;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -8,6 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 public class HelperUtilsTest {
 
@@ -64,4 +68,32 @@ public class HelperUtilsTest {
     assertEquals(vendorId + "0", extracteVendorId);
   }
 
+  @Test
+  public final void testExtractOrderMappingWithOtherField() throws Exception {
+    org.folio.rest.mappings.model.DataSource jsonDs = new org.folio.rest.mappings.model.DataSource();
+
+    String jsonFrom = "//abc/de/fg";
+    String listPriceFrom = "//hi/jk/l";
+    String listPriceVal = "22.5";
+
+    jsonDs.setFrom(jsonFrom);
+    jsonDs.setFromOtherField(org.folio.rest.mappings.model.DataSource.FromOtherField.LIST_PRICE);
+
+    Map<Mapper.Field, DataSource> map = new EnumMap<>(Mapper.Field.class);
+    DataSource dataSrc = DataSource.builder()
+      .withFrom(listPriceFrom)
+      .withDefault(listPriceVal)
+      .build();
+
+    map.put(Mapper.Field.LIST_PRICE, dataSrc);
+
+    DataSource outputDs = HelperUtils.extractOrderMapping(jsonDs, map);
+    assertNotNull(outputDs);
+    assertEquals(jsonFrom, outputDs.from);
+
+    assertNotNull(outputDs.defValue);
+    DataSource otherFieldDs = (DataSource) outputDs.defValue;
+    assertEquals(listPriceVal, otherFieldDs.defValue);
+    assertEquals(listPriceFrom, otherFieldDs.from);
+  }
 }

@@ -353,11 +353,27 @@ public class PostGobiOrdersHelperTest {
             Double result = (Double) ds.translation.apply(ds.defValue.toString()).get();
             context.assertEquals(0.0, result);
           } catch (Exception e) {
-            logger.error("Failed to execute translation", e);
+            logger.error("Failed to execute translation LIST_PRICE", e);
           }
+
+          context.assertNotNull((map.get(Field.ESTIMATED_PRICE)));
+          ds = map.get(Field.ESTIMATED_PRICE);
+          context.assertEquals("//NetPrice/Amount", ds.from);
+          context.assertNotNull(ds.defValue);
+          DataSource defVal = (DataSource) ds.defValue;
+          context.assertEquals("//ListPrice/Amount//EstPrice", defVal.from);
+          context.assertEquals("15.0", defVal.defValue);
+          try {
+            Double result = (Double) defVal.translation.apply(defVal.defValue.toString()).get();
+            context.assertEquals( 15.0, result);
+          } catch (Exception e) {
+            logger.error("Failed to execute translation for ESTIMATED_ PRICE with recursive default mapping", e);
+          }
+
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });
     });
   }
 }
+

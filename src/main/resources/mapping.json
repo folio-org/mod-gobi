@@ -36,15 +36,25 @@
           "description": "XPath to the data for the field to map"
         },
         "translation": {
-          "type": "string",
+          "enum" : ["toDouble", "toInteger", "lookupMaterialTypeId", "lookupLocationId", "lookupVendorId", "getPurchaseOptionCode"],
           "description": "Method to translate the specified type"
         },
         "combinator": {
-          "type": "string",
+          "enum": ["concat", "multiply"],
           "description": "Method to combine the specified type with other values"
         },
-        "default": {
-          "type": "string"
+        "default" : {
+          "type" : "string",
+          "description" : "default value"
+        },
+        "defaultMapping" : {
+          "$ref" : "#",
+          "description" : "default value found from the mapping of another node"
+        },
+        "fromOtherField" : {
+          "$ref" : "#properties/field",
+          "description" : "default value found from another field",
+          "$comment": "in the config json, the order of dataSource is important as this field refers to previous dataSource objects."
         }
       }
     }

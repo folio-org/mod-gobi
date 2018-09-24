@@ -500,7 +500,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <sourceDirectory>${basedir}/ramls</sourceDirectory>
+              <sourceDirectory>${basedir}/src/main/resources</sourceDirectory>
               <targetPackage>org.folio.rest.mappings.model</targetPackage>
             </configuration>
           </execution>
