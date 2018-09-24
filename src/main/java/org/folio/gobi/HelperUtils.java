@@ -15,7 +15,6 @@ import org.folio.gobi.Mapper.Field;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.folio.gobi.exceptions.HttpException;
-import org.folio.rest.mappings.model.DefValueMapping;
 import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.Mappings;
 import org.w3c.dom.NodeList;
@@ -23,6 +22,8 @@ import org.w3c.dom.NodeList;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import javax.xml.crypto.Data;
 
 public class HelperUtils {
   private static final Logger logger = Logger.getLogger(HelperUtils.class);
@@ -90,67 +91,74 @@ public class HelperUtils {
         logger.info("Mapping existis for field: " + mapping.getField());
         Field field = Field.valueOf(mapping.getField().toString());
         org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
-        org.folio.rest.mappings.model.DataSource.Combinator combinator = ds.getCombinator();
-        NodeCombinator nc = null;
-        if (combinator != null) {
-          try {
-            Method combinatorMethod = Mapper.class.getMethod(combinator.toString(), NodeList.class);
-            nc = data -> {
-              try {
-                return (String) combinatorMethod.invoke(null, data);
-              } catch (Exception e) {
-                logger.error("Unable to invoke combinator method: " + combinator, e);
-              }
-              return null;
-            };
-          } catch (NoSuchMethodException e) {
-            logger.error("Combinator method not found: " + combinator, e);
-          }
-        }
-        org.folio.rest.mappings.model.DataSource.Translation translation = ds.getTranslation();
-        Translation<?> t = null;
-        if (translation != null) {
-          try {
-
-            Method translationMethod = Mapper.class.getMethod(translation.name(), String.class);
-            t = data -> {
-              try {
-                return (CompletableFuture<Object>) translationMethod.invoke(null, data);
-              } catch (Exception e) {
-                logger.error("Unable to invoke translation method: " + translation, e);
-              }
-              return null;
-            };
-          } catch (NoSuchMethodException e) {
-            logger.error("Translation method not found: " + translation, e);
-          }
-        }
-
-        String defaultValue = "";
-
-        if(ds.getDefaultMapping() != null){
-          Map<Field, DataSource> aMap = extractOrderMappings(JsonObject.mapFrom(ds.getDefaultMapping()));
-          defaultValue = aMap.get( Mapping.Field.ESTIMATED_PRICE).defValue.toString();
-        }
-        else
-        {
-          defaultValue = ds.getDefault();
-        }
-
-        String from = ds.getFrom();
-
-        DataSource dataSource = DataSource.builder()
-          .withFrom(from)
-          .withTranslation(t)
-          .withTranslateDefault(true)
-          .withCombinator(nc)
-          .withDefault(defaultValue)
-          .build();
-
+        DataSource dataSource = extractOrderMapping(ds, map);
         map.put(field, dataSource);
       }
     }
 
     return map;
+  }
+
+  public static DataSource extractOrderMapping(org.folio.rest.mappings.model.DataSource dataSource, Map<Field, DataSource> map){
+    org.folio.rest.mappings.model.DataSource.Combinator combinator = dataSource.getCombinator();
+    NodeCombinator nc = null;
+    if (combinator != null) {
+      try {
+        Method combinatorMethod = Mapper.class.getMethod(combinator.toString(), NodeList.class);
+        nc = data -> {
+          try {
+            return (String) combinatorMethod.invoke(null, data);
+          } catch (Exception e) {
+            logger.error("Unable to invoke combinator method: " + combinator, e);
+          }
+          return null;
+        };
+      } catch (NoSuchMethodException e) {
+        logger.error("Combinator method not found: " + combinator, e);
+      }
+    }
+    org.folio.rest.mappings.model.DataSource.Translation translation = dataSource.getTranslation();
+    Translation<?> t = null;
+    if (translation != null) {
+      try {
+
+        Method translationMethod = Mapper.class.getMethod(translation.toString(), String.class);
+        t = data -> {
+          try {
+            return (CompletableFuture<Object>) translationMethod.invoke(null, data);
+          } catch (Exception e) {
+            logger.error("Unable to invoke translation method: " + translation, e);
+          }
+          return null;
+        };
+      } catch (NoSuchMethodException e) {
+        logger.error("Translation method not found: " + translation, e);
+      }
+    }
+
+    Object defaultValue = new Object();
+
+    if (dataSource.getDefault() != null) {
+      defaultValue = dataSource.getDefault();
+    }
+    else if (dataSource.getFromOtherField() != null){
+      String otherField = dataSource.getFromOtherField().value();
+      defaultValue = map.get(Field.valueOf(otherField));
+    }
+    else if(dataSource.getDefaultMapping() != null) {
+      defaultValue = extractOrderMapping(dataSource.getDefaultMapping().getDataSource(), map);
+    }
+
+    String from = dataSource.getFrom();
+
+    DataSource dataSrc = DataSource.builder()
+      .withFrom(from)
+      .withTranslation(t)
+      .withTranslateDefault(true)
+      .withCombinator(nc)
+      .withDefault(defaultValue)
+      .build();
+
+    return dataSrc;
   }
 }
