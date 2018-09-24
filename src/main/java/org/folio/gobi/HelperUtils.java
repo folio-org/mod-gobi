@@ -144,14 +144,12 @@ public class HelperUtils {
       defaultValue = extractOrderMapping(dataSource.getDefaultMapping().getDataSource(), map);
     }
 
-    DataSource dataSrc = DataSource.builder()
+    return DataSource.builder()
       .withFrom(dataSource.getFrom())
       .withTranslation(t)
       .withTranslateDefault(true)
       .withCombinator(nc)
       .withDefault(defaultValue)
       .build();
-
-    return dataSrc;
   }
 }
