@@ -11,7 +11,13 @@
     {
       "field":"ACQUISITION_METHOD",
       "dataSource":{
-        "default":"mod-gobi"
+        "default":"Purchase at Vendor System"
+      }
+    },
+    {
+      "field":"APPROVAL_STATUS",
+      "dataSource":{
+        "default":"APPROVED"
       }
     },
     {
@@ -42,14 +48,8 @@
     {
       "field":"CURRENCY",
       "dataSource":{
-        "from":"//NetPrice/Currency",
+        "from":"//ListPrice/Currency",
         "default":"USD"
-      }
-    },
-    {
-      "field":"EXPECTED_RECEIPT_DATE",
-      "dataSource": {
-        "default": "Order Sent"
       }
     },
     {
@@ -86,6 +86,13 @@
         "from": "//NetPrice/Amount",
         "default": "0",
         "translation": "toDouble"
+      }
+    },
+    {
+      "field":"OWNER",
+      "dataSource": {
+        "from": "//BaseAccount",
+        "default":"Main"
       }
     },
     {
@@ -162,6 +169,12 @@
       "dataSource": {
         "from": "//datafield[@tag='245']/*",
         "combinator":"concat"
+      }
+    },
+    {
+      "field":"VENDOR",
+      "dataSource": {
+        "default": "GOBI Library Solutions"
       }
     },
     {

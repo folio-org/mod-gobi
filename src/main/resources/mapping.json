@@ -9,6 +9,7 @@
         "ACCESS_PROVIDER",
         "ACCOUNT_NUMBER",
         "ACQUISITION_METHOD",
+        "APPROVAL_STATUS",
         "CLAIM",
         "COLLECTION",
         "CONTRIBUTOR",
@@ -24,6 +25,7 @@
         "MATERIAL_TYPE",
         "NET_PRICE",
         "NOTE_FROM_VENDOR",
+        "OWNER",
         "PO_LINE_WORKFLOW_STATUS",
         "PO_LINE_RECEIPT_STATUS",
         "PO_LINE_PAYMENT_STATUS",
@@ -37,6 +39,7 @@
         "SOURCE_ID",
         "TITLE",
         "USER_LIMIT",
+        "VENDOR",
         "VENDOR_ID",
         "VENDOR_REF_NO",
         "VENDOR_REF_NO_TYPE"
