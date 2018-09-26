@@ -1,0 +1,201 @@
+{
+  "mappings":
+  [
+    {
+      "field":"ACCOUNT_NUMBER",
+      "dataSource":{
+        "from":"//SubAccount",
+        "default":"0"
+      }
+    },
+    {
+      "field":"ACQUISITION_METHOD",
+      "dataSource":{
+        "default":"mod-gobi"
+      }
+    },
+    {
+      "field":"CLAIM",
+      "dataSource": {
+        "default": "true"
+      }
+    },
+    {
+      "field":"COLLECTION",
+      "dataSource": {
+        "default": "false"
+      }
+    },
+    {
+      "field":"CONTRIBUTOR",
+      "dataSource": {
+        "from": "//datafield[@tag='100']/*",
+        "combinator":"concat"
+      }
+    },
+    {
+      "field":"CREATED_DATE",
+      "dataSource": {
+        "from": "//OrderPlaced"
+      }
+    },
+    {
+      "field":"CURRENCY",
+      "dataSource":{
+        "from":"//NetPrice/Currency",
+        "default":"USD"
+      }
+    },
+    {
+      "field":"EXPECTED_RECEIPT_DATE",
+      "dataSource": {
+        "default": "Order Sent"
+      }
+    },
+    {
+      "field":"FUND_CODE",
+      "dataSource": {
+        "from": "//FundCode",
+        "default": "0",
+        "translation": "toDouble"
+      }
+    },
+    {
+      "field":"LIST_PRICE",
+      "dataSource":{
+        "from":"//ListPrice/Amount",
+        "default":"0",
+        "translation": "toDouble"
+      }
+    },
+    {
+      "field":"LOCATION",
+      "dataSource": {
+        "from": "//Location"
+      }
+    },
+    {
+      "field":"MATERIAL_TYPE",
+      "dataSource": {
+        "from": "//LocalData[Description='LocalData1']/Value"
+      }
+    },
+    {
+      "field":"NET_PRICE",
+      "dataSource": {
+        "from": "//NetPrice/Amount",
+        "default": "0",
+        "translation": "toDouble"
+      }
+    },
+    {
+      "field":"PO_LINE_WORKFLOW_STATUS",
+      "dataSource": {
+        "default": "Order Sent"
+      }
+    },
+    {
+      "field":"PO_LINE_RECEIPT_STATUS",
+      "dataSource": {
+        "default": "Awaiting Receipt"
+      }
+    },
+    {
+      "field":"PO_LINE_PAYMENT_STATUS",
+      "dataSource": {
+        "default": "Awaiting Payment"
+      }
+    },
+    {
+      "field":"PRODUCT_ID",
+      "dataSource": {
+        "from": "//datafield[@tag='020']"
+      }
+    },
+    {
+      "field":"PRODUCT_ID_TYPE",
+      "dataSource": {
+        "default": "ISBN"
+      }
+    },
+    {
+      "field": "PUBLISHER",
+      "dataSource": {
+        "from": "//datafield[@tag='260']/*",
+        "combinator": "concat"
+      }
+    },
+    {
+      "field":"QUANTITY",
+      "dataSource":{
+        "from":"//Quantity",
+        "default":"1",
+        "translation": "toInteger"
+      }
+    },
+    {
+      "field":"RECEIPT_DUE",
+      "dataSource": {
+        "default": "true"
+      }
+    },
+    {
+      "field":"RECEIVING_NOTE",
+      "dataSource": {
+        "from": "//LocalData[Description='LocalData2']/Value"
+      }
+    },
+    {
+      "field":"REQUESTER",
+      "dataSource": {
+        "from": "//LocalData[Description='LocalData3']/Value"
+      }
+    },
+    {
+      "field":"SOURCE_ID",
+      "dataSource": {
+        "default": "Loaded from Vendor (API)"
+      }
+    },
+    {
+      "field":"TITLE",
+      "dataSource": {
+        "from": "//datafield[@tag='245']/*",
+        "combinator":"concat"
+      }
+    },
+    {
+      "field":"VENDOR_ID",
+      "dataSource": {
+        "default": "GOBI"
+      }
+    },
+    {
+      "field":"VENDOR_REF_NO",
+      "dataSource": {
+        "from": "//YBPOrderKey"
+      }
+    },
+    {
+      "field":"VENDOR_REF_NO_TYPE",
+      "dataSource": {
+        "default": "Supplier's unique order line reference number"
+      }
+    },
+    {
+      "field":"ESTIMATED_PRICE",
+      "dataSource":{
+        "from":"//ListPrice/Amount",
+        "defaultMapping": {
+          "dataSource": {
+            "from" : "//NetPrice/Amount|//Quantity",
+            "combinator":"multiply",
+            "fromOtherField" : "LIST_PRICE",
+            "translation" : "toDouble"
+          }
+        },
+        "translation": "toDouble"
+      }
+    }
+  ]
+}

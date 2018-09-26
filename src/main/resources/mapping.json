@@ -19,6 +19,7 @@
         "CREATED_DATE",
         "CURRENCY",
         "ESTIMATED_PRICE",
+        "EXPECTED_RECEIPT_DATE",
         "FUND_CODE",
         "FUND_PERCENTAGE",
         "INSTRUCTIONS",
