@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Collection of GOBI dataMappings",
+  "properties": {
+    "mappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "$ref": "GOBIMapping.json"
+      }
+    }
+  },
+  "required": [
+    "mappings"
+  ]
+}
