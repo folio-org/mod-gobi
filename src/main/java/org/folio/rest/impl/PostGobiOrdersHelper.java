@@ -7,6 +7,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+
 import org.apache.log4j.Logger;
 import org.folio.gobi.DataSource;
 import org.folio.gobi.GobiPurchaseOrderParser;
@@ -18,11 +22,14 @@ import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
 import org.folio.rest.RestVerticle;
+import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource.PostGobiOrdersResponse;
+import org.folio.rest.mappings.model.OrderMapping;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -58,8 +65,10 @@ public class PostGobiOrdersHelper {
     this.asyncResultHandler = asyncResultHandler;
   }
 
-  public CompletableFuture<JsonObject> map(Document doc) {
-    VertxCompletableFuture<JsonObject> future = new VertxCompletableFuture<>(ctx);
+  public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
+    final OrderMapping.OrderType orderType = getOrderType(doc);
+
+    VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
 
     try {
       Map<Field, DataSource> mappings = new EnumMap<>(Field.class);
@@ -143,14 +152,37 @@ public class PostGobiOrdersHelper {
         .withTranslation(this::getPurchaseOptionCode)
         .build());
 
-      new Mapper(mappings).map(doc)
-        .thenAccept(compPO -> future.complete(JsonObject.mapFrom(compPO)));
+      lookupOrderMappings(orderType).thenAccept(m -> {
+        // Override the default mappings with the configured mappings
+        mappings.putAll(m);
+        new Mapper(mappings).map(doc)
+          .thenAccept(compPO -> future.complete(compPO));
+      }).exceptionally(e -> {
+        logger.error("Exception looking up mappings", e);
+        future.completeExceptionally(e);
+        return null;
+      });
     } catch (Exception e) {
       logger.error("Exception mapping request", e);
       future.completeExceptionally(e);
     }
 
     return future;
+  }
+
+  public static OrderMapping.OrderType getOrderType(Document doc) {
+    final XPath xpath = XPathFactory.newInstance().newXPath();
+    OrderMapping.OrderType orderType;
+
+    try {
+      Node node = (Node) xpath.evaluate("//ListedElectronicMonograph|//ListedElectronicSerial|//ListedPrintMonograph|//ListedPrintSerial|//UnlistedPrintMonograph|//UnlistedPrintSerial", doc, XPathConstants.NODE);
+      orderType = OrderMapping.OrderType.fromValue(node.getNodeName());
+    } catch (Exception e) {
+      logger.error("Cannot determine order type", e);
+      orderType = null;
+    }
+
+    return orderType;
   }
 
   public CompletableFuture<Integer> getPurchaseOptionCode(Object s){
@@ -223,7 +255,71 @@ public class PostGobiOrdersHelper {
     }
   }
 
-  public CompletableFuture<Map<Field, DataSource>> lookupOrderMappings() {
+  public CompletableFuture<String> lookupWorkflowStatusId(String workflowStatusCode) {
+    try {
+      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", workflowStatusCode));
+      return httpClient.request(HttpMethod.GET, "/workflow_status?query=" + query, okapiHeaders)
+        .thenApply(HelperUtils::verifyAndExtractBody)
+        .thenApply(HelperUtils::extractWorkflowStatusId)
+        .exceptionally(t -> {
+          logger.error("Exception looking up workflow status id", t);
+          return null;
+        });
+    } catch (Exception e) {
+      logger.error("Exception calling lookupWorkflowStatusId", e);
+      throw new CompletionException(e);
+    }
+  }
+
+  public CompletableFuture<String> lookupReceiptStatusId(String receiptStatusCode) {
+    try {
+      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", receiptStatusCode));
+      return httpClient.request(HttpMethod.GET, "/receipt_status?query=" + query, okapiHeaders)
+        .thenApply(HelperUtils::verifyAndExtractBody)
+        .thenApply(HelperUtils::extractReceiptStatusId)
+        .exceptionally(t -> {
+          logger.error("Exception looking up receipt status id", t);
+          return null;
+        });
+    } catch (Exception e) {
+      logger.error("Exception calling lookupReceiptStatusId", e);
+      throw new CompletionException(e);
+    }
+  }
+
+  public CompletableFuture<String> lookupPaymentStatusId(String paymentStatusCode) {
+    try {
+      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", paymentStatusCode));
+      return httpClient.request(HttpMethod.GET, "/payment_status?query=" + query, okapiHeaders)
+        .thenApply(HelperUtils::verifyAndExtractBody)
+        .thenApply(HelperUtils::extractPaymentStatusId)
+        .exceptionally(t -> {
+          logger.error("Exception looking up payment status id", t);
+          return null;
+        });
+    } catch (Exception e) {
+      logger.error("Exception calling lookupPaymentStatusId", e);
+      throw new CompletionException(e);
+    }
+  }
+
+  public CompletableFuture<String> lookupActivationStatusId(String activationStatusCode) {
+    try {
+      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", activationStatusCode));
+      return httpClient.request(HttpMethod.GET, "/activation_status?query=" + query, okapiHeaders)
+        .thenApply(HelperUtils::verifyAndExtractBody)
+        .thenApply(HelperUtils::extractActivationStatusId)
+        .exceptionally(t -> {
+          logger.error("Exception looking up activation status id", t);
+          return null;
+        });
+    } catch (Exception e) {
+      logger.error("Exception calling lookupActivationStatusId", e);
+      throw new CompletionException(e);
+    }
+  }
+
+  public CompletableFuture<Map<Field, DataSource>> lookupOrderMappings(OrderMapping.OrderType orderType) {
     try {
       final String query = HelperUtils.encodeValue(
           String.format("(module==%s AND configName==%s AND code==%s)",
@@ -233,7 +329,7 @@ public class PostGobiOrdersHelper {
       return httpClient.request(HttpMethod.GET,
           "/configurations/entries?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
-        .thenApply(HelperUtils::extractOrderMappings)
+        .thenApply(jo -> HelperUtils.extractOrderMappings(orderType, jo))
         .exceptionally(t -> {
           logger.error("Exception looking up order mappings", t);
           return null;
@@ -244,10 +340,10 @@ public class PostGobiOrdersHelper {
     }
   }
 
-  public CompletableFuture<String> placeOrder(JsonObject compPO) {
+  public CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
     VertxCompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
     try {
-      httpClient.request(HttpMethod.POST, compPO.toBuffer(), "/orders", okapiHeaders)
+      httpClient.request(HttpMethod.POST, compPO, "/orders", okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenAccept(body -> {
           logger.info("Response from mod-orders: " + body.encodePrettily());

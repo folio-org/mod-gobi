@@ -1,6 +1,7 @@
 package org.folio.gobi;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -14,6 +15,7 @@ import org.folio.rest.acq.model.Eresource;
 import org.folio.rest.acq.model.Location;
 import org.folio.rest.acq.model.PurchaseOrder;
 import org.folio.rest.acq.model.Vendor;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -179,6 +181,11 @@ public class Mapper {
   public static CompletableFuture<Double> toDouble(String s) {
     Double val = s != null ? Double.parseDouble(s) : null;
     return CompletableFuture.completedFuture(val);
+  }
+
+  public static CompletableFuture<Date> toDate(String s) {
+    DateTime val = s != null ? DateTime.parse(s) : DateTime.now();
+    return CompletableFuture.completedFuture(val.toDate());
   }
 
   public static String concat(NodeList nodes) {

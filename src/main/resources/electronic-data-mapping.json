@@ -1,0 +1,291 @@
+{
+  "orderMappings":
+  [
+    {
+      "orderType": "ListedElectronicMonograph",
+      "mappings":
+      [
+        {
+          "field":"ACCOUNT_NUMBER",
+          "dataSource":{
+            "from":"//SubAccount",
+            "default":"0"
+          }
+        },
+        {
+          "field":"ACQUISITION_METHOD",
+          "dataSource":{
+            "default":"PVA"
+          }
+        },
+        {
+          "field":"APPROVAL_STATUS",
+          "dataSource":{
+            "default":"A",
+            "translation": "lookupWorkflowStatusId",
+            "translateDefault": true
+          }
+        },
+        {
+          "field":"CLAIM",
+          "dataSource": {
+            "default": "true"
+          }
+        },
+        {
+          "field":"COLLECTION",
+          "dataSource": {
+            "default": "false"
+          }
+        },
+        {
+          "field":"CONTRIBUTOR",
+          "dataSource": {
+            "from": "//datafield[@tag='100']/*",
+            "combinator":"concat"
+          }
+        },
+        {
+          "field":"CREATED_DATE",
+          "dataSource": {
+            "from": "//OrderPlaced",
+            "translation": "toDate"
+          }
+        },
+        {
+          "field":"CURRENCY",
+          "dataSource":{
+            "from":"//ListPrice/Currency",
+            "default":"USD"
+          }
+        },
+        {
+          "field":"FUND_CODE",
+          "dataSource": {
+            "from": "//FundCode",
+            "translation": "lookupFundId"
+          }
+        },
+        {
+          "field":"LIST_PRICE",
+          "dataSource":{
+            "from":"//ListPrice/Amount",
+            "default":"0",
+            "translation": "toDouble"
+          }
+        },
+        {
+          "field":"LOCATION",
+          "dataSource": {
+            "from": "//Location"
+          }
+        },
+        {
+          "field":"MATERIAL_TYPE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData1']/Value",
+            "translation": "lookupMaterialTypeId"
+          }
+        },
+        {
+          "field":"NET_PRICE",
+          "dataSource": {
+            "from": "//NetPrice/Amount",
+            "default": "0",
+            "translation": "toDouble"
+          }
+        },
+        {
+          "field":"OWNER",
+          "dataSource": {
+            "from": "//BaseAccount",
+            "default":"Main"
+          }
+        },
+        {
+          "field":"PO_LINE_WORKFLOW_STATUS",
+          "dataSource": {
+            "default":"P"
+          }
+        },
+        {
+          "field":"PO_RECEIPT_STATUS",
+          "dataSource": {
+            "default":"RNR",
+            "translation": "lookupReceiptStatusId",
+            "translateDefault": true
+          }
+        },
+        {
+          "field":"PO_LINE_RECEIPT_STATUS",
+          "dataSource": {
+            "default":"RNR"
+          }
+        },
+        {
+          "field":"PO_PAYMENT_STATUS",
+          "dataSource": {
+            "default":"AP",
+            "translation": "lookupPaymentStatusId",
+            "translateDefault": true
+          }
+        },
+        {
+          "field":"PO_LINE_PAYMENT_STATUS",
+          "dataSource": {
+            "default":"AP"
+          }
+        },
+        {
+          "field":"PRODUCT_ID",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='a']"
+          }
+        },
+        {
+          "field":"PRODUCT_ID_TYPE",
+          "dataSource": {
+            "default": "ISBN"
+          }
+        },
+        {
+          "field": "PUBLISHER",
+          "dataSource": {
+            "from": "//datafield[@tag='260']/subfield[@code='b']"
+          }
+        },
+        {
+          "field":"QUANTITY",
+          "dataSource":{
+            "from":"//Quantity",
+            "default":"1",
+            "translation": "toInteger"
+          }
+        },
+        {
+          "field":"RECEIVING_NOTE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData2']/Value"
+          }
+        },
+        {
+          "field":"REQUESTER",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData3']/Value"
+          }
+        },
+        {
+          "field":"SOURCE_ID",
+          "dataSource": {
+            "default": "Loaded from Vendor (API)"
+          }
+        },
+        {
+          "field":"TITLE",
+          "dataSource": {
+            "from": "//datafield[@tag='245']/*",
+            "combinator":"concat"
+          }
+        },
+        {
+          "field":"VENDOR_ID",
+          "dataSource": {
+            "default": "GOBI",
+            "translation": "lookupVendorId",
+            "translateDefault": true
+          }
+        },
+        {
+          "field":"VENDOR_REF_NO",
+          "dataSource": {
+            "from": "//YBPOrderKey"
+          }
+        },
+        {
+          "field":"VENDOR_REF_NO_TYPE",
+          "dataSource": {
+            "default": "Supplier's unique order line reference number"
+          }
+        },
+        {
+          "field":"ESTIMATED_PRICE",
+          "dataSource":{
+            "from":"//ListPrice/Amount",
+            "defaultMapping": {
+              "dataSource": {
+                "from" : "//NetPrice/Amount|//Quantity",
+                "combinator":"multiply",
+                "fromOtherField" : "LIST_PRICE",
+                "translation" : "toDouble"
+              }
+            },
+            "translation": "toDouble"
+          }
+        },
+        {
+          "field": "CREATE_INVENTORY",
+          "dataSource": {
+            "default": true
+          }
+        },
+        {
+          "field": "TRIAL",
+          "dataSource": {
+            "default": false
+          }
+        },
+        {
+          "field": "ACTIVATION_STATUS",
+          "dataSource": {
+            "default": "NA",
+            "translation": "lookupActivationStatusId",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "ACCESS_PROVIDER",
+           "dataSource": {
+            "from": "//PurchaseOrder/VendorPOCode",
+            "translation": "lookupVendorId"
+          }
+        },
+        {
+          "field": "NOTE_FROM_VENDOR",
+          "dataSource": {
+            "from": "//PurchaseOrder/VendorCode"
+          }
+        },
+        {
+          "field": "INSTRUCTIONS",
+          "dataSource": {
+            "from": "//OrderNotes"
+          }
+        },
+        {
+          "field": "PUBLICATION_DATE",
+          "dataSource": {
+            "from": "//datafield[@tag='260']/subfield[@code='c']"
+          }
+        },
+        {
+          "field": "ORDER_FORMAT",
+           "dataSource": {
+            "default": "ER"
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+           "dataSource": {
+            "default": "OT"
+          }
+        },
+        {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100"
+          }
+        }
+      ]
+    }
+  ]
+}
