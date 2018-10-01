@@ -447,6 +447,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       router.route(HttpMethod.GET, "/vendor").handler(this::handleGetVendor);
       router.route(HttpMethod.GET, "/material-types").handler(this::handleGetMaterialType);
       router.route(HttpMethod.GET, "/locations").handler(this::handleGetLocation);
+      router.route(HttpMethod.GET, "/configurations/entries").handler(this::handleGetConfigurationsEntries);
 
       return router;
     }
@@ -541,6 +542,21 @@ public class GOBIIntegrationServiceResourceImplTest {
         .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
         .end(locations.encodePrettily());
     }
+
+    private void handleGetConfigurationsEntries(RoutingContext ctx) {
+
+      logger.info("got configurations entries request: " + ctx.request().query());
+
+      JsonObject configurationsEntries = new JsonObject()
+        .put("configs", new JsonArray())
+        .put("total_records", 0);
+
+      ctx.response()
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(configurationsEntries.encodePrettily());
+    }
+
     private String randomDigits(int len) {
       return rand.ints(len, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining());
     }

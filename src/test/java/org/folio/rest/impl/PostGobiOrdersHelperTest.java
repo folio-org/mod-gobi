@@ -6,6 +6,7 @@ import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.concurrent.CompletionException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.folio.gobi.DataSource;
 import org.folio.gobi.Mapper.Field;
@@ -21,6 +23,7 @@ import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
 import org.folio.rest.gobi.model.GobiResponse;
+import org.folio.rest.mappings.model.OrderMapping;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.After;
@@ -29,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -315,6 +319,38 @@ public class PostGobiOrdersHelperTest {
   }
 
   @Test
+  public final void testGetOrderType(TestContext context) throws Exception {
+    logger.info("Begin: Testing for valid order type in the GOBI order XML");
+
+    String [] orderFiles = {
+        "GOBIIntegrationServiceResourceImpl/po_listed_electronic_monograph.xml",
+        "GOBIIntegrationServiceResourceImpl/po_listed_electronic_serial.xml",
+        "GOBIIntegrationServiceResourceImpl/po_listed_print_monograph.xml",
+        "GOBIIntegrationServiceResourceImpl/po_listed_print_serial.xml",
+        "GOBIIntegrationServiceResourceImpl/po_unlisted_print_monograph.xml",
+        "GOBIIntegrationServiceResourceImpl/po_unlisted_print_serial.xml",
+        "GOBIIntegrationServiceResourceImpl/po_unknown_order_type.xml",
+    };
+    OrderMapping.OrderType [] expected = {
+      OrderMapping.OrderType.LISTED_ELECTRONIC_MONOGRAPH,
+      OrderMapping.OrderType.LISTED_ELECTRONIC_SERIAL,
+      OrderMapping.OrderType.LISTED_PRINT_MONOGRAPH,
+      OrderMapping.OrderType.LISTED_PRINT_SERIAL,
+      OrderMapping.OrderType.UNLISTED_PRINT_MONOGRAPH,
+      OrderMapping.OrderType.UNLISTED_PRINT_SERIAL,
+      null
+    };
+
+    for (int i = 0; i < orderFiles.length; i++) {
+      InputStream data = this.getClass().getClassLoader().getResourceAsStream(orderFiles[i]);
+      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
+
+      OrderMapping.OrderType orderType = PostGobiOrdersHelper.getOrderType(doc);
+      assertEquals(expected[i], orderType);
+    }
+  }
+
+  @Test
   public final void testLookupOrderMappings(TestContext context) throws Exception {
     final Async async = context.async();
     final Vertx vertx = Vertx.vertx();
@@ -338,8 +374,9 @@ public class PostGobiOrdersHelperTest {
       okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
       okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
       PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders, vertx.getOrCreateContext());
-      pgoh.lookupOrderMappings()
+      pgoh.lookupOrderMappings(OrderMapping.OrderType.fromValue("ListedElectronicMonograph"))
         .thenAccept(map -> {
+          context.assertNotNull(map);
           context.assertNotNull(map.get(Field.CURRENCY));
           DataSource ds = map.get(Field.CURRENCY);
           context.assertEquals("//ListPrice/Currency", ds.from);
@@ -369,6 +406,146 @@ public class PostGobiOrdersHelperTest {
           } catch (Exception e) {
             logger.error("Failed to execute translation for ESTIMATED_ PRICE with recursive default mapping", e);
           }
+
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testLookupWorkflowStatusId(TestContext context) throws Exception {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals("/workflow_status")) {
+        req.response()
+          .setStatusCode(200)
+          .putHeader("content-type", "application/json")
+          .sendFile("PostGobiOrdersHelper/workflow_statuses.json");
+      } else {
+        req.response().setStatusCode(500).end("Unexpected call: " + req.path());
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders, vertx.getOrCreateContext());
+      pgoh.lookupWorkflowStatusId("A")
+        .thenAccept(id -> {
+          context.assertNotNull(id);
+          context.assertEquals("dcfdd034-b870-4330-b762-0c6e80146ebf", id);
+
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testLookupReceiptStatusId(TestContext context) throws Exception {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals("/receipt_status")) {
+        req.response()
+          .setStatusCode(200)
+          .putHeader("content-type", "application/json")
+          .sendFile("PostGobiOrdersHelper/receipt_statuses.json");
+      } else {
+        req.response().setStatusCode(500).end("Unexpected call: " + req.path());
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders, vertx.getOrCreateContext());
+      pgoh.lookupReceiptStatusId("RNR")
+        .thenAccept(id -> {
+          context.assertNotNull(id);
+          context.assertEquals("cb5d39d0-b541-4ab9-9c64-8622d233f68c", id);
+
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testLookupPaymentStatusId(TestContext context) throws Exception {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals("/payment_status")) {
+        req.response()
+          .setStatusCode(200)
+          .putHeader("content-type", "application/json")
+          .sendFile("PostGobiOrdersHelper/payment_statuses.json");
+      } else {
+        req.response().setStatusCode(500).end("Unexpected call: " + req.path());
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders, vertx.getOrCreateContext());
+      pgoh.lookupPaymentStatusId("AP")
+        .thenAccept(id -> {
+          context.assertNotNull(id);
+          context.assertEquals("37ea6927-bc92-485a-b748-288b50660e02", id);
+
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testLookupActivationStatusId(TestContext context) throws Exception {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals("/activation_status")) {
+        req.response()
+          .setStatusCode(200)
+          .putHeader("content-type", "application/json")
+          .sendFile("PostGobiOrdersHelper/activation_statuses.json");
+      } else {
+        req.response().setStatusCode(500).end("Unexpected call: " + req.path());
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders, vertx.getOrCreateContext());
+      pgoh.lookupActivationStatusId("NA")
+        .thenAccept(id -> {
+          context.assertNotNull(id);
+          context.assertEquals("2f0dfdec-00bb-462b-b1fb-20ab3d488f59", id);
 
           vertx.close(context.asyncAssertSuccess());
           async.complete();

@@ -17,6 +17,7 @@ import org.folio.gobi.Mapper.Translation;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.Mappings;
+import org.folio.rest.mappings.model.OrderMapping;
 import org.w3c.dom.NodeList;
 
 import io.vertx.core.json.Json;
@@ -58,6 +59,22 @@ public class HelperUtils {
     return extractIdOfFirst(obj, "vendors");
   }
 
+  public static String extractWorkflowStatusId(JsonObject obj) {
+    return extractIdOfFirst(obj, "workflow_statuses");
+  }
+
+  public static String extractReceiptStatusId(JsonObject obj) {
+    return extractIdOfFirst(obj, "receipt_statuses");
+  }
+
+  public static String extractPaymentStatusId(JsonObject obj) {
+    return extractIdOfFirst(obj, "payment_statuses");
+  }
+
+  public static String extractActivationStatusId(JsonObject obj) {
+    return extractIdOfFirst(obj, "activation_statuses");
+  }
+
   public static String extractIdOfFirst(JsonObject obj, String arrField) {
     if (obj == null || arrField == null || arrField.isEmpty()) {
       return null;
@@ -77,20 +94,33 @@ public class HelperUtils {
     return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
   }
 
-  public static Map<Field, DataSource> extractOrderMappings(JsonObject jo) {
-    final String mappingsString = jo.getJsonArray("configs").getJsonObject(0).getString("value");
-    final Mappings mappings = Json.decodeValue(mappingsString, Mappings.class);
-
+  public static Map<Field, DataSource> extractOrderMappings(OrderMapping.OrderType orderType, JsonObject jo) {
     final Map<Field, DataSource> map = new EnumMap<>(Field.class);
 
-    List<Mapping> mappingsList = mappings.getMappings();
-    if (mappingsList != null) {
-      for (Mapping mapping : mappingsList) {
-        logger.info("Mapping existis for field: " + mapping.getField());
-        Field field = Field.valueOf(mapping.getField().toString());
-        org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
-        DataSource dataSource = extractOrderMapping(ds, map);
-        map.put(field, dataSource);
+    final JsonArray configs = jo.getJsonArray("configs");
+
+    if (!configs.isEmpty()) {
+      final String mappingsString = configs.getJsonObject(0).getString("value");
+      final Mappings mappings = Json.decodeValue(mappingsString, Mappings.class);
+
+      final List<OrderMapping> orderMappingList = mappings.getOrderMappings();
+
+      if (orderMappingList != null) {
+        for (OrderMapping orderMapping : orderMappingList) {
+          if (orderMapping.getOrderType() == orderType) {
+            final List<Mapping> mappingList = orderMapping.getMappings();
+            if (mappingList != null) {
+              for (Mapping mapping : mappingList) {
+                logger.info("Mapping exists for type: " + orderType.value() + ", field: " + mapping.getField());
+                final Field field = Field.valueOf(mapping.getField().toString());
+                org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
+                DataSource dataSource = extractOrderMapping(ds, map);
+                map.put(field, dataSource);
+              }
+            }
+            break;
+          }
+        }
       }
     }
 
