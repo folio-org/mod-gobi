@@ -156,7 +156,7 @@ public class PostGobiOrdersHelper {
         // Override the default mappings with the configured mappings
         mappings.putAll(m);
         new Mapper(mappings).map(doc)
-          .thenAccept(compPO -> future.complete(compPO));
+          .thenAccept(future::complete);
       }).exceptionally(e -> {
         logger.error("Exception looking up mappings", e);
         future.completeExceptionally(e);
