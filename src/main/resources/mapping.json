@@ -19,6 +19,7 @@
         "CREATED_DATE",
         "CURRENCY",
         "ESTIMATED_PRICE",
+        "EXPECTED_RECEIPT_DATE",
         "FUND_CODE",
         "FUND_PERCENTAGE",
         "INSTRUCTIONS",
@@ -40,12 +41,14 @@
         "PUBLICATION_DATE",
         "PUBLISHER",
         "QUANTITY",
+        "RECEIPT_DUE",
         "RECEIVING_NOTE",
         "REQUESTER",
         "SOURCE_ID",
         "TITLE",
         "TRIAL",
         "USER_LIMIT",
+        "VENDOR",
         "VENDOR_ID",
         "VENDOR_REF_NO",
         "VENDOR_REF_NO_TYPE"
@@ -60,25 +63,8 @@
           "description": "XPath to the data for the field to map"
         },
         "translation": {
-          "enum" : [
-            "toDouble",
-            "toInteger",
-            "lookupMaterialTypeId",
-            "lookupLocationId",
-            "lookupVendorId",
-            "getPurchaseOptionCode",
-            "lookupWorkflowStatusId",
-            "lookupFundId",
-            "toDate",
-            "lookupReceiptStatusId",
-            "lookupPaymentStatusId",
-            "lookupActivationStatusId"
-          ],
+          "enum" : ["toDouble", "toInteger", "lookupMaterialTypeId", "lookupLocationId", "lookupVendorId", "getPurchaseOptionCode"],
           "description": "Method to translate the specified type"
-        },
-        "translateDefault": {
-          "type": "boolean",
-          "description": "Whether or not to translate the default value"
         },
         "combinator": {
           "enum": ["concat", "multiply"],
