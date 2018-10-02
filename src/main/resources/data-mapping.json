@@ -28,13 +28,13 @@
         {
           "field": "CLAIM",
           "dataSource": {
-            "default": "true"
+            "default": true
           }
         },
         {
           "field": "COLLECTION",
           "dataSource": {
-            "default": "false"
+            "default": false
           }
         },
         {
@@ -155,7 +155,7 @@
         {
           "field": "RECEIPT_DUE",
           "dataSource": {
-            "default": "true"
+            "default": true
           }
         },
         {
@@ -253,13 +253,13 @@
         {
           "field": "CLAIM",
           "dataSource": {
-            "default": "true"
+            "default": true
           }
         },
         {
           "field": "COLLECTION",
           "dataSource": {
-            "default": "false"
+            "default": false
           }
         },
         {
@@ -368,7 +368,7 @@
         {
           "field": "RECEIPT_DUE",
           "dataSource": {
-            "default": "true"
+            "default": true
           }
         },
         {
@@ -467,7 +467,7 @@
         {
           "field":"COLLECTION",
           "dataSource": {
-            "default": "false"
+            "default": false
           }
         },
         {
