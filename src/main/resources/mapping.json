@@ -63,8 +63,25 @@
           "description": "XPath to the data for the field to map"
         },
         "translation": {
-          "enum" : ["toDouble", "toInteger", "lookupMaterialTypeId", "lookupLocationId", "lookupVendorId", "getPurchaseOptionCode"],
+          "enum" : [
+            "toDouble",
+            "toInteger",
+            "lookupMaterialTypeId",
+            "lookupLocationId",
+            "lookupVendorId",
+            "getPurchaseOptionCode",
+            "lookupWorkflowStatusId",
+            "lookupFundId",
+            "toDate",
+            "lookupReceiptStatusId",
+            "lookupPaymentStatusId",
+            "lookupActivationStatusId"
+          ],
           "description": "Method to translate the specified type"
+        },
+        "translateDefault": {
+          "type": "boolean",
+          "description": "Whether or not to translate the default value"
         },
         "combinator": {
           "enum": ["concat", "multiply"],
