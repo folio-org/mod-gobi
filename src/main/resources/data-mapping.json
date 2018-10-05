@@ -719,7 +719,7 @@
         }
       ]
     },
-    {
+   {
       "orderType": "ListedPrintSerial",
       "mappings": [
         {
@@ -803,24 +803,6 @@
           }
         },
         {
-          "field": "SUBSCRIPTION_FROM_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "SUBSCRIPTION_INTERVAL",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "SUBSCRIPTION_TO_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
           "field": "RECEIPT_DUE",
           "dataSource": {
             "default": true
@@ -866,36 +848,6 @@
           "field": "SOURCE_ID",
           "dataSource": {
             "default": "Loaded from Vendor (API)"
-          }
-        },
-        {
-          "field": "MANUAL_RENEWAL",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_CYCLE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_REVIEW_PERIOD",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_INTERVAL",
-          "dataSource": {
-            "default": "NA"
           }
         },
         {
@@ -1021,14 +973,6 @@
           }
         },
         {
-          "field": "ACTIVATION_STATUS",
-          "dataSource": {
-            "default": "NA",
-            "translation": "lookupActivationStatusId",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "CREATE_INVENTORY",
           "dataSource": {
             "default": true
@@ -1050,30 +994,6 @@
           "field": "PRODUCT_ID_TYPE",
           "dataSource": {
             "default": "ISBN"
-          }
-        },
-        {
-          "field": "SUBSCRIPTION_FROM_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "SUBSCRIPTION_INTERVAL",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "SUBSCRIPTION_TO_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RECEIPT_DUE",
-          "dataSource": {
-            "default": true
           }
         },
         {
@@ -1116,36 +1036,6 @@
           "field": "SOURCE_ID",
           "dataSource": {
             "default": "Loaded from Vendor (API)"
-          }
-        },
-        {
-          "field": "MANUAL_RENEWAL",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_CYCLE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_REVIEW_PERIOD",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_INTERVAL",
-          "dataSource": {
-            "default": "NA"
           }
         },
         {
@@ -1234,24 +1124,6 @@
           }
         },
         {
-          "field": "SUBSCRIPTION_FROM_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "SUBSCRIPTION_INTERVAL",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "SUBSCRIPTION_TO_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
           "field": "RECEIPT_DUE",
           "dataSource": {
             "default": true
@@ -1297,36 +1169,6 @@
           "field": "SOURCE_ID",
           "dataSource": {
             "default": "Loaded from Vendor (API)"
-          }
-        },
-        {
-          "field": "MANUAL_RENEWAL",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_CYCLE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_DATE",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_REVIEW_PERIOD",
-          "dataSource": {
-            "default": "NA"
-          }
-        },
-        {
-          "field": "RENEWAL_INTERVAL",
-          "dataSource": {
-            "default": "NA"
           }
         },
         {
