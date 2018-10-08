@@ -843,18 +843,6 @@
           "dataSource": {
             "default": "Awaiting Payment"
           }
-        },
-        {
-          "field": "SOURCE_ID",
-          "dataSource": {
-            "default": "Loaded from Vendor (API)"
-          }
-        },
-        {
-          "field": "VENDOR_REF_NO_TYPE",
-          "dataSource": {
-            "default": "Supplier's unique order line reference number"
-          }
         }
       ]
     },
@@ -1031,18 +1019,6 @@
           "dataSource": {
             "default": "Awaiting Payment"
           }
-        },
-        {
-          "field": "SOURCE_ID",
-          "dataSource": {
-            "default": "Loaded from Vendor (API)"
-          }
-        },
-        {
-          "field": "VENDOR_REF_NO_TYPE",
-          "dataSource": {
-            "default": "Supplier's unique order line reference number"
-          }
         }
       ]
     },
@@ -1163,18 +1139,6 @@
           "field": "PO_LINE_PAYMENT_STATUS",
           "dataSource": {
             "default": "Awaiting Payment"
-          }
-        },
-        {
-          "field": "SOURCE_ID",
-          "dataSource": {
-            "default": "Loaded from Vendor (API)"
-          }
-        },
-        {
-          "field": "VENDOR_REF_NO_TYPE",
-          "dataSource": {
-            "default": "Supplier's unique order line reference number"
           }
         }
       ]
