@@ -1,12 +1,12 @@
 package org.folio.rest.impl;
 
+
 import java.io.Reader;
 import java.util.Base64;
-import java.util.EnumMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -17,20 +17,20 @@ import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.gobi.HelperUtils;
 import org.folio.gobi.Mapper;
-import org.folio.gobi.Mapper.Field;
+import org.folio.gobi.MappingHelper;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
-import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource.PostGobiOrdersResponse;
+import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.OrderMapping;
+import org.folio.rest.mappings.model.OrderMapping.OrderType;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -51,10 +51,13 @@ public class PostGobiOrdersHelper {
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
 
+  
+  
   private final HttpClientInterface httpClient;
   private final Context ctx;
   private final Map<String, String> okapiHeaders;
   private final Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler;
+  
 
   public PostGobiOrdersHelper(HttpClientInterface httpClient,
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Map<String, String> okapiHeaders,
@@ -64,98 +67,144 @@ public class PostGobiOrdersHelper {
     this.okapiHeaders = okapiHeaders;
     this.asyncResultHandler = asyncResultHandler;
   }
-
+  
+  
+ 
+//  public CompletableFuture<CompositePurchaseOrder> defaultMapping(Document doc) {
+//
+//	// Map<OrderMapping.OrderType, Map<Mapping.Field, DataSource>>
+//	  
+//	  try {
+//		  Map<OrderMapping.OrderType, Map<Mapping.Field, DataSource>> defaultMapping = 
+//				  new LinkedHashMap<OrderMapping.OrderType, Map<Mapper.Field, DataSource>>();
+//				  
+//		  Map<Field, DataSource> mappings = new EnumMap<>(Field.class);
+//		  Json.decodeValue(buf, clazz)
+//		  JsonObject jo = new JsonObject();
+//		  final JsonArray orderMappingsArray = jo.getJsonArray("orderMappings");	//get ordermappings array
+//		  for(int i=0;i<orderMappingsArray.size();i++) {
+//			  JsonObject jsonOrder = orderMappingsArray.getJsonObject(i);			//get ith json object in ordermapping array
+//			  String orderType = jsonOrder.getString("orderType");					//get orderType
+//			  JsonArray mappingsArray = jsonOrder.getJsonArray("mappings");			//get mappings array
+//			  for(int j=0;j<mappingsArray.size();j++) {								//iterate through mappings array
+//				  JsonObject mappingsObject = new JsonObject();						
+//				  mappingsObject = mappingsArray.getJsonObject(j);					//get jth object in mappings array
+//				  String field = mappingsObject.getString("field");					//get field
+//				  // Field.ACCOUNT_NUMBER
+//				  DataSource a = mappings.get(field);
+//				  Map<String, Object> dataSourceMap = mappingsObject.getMap();		
+//				  if(!dataSourceMap.isEmpty()) {
+//					  if(dataSourceMap.containsKey("from")) {
+//						  
+//					  }
+//				  }
+//				  
+//			  }
+//		  }
+//	  }
+//	  catch (Exception e) {
+//	      logger.error("Exception mapping request", e);
+//	      //future.completeExceptionally(e);
+//	    }
+//	  return CompletableFuture.completedFuture(null);
+//  }
+  
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
     final OrderMapping.OrderType orderType = getOrderType(doc);
 
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
-
+    
     try {
-      Map<Field, DataSource> mappings = new EnumMap<>(Field.class);
-
-      mappings.put(Field.CREATED_BY, DataSource.builder()
-        .withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
-        .build());
-      mappings.put(Field.ACCOUNT_NUMBER, DataSource.builder()
-        .withFrom("//SubAccount")
-        .withDefault(0)
-        .build());
-      mappings.put(Field.ACQUISITION_METHOD, DataSource.builder()
-        .withDefault("mod-gobi")
-        .build());
-      mappings.put(Field.QUANTITY, DataSource.builder()
-        .withFrom("//Quantity")
-        .withDefault(1)
-        .withTranslation(Mapper::toInteger)
-        .build());
-      mappings.put(Field.LIST_PRICE, DataSource.builder()
-        .withFrom("//ListPrice/Amount")
-        .withDefault(0d)
-        .withTranslation(Mapper::toDouble)
-        .build());
-      mappings.put(Field.ESTIMATED_PRICE, DataSource.builder()
-        .withFrom("//NetPrice/Amount")
-        .withDefault(DataSource.builder()
-          .withFrom("//ListPrice/Amount|//Quantity")
-          .withCombinator(Mapper::multiply)
-          .withDefault(mappings.get(Field.LIST_PRICE))
-          .withTranslation(Mapper::toDouble)
-          .build())
-        .withTranslation(Mapper::toDouble)
-        .build());
-      mappings.put(Field.CURRENCY, DataSource.builder()
-        .withFrom("//ListPrice/Currency")
-        .withDefault("USD")
-        .build());
-      mappings.put(Field.FUND_CODE, DataSource.builder()
-        .withFrom("//FundCode")
-        .withDefault(0)
-        .build());
-      mappings.put(Field.TITLE, DataSource.builder()
-        .withFrom("//datafield[@tag='245']/*")
-        .withCombinator(Mapper::concat)
-        .build());
-      mappings.put(Field.RECEIVING_NOTE, DataSource.builder()
-        .withFrom("//LocalData[Description='LocalData2']/Value")
-        .build());
-      mappings.put(Field.REQUESTER, DataSource.builder()
-        .withFrom("//LocalData[Description='LocalData3']/Value")
-        .build());
-      mappings.put(Field.ACCESS_PROVIDER, DataSource.builder()
-        .withFrom("//PurchaseOrder/VendorPOCode")
-        .build());
-      mappings.put(Field.NOTE_FROM_VENDOR, DataSource.builder()
-        .withFrom("//PurchaseOrder/VendorCode")
-        .build());
-      mappings.put(Field.PRODUCT_ID, DataSource.builder()
-        .withFrom("//datafield[@tag='020']/subfield[@code='a']")
-        .build());
-      mappings.put(Field.MATERIAL_TYPE, DataSource.builder()
-        .withFrom("//LocalData[Description='LocalData1']/Value")
-        .withTranslation(this::lookupMaterialTypeId)
-        .build());
-      mappings.put(Field.LOCATION, DataSource.builder()
-        .withFrom("//Location")
-        .withTranslation(this::lookupLocationId)
-        .build());
-      mappings.put(Field.VENDOR_ID, DataSource.builder()
-        .withDefault("GOBI")
-        .withTranslation(this::lookupVendorId)
-        .withTranslateDefault(true)
-        .build());
-      mappings.put(Field.INSTRUCTIONS, DataSource.builder()
-        .withFrom("//OrderNotes")
-        .withDefault("")
-        .build());
-      mappings.put(Field.USER_LIMIT, DataSource.builder()
-        .withFrom("//PurchaseOption/Code")
-        .withTranslation(this::getPurchaseOptionCode)
-        .build());
+      Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping();
+      
+      Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType);
+      
+      
+//
+//      mappings.put(Field.CREATED_BY, DataSource.builder()
+//        //.withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
+//        .build());
+//      mappings.put(Field.ACCOUNT_NUMBER, DataSource.builder()
+//        .withFrom("//SubAccount")
+//        .withDefault(0)
+//        .build());
+//      mappings.put(Field.ACQUISITION_METHOD, DataSource.builder()
+//        .withDefault("mod-gobi")
+//        .build());
+//      mappings.put(Field.QUANTITY, DataSource.builder()
+//        .withFrom("//Quantity")
+//        .withDefault(1)
+//        //.withTranslation(Mapper::toInteger)
+//        .build());
+//      mappings.put(Field.LIST_PRICE, DataSource.builder()
+//        .withFrom("//ListPrice/Amount")
+//        .withDefault(0d)
+//        //.withTranslation(Mapper::toDouble)
+//        .build());
+//      mappings.put(Field.ESTIMATED_PRICE, DataSource.builder()
+//        .withFrom("//NetPrice/Amount")
+//        .withDefault(DataSource.builder()
+//          .withFrom("//ListPrice/Amount|//Quantity")
+//          .withCombinator(Mapper::multiply)
+//          .withDefault(mappings.get(Field.LIST_PRICE))
+//          //.withTranslation(Mapper::toDouble)
+//          .build())
+//        //.withTranslation(Mapper::toDouble)
+//        .build());
+//      mappings.put(Field.CURRENCY, DataSource.builder()
+//        .withFrom("//ListPrice/Currency")
+//        .withDefault("USD")
+//        .build());
+//      mappings.put(Field.FUND_CODE, DataSource.builder()
+//        .withFrom("//FundCode")
+//        .withDefault(0)
+//        .build());
+//      mappings.put(Field.TITLE, DataSource.builder()
+//        .withFrom("//datafield[@tag='245']/*")
+//        .withCombinator(Mapper::concat)
+//        .build());
+//      mappings.put(Field.RECEIVING_NOTE, DataSource.builder()
+//        .withFrom("//LocalData[Description='LocalData2']/Value")
+//        .build());
+//      mappings.put(Field.REQUESTER, DataSource.builder()
+//        .withFrom("//LocalData[Description='LocalData3']/Value")
+//        .build());
+//      mappings.put(Field.ACCESS_PROVIDER, DataSource.builder()
+//        .withFrom("//PurchaseOrder/VendorPOCode")
+//        .build());
+//      mappings.put(Field.NOTE_FROM_VENDOR, DataSource.builder()
+//        .withFrom("//PurchaseOrder/VendorCode")
+//        .build());
+//      mappings.put(Field.PRODUCT_ID, DataSource.builder()
+//        .withFrom("//datafield[@tag='020']/subfield[@code='a']")
+//        .build());
+//      mappings.put(Field.MATERIAL_TYPE, DataSource.builder()
+//        .withFrom("//LocalData[Description='LocalData1']/Value")
+//        //.withTranslation(this::lookupMaterialTypeId)
+//        .build());
+//      mappings.put(Field.LOCATION, DataSource.builder()
+//        .withFrom("//Location")
+//        //.withTranslation(this::lookupLocationId)
+//        .build());
+//      mappings.put(Field.VENDOR_ID, DataSource.builder()
+//        .withDefault("GOBI")
+//        //.withTranslation(this::lookupVendorId)
+//        .withTranslateDefault(true)
+//        .build());
+//      mappings.put(Field.INSTRUCTIONS, DataSource.builder()
+//        .withFrom("//OrderNotes")
+//        .withDefault("")
+//        .build());
+//      mappings.put(Field.USER_LIMIT, DataSource.builder()
+//        .withFrom("//PurchaseOption/Code")
+//        //.withTranslation(this::getPurchaseOptionCode)
+//        .build());
 
       lookupOrderMappings(orderType).thenAccept(m -> {
         // Override the default mappings with the configured mappings
+
         mappings.putAll(m);
-        new Mapper(mappings).map(doc)
+        new Mapper(mappings, this).map(doc)
           .thenAccept(future::complete);
       }).exceptionally(e -> {
         logger.error("Exception looking up mappings", e);
@@ -303,6 +352,11 @@ public class PostGobiOrdersHelper {
     }
   }
 
+  //TO DO - Needs implementation
+  public CompletableFuture<String> lookupFundId(String fundCode) {
+	    return CompletableFuture.completedFuture(UUID.randomUUID().toString());
+	  }
+  
   public CompletableFuture<String> lookupActivationStatusId(String activationStatusCode) {
     try {
       String query = HelperUtils.encodeValue(String.format("code==\"%s\"", activationStatusCode));
@@ -319,7 +373,7 @@ public class PostGobiOrdersHelper {
     }
   }
 
-  public CompletableFuture<Map<Field, DataSource>> lookupOrderMappings(OrderMapping.OrderType orderType) {
+  public CompletableFuture<Map<Mapping.Field, DataSource>> lookupOrderMappings(OrderMapping.OrderType orderType) {
     try {
       final String query = HelperUtils.encodeValue(
           String.format("(module==%s AND configName==%s AND code==%s)",

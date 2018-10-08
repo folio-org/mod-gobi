@@ -10,6 +10,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
+import org.folio.rest.impl.PostGobiOrdersHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -41,13 +42,13 @@ public class DataSource {
     xpath = xpathFactory.newXPath();
   }
 
-  public CompletableFuture<Object> resolve(Document doc) {
+  public CompletableFuture<Object> resolve(Document doc ,PostGobiOrdersHelper gobiHelper) {
     CompletableFuture<Object> future = new CompletableFuture<>();
 
     if (from != null) {
       applyXPath(doc)
-        .thenAccept(s -> applyTranslation(s)
-          .thenAccept(o -> applyDefault(o, doc)
+        .thenAccept(s -> applyTranslation(s, gobiHelper)
+          .thenAccept(o -> applyDefault(o, doc, gobiHelper)
             .thenAccept(future::complete)
             .exceptionally(t -> {
               future.completeExceptionally(t);
@@ -62,7 +63,7 @@ public class DataSource {
           return null;
         });
     } else {
-      applyDefault(null, doc)
+      applyDefault(null, doc, gobiHelper)
         .thenAccept(future::complete)
         .exceptionally(t -> {
           future.completeExceptionally(t);
@@ -82,25 +83,27 @@ public class DataSource {
     }).thenApply(combinator::apply);
   }
 
-  private CompletableFuture<?> applyTranslation(Object o) {
+  private CompletableFuture<?> applyTranslation(Object o, PostGobiOrdersHelper gobiHelper) {
     if (translation != null) {
-      return translation.apply(o == null ? null : o.toString());
+      return translation.apply(o == null ? null : o.toString(), gobiHelper);
     } else {
       return CompletableFuture.completedFuture(o);
     }
   }
 
-  private CompletableFuture<?> applyDefault(Object o, Document doc) {
+  private CompletableFuture<?> applyDefault(Object o, Document doc, PostGobiOrdersHelper gobiHelper) {
     if (o == null) {
       if (defValue instanceof DataSource) {
         if (translateDefValue) {
-          return ((DataSource) defValue).resolve(doc).thenApply(this::applyTranslation);
+          return ((DataSource) defValue).resolve(doc, gobiHelper).thenApply(v -> {
+            return applyTranslation(v.toString(), gobiHelper);
+          });
         } else {
-          return ((DataSource) defValue).resolve(doc);
+          return ((DataSource) defValue).resolve(doc, gobiHelper);
         }
       } else {
         if (translateDefValue) {
-          return applyTranslation(defValue.toString());
+          return applyTranslation(defValue.toString(), gobiHelper);
         } else {
           return CompletableFuture.completedFuture(defValue);
         }

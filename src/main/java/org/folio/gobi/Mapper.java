@@ -15,6 +15,8 @@ import org.folio.rest.acq.model.Eresource;
 import org.folio.rest.acq.model.Location;
 import org.folio.rest.acq.model.PurchaseOrder;
 import org.folio.rest.acq.model.Vendor;
+import org.folio.rest.impl.PostGobiOrdersHelper;
+import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,38 +29,40 @@ public class Mapper {
 
   private static final Logger logger = LoggerFactory.getLogger(Mapper.class);
 
-  public enum Field {
-    ACCOUNT_NUMBER("account_number"),
-    ACQUISITION_METHOD("acquisition_method"),
-    QUANTITY("quantity"),
-    LIST_PRICE("list_price"),
-    ESTIMATED_PRICE("estimated_price"),
-    CURRENCY("currency"),
-    FUND_CODE("fund_code"),
-    CREATED_BY("created_by"),
-    TITLE("title"),
-    MATERIAL_TYPE("material_type"),
-    RECEIVING_NOTE("receiving_note"),
-    REQUESTER("requester"),
-    VENDOR_ID("vendor_id"),
-    INSTRUCTIONS("instruction_to_vendor"),
-    NOTE_FROM_VENDOR("note_from_vendor"),
-    USER_LIMIT("user_limit"),
-    LOCATION("location"),
-    PRODUCT_ID("product_id"),
-    ACCESS_PROVIDER("access_provider");
+//  public enum Field {
+//    ACCOUNT_NUMBER("account_number"),
+//    ACQUISITION_METHOD("acquisition_method"),
+//    QUANTITY("quantity"),
+//    LIST_PRICE("list_price"),
+//    ESTIMATED_PRICE("estimated_price"),
+//    CURRENCY("currency"),
+//    FUND_CODE("fund_code"),
+//    CREATED_BY("created_by"),
+//    TITLE("title"),
+//    MATERIAL_TYPE("material_type"),
+//    RECEIVING_NOTE("receiving_note"),
+//    REQUESTER("requester"),
+//    VENDOR_ID("vendor_id"),
+//    INSTRUCTIONS("instruction_to_vendor"),
+//    NOTE_FROM_VENDOR("note_from_vendor"),
+//    USER_LIMIT("user_limit"),
+//    LOCATION("location"),
+//    PRODUCT_ID("product_id"),
+//    ACCESS_PROVIDER("access_provider");
+//
+//    public final String fieldName;
+//
+//    Field(String fieldName) {
+//      this.fieldName = fieldName;
+//    }
+//  }
 
-    public final String fieldName;
+  private final Map<Mapping.Field, DataSource> mappings;
+  private final PostGobiOrdersHelper gobiHelper;
 
-    Field(String fieldName) {
-      this.fieldName = fieldName;
-    }
-  }
-
-  private final Map<Field, DataSource> mappings;
-
-  public Mapper(Map<Field, DataSource> mappings) {
+  public Mapper(Map<Mapping.Field, DataSource> mappings, PostGobiOrdersHelper gobiHelper) {
     this.mappings = mappings;
+    this.gobiHelper = gobiHelper;
   }
 
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
@@ -77,75 +81,75 @@ public class Mapper {
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
 
-      futures.add(mappings.get(Field.CREATED_BY)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.CREATED_BY)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> po.setCreatedBy((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.ACCOUNT_NUMBER)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.ACCOUNT_NUMBER)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> pol.setAccountNumber((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.ACQUISITION_METHOD)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.ACQUISITION_METHOD)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> pol.setAcquisitionMethod((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.REQUESTER)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.REQUESTER)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> pol.setRequester((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.TITLE)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.TITLE)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> detail.setTitle((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.MATERIAL_TYPE)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.MATERIAL_TYPE)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> detail.setMaterialType((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.RECEIVING_NOTE)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.RECEIVING_NOTE)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> detail.setReceivingNote((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.PRODUCT_ID)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.PRODUCT_ID)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> detail.setProductId((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.LOCATION)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.LOCATION)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> location.setLocationId((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.QUANTITY)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.QUANTITY)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> {
           cost.setQuantity((Integer) o);
           location.setQuantity((Integer) o);
         })
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.LIST_PRICE)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.LIST_PRICE)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> cost.setListPrice((Double) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.ESTIMATED_PRICE)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.ESTIMATED_PRICE)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> cost.setEstimatedPrice((Double) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.CURRENCY)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.CURRENCY)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> cost.setCurrency((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.ACCESS_PROVIDER)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.ACCESS_PROVIDER)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> eresource.setAccessProvider((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.USER_LIMIT)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.USER_LIMIT)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> eresource.setUserLimit((Integer) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.VENDOR_ID)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.VENDOR_ID)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> vendor.setRefNumber((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.INSTRUCTIONS)
-        .resolve(doc)
+      futures.add(mappings.get(Mapping.Field.INSTRUCTIONS)
+        .resolve(doc, gobiHelper)
         .thenAccept(o -> vendor.setInstructions((String) o))
         .exceptionally(Mapper::logException));
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()])).thenAccept(v -> {
@@ -215,7 +219,7 @@ public class Mapper {
   }
 
   public static interface Translation<T> {
-    public CompletableFuture<T> apply(String s);
+    public CompletableFuture<T> apply(String s, PostGobiOrdersHelper gobiHelper);
   }
 
   public static interface NodeCombinator {

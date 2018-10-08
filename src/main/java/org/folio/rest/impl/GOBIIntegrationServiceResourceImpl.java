@@ -36,6 +36,9 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext)
       throws Exception {
 
+    try {
+      
+   
     HttpClientInterface httpClient = getHttpClient(okapiHeaders);
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders,
         vertxContext);
@@ -57,6 +60,10 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
         }).exceptionally(helper::handleError);
       }).exceptionally(helper::handleError);
     }).exceptionally(helper::handleError);
+    }
+    catch(Throwable e) {
+      logger.error("Inside GOBIIntegration", e);
+    }
   }
 
   public static HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {

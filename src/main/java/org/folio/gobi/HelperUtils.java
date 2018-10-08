@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.apache.log4j.Logger;
-import org.folio.gobi.Mapper.Field;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.folio.gobi.exceptions.HttpException;
@@ -36,6 +35,7 @@ public class HelperUtils {
   }
 
   public static JsonObject verifyAndExtractBody(org.folio.rest.tools.client.Response response) {
+    logger.info("This is in verifyAndExtractBody" + response.toString());
     if (response == null) {
       throw new CompletionException(new NullPointerException("response is null"));
     }
@@ -94,8 +94,8 @@ public class HelperUtils {
     return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
   }
 
-  public static Map<Field, DataSource> extractOrderMappings(OrderMapping.OrderType orderType, JsonObject jo) {
-    final Map<Field, DataSource> map = new EnumMap<>(Field.class);
+  public static Map<Mapping.Field, DataSource> extractOrderMappings(OrderMapping.OrderType orderType, JsonObject jo) {
+    final Map<Mapping.Field, DataSource> map = new EnumMap<>(Mapping.Field.class);
 
     final JsonArray configs = jo.getJsonArray("configs");
 
@@ -112,10 +112,10 @@ public class HelperUtils {
             if (mappingList != null) {
               for (Mapping mapping : mappingList) {
                 logger.info("Mapping exists for type: " + orderType.value() + ", field: " + mapping.getField());
-                final Field field = Field.valueOf(mapping.getField().toString());
+                //final Field field = Field.valueOf(mapping.getField().toString());
                 org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
                 DataSource dataSource = extractOrderMapping(ds, map);
-                map.put(field, dataSource);
+                map.put(mapping.getField(), dataSource);
               }
             }
             break;
@@ -127,7 +127,7 @@ public class HelperUtils {
     return map;
   }
 
-  public static DataSource extractOrderMapping(org.folio.rest.mappings.model.DataSource dataSource, Map<Field, DataSource> map){
+  public static DataSource extractOrderMapping(org.folio.rest.mappings.model.DataSource dataSource, Map<Mapping.Field, DataSource> map){
     org.folio.rest.mappings.model.DataSource.Combinator combinator = dataSource.getCombinator();
     NodeCombinator nc = null;
     if (combinator != null) {
@@ -150,9 +150,9 @@ public class HelperUtils {
     if (translation != null) {
       try {
         Method translationMethod = Mapper.class.getMethod(translation.toString(), String.class);
-        t = data -> {
+        t = (data, postGobiHelper) -> {
           try {
-            return (CompletableFuture<Object>) translationMethod.invoke(null, data);
+            return (CompletableFuture<Object>) translationMethod.invoke(null, data, postGobiHelper);
           } catch (Exception e) {
             logger.error("Unable to invoke translation method: " + translation, e);
           }
@@ -169,7 +169,7 @@ public class HelperUtils {
       defaultValue = dataSource.getDefault();
     } else if (dataSource.getFromOtherField() != null){
       String otherField = dataSource.getFromOtherField().value();
-      defaultValue = map.get(Field.valueOf(otherField));
+      defaultValue = map.get(Mapping.Field.valueOf(otherField));
     } else if(dataSource.getDefaultMapping() != null) {
       defaultValue = extractOrderMapping(dataSource.getDefaultMapping().getDataSource(), map);
     }
