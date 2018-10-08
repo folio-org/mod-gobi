@@ -684,7 +684,7 @@
         {
           "field": "NOTE_FROM_VENDOR",
           "dataSource": {
-            "from": "//PurchaseOrder/VendorCode"
+            "from": "//PurchaseOption/VendorCode"
           }
         },
         {
@@ -936,7 +936,7 @@
         {
           "field": "NOTE_FROM_VENDOR",
           "dataSource": {
-            "from": "//PurchaseOrder/VendorCode"
+            "from": "//PurchaseOption/VendorCode"
           }
         },
         {
