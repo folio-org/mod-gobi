@@ -3,25 +3,15 @@ package org.folio.gobi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.folio.gobi.Mapper.Field;
-import org.folio.rest.impl.PostGobiOrdersHelper;
-import org.folio.rest.mappings.model.OrderMapping;
+import org.folio.rest.mappings.model.Mapping;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.parsetools.impl.JsonParserImpl;
-
-import java.io.InputStream;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilderFactory;
 
 public class HelperUtilsTest {
 
@@ -157,13 +147,13 @@ public class HelperUtilsTest {
     jsonDs.setFrom(jsonFrom);
     jsonDs.setFromOtherField(org.folio.rest.mappings.model.DataSource.FromOtherField.LIST_PRICE);
 
-    Map<Mapper.Field, DataSource> map = new EnumMap<>(Mapper.Field.class);
+    Map<Mapping.Field, DataSource> map = new EnumMap<>(Mapping.Field.class);
     DataSource dataSrc = DataSource.builder()
       .withFrom(listPriceFrom)
       .withDefault(listPriceVal)
       .build();
 
-    map.put(Mapper.Field.LIST_PRICE, dataSrc);
+    map.put(Mapping.Field.LIST_PRICE, dataSrc);
 
     DataSource outputDs = HelperUtils.extractOrderMapping(jsonDs, map);
     assertNotNull(outputDs);
