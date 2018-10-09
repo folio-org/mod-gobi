@@ -94,7 +94,7 @@ public class MappingHelper {
         if (PostGobiOrdersHelperList.contains(translation.toString())) {
           translationMethod = PostGobiOrdersHelper.class.getMethod(translation.toString(), String.class);
         } else {
-          translationMethod = Mapper.class.getMethod(translation.toString(), String.class);
+          translationMethod = Mapper.class.getMethod(translation.toString(), String.class, PostGobiOrdersHelper.class);
         }
 
         t = (data, postGobiHelper) -> {

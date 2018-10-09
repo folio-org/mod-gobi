@@ -177,17 +177,17 @@ public class Mapper {
     return null;
   }
 
-  public static CompletableFuture<Integer> toInteger(String s) {
+  public static CompletableFuture<Integer> toInteger(String s, PostGobiOrdersHelper gobiHelper) {
     Integer val = s != null ? Integer.parseInt(s) : null;
     return CompletableFuture.completedFuture(val);
   }
 
-  public static CompletableFuture<Double> toDouble(String s) {
+  public static CompletableFuture<Double> toDouble(String s, PostGobiOrdersHelper gobiHelper) {
     Double val = s != null ? Double.parseDouble(s) : null;
     return CompletableFuture.completedFuture(val);
   }
 
-  public static CompletableFuture<Date> toDate(String s) {
+  public static CompletableFuture<Date> toDate(String s, PostGobiOrdersHelper gobiHelper) {
     DateTime val = s != null ? DateTime.parse(s) : DateTime.now();
     return CompletableFuture.completedFuture(val.toDate());
   }
