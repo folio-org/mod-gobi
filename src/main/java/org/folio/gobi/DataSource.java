@@ -95,9 +95,9 @@ public class DataSource {
     if (o == null) {
       if (defValue instanceof DataSource) {
         if (translateDefValue) {
-          return ((DataSource) defValue).resolve(doc, gobiHelper).thenApply(v -> {
-            return applyTranslation(v.toString(), gobiHelper);
-          });
+          return ((DataSource) defValue).resolve(doc, gobiHelper).thenApply(v -> 
+            applyTranslation(v.toString(), gobiHelper)
+          );
         } else {
           return ((DataSource) defValue).resolve(doc, gobiHelper);
         }

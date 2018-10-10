@@ -1,5 +1,6 @@
 package org.folio.gobi;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -24,13 +25,17 @@ import io.vertx.core.json.Json;
 public class MappingHelper {
   private static final Logger logger = Logger.getLogger(MappingHelper.class);
 
-  private static final String path = "data-mapping.json";
+  private static final String PATH = "data-mapping.json";
 
+  private MappingHelper() {
+    throw new IllegalStateException("MappingHelper class cannot be instantiated");
+  }
+  
   public static Map<OrderType, Map<Field, DataSource>> defaultMapping() {
 
     Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new LinkedHashMap<>();
 
-    String jsonAsString = readMappingsFile(path);
+    String jsonAsString = readMappingsFile(PATH);
     final Mappings mappings = Json.decodeValue(jsonAsString, Mappings.class);
     final List<OrderMapping> orderMappingList = mappings.getOrderMappings(); // get orderMappings list
     for (OrderMapping orderMapping : orderMappingList) { // iterate through orderMappings list
@@ -51,7 +56,7 @@ public class MappingHelper {
 
   public static org.folio.gobi.DataSource getDS(Mapping mapping,
       Map<Field, org.folio.gobi.DataSource> fieldDataSourceMapping) {
-    List<String> PostGobiOrdersHelperList = Arrays.asList("lookupLocationId", "lookupMaterialTypeId", "lookupVendorId",
+    List<String> postGobiOrdersHelperList = Arrays.asList("lookupLocationId", "lookupMaterialTypeId", "lookupVendorId",
         "lookupWorkflowStatusId", "lookupReceiptStatusId", "lookupPaymentStatusId", "lookupActivationStatusId",
         "lookupFundId");
 
@@ -92,7 +97,7 @@ public class MappingHelper {
     Method translationMethod;
     if (translation != null) {
       try {
-        if (PostGobiOrdersHelperList.contains(translation.toString())) {
+        if (postGobiOrdersHelperList.contains(translation.toString())) {
           translationMethod = PostGobiOrdersHelper.class.getMethod(translation.toString(), String.class);
         } else {
           translationMethod = Mapper.class.getMethod(translation.toString(), String.class, PostGobiOrdersHelper.class);
@@ -124,8 +129,9 @@ public class MappingHelper {
       } else {
         return "";
       }
-    } catch (Throwable e) {
+    } catch (IOException e) {
       logger.error(String.format("Unable to read mock configuration in %s file", path));
+      e.printStackTrace();
     }
     return "";
   }
