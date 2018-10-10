@@ -29,34 +29,6 @@ public class Mapper {
 
   private static final Logger logger = LoggerFactory.getLogger(Mapper.class);
 
-//  public enum Field {
-//    ACCOUNT_NUMBER("account_number"),
-//    ACQUISITION_METHOD("acquisition_method"),
-//    QUANTITY("quantity"),
-//    LIST_PRICE("list_price"),
-//    ESTIMATED_PRICE("estimated_price"),
-//    CURRENCY("currency"),
-//    FUND_CODE("fund_code"),
-//    CREATED_BY("created_by"),
-//    TITLE("title"),
-//    MATERIAL_TYPE("material_type"),
-//    RECEIVING_NOTE("receiving_note"),
-//    REQUESTER("requester"),
-//    VENDOR_ID("vendor_id"),
-//    INSTRUCTIONS("instruction_to_vendor"),
-//    NOTE_FROM_VENDOR("note_from_vendor"),
-//    USER_LIMIT("user_limit"),
-//    LOCATION("location"),
-//    PRODUCT_ID("product_id"),
-//    ACCESS_PROVIDER("access_provider");
-//
-//    public final String fieldName;
-//
-//    Field(String fieldName) {
-//      this.fieldName = fieldName;
-//    }
-//  }
-
   private final Map<Mapping.Field, DataSource> mappings;
   private final PostGobiOrdersHelper gobiHelper;
 

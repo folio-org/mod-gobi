@@ -49,7 +49,6 @@ public class MappingTest {
   @Test
   public void testBasicXPath() throws Exception {
     logger.info("begin: Test Mapping - xpath evalutation");
-    
     assertEquals("Hello World", DataSource.builder().withFrom("//Doo/Dah").build().resolve(doc, postGobiOrdersHelper).get());
     assertEquals("DIT", DataSource.builder().withFrom("//Bar[@attr='dit']").build().resolve(doc, postGobiOrdersHelper).get());
   }
@@ -57,7 +56,6 @@ public class MappingTest {
   @Test
   public void testDefaults() throws Exception {
     logger.info("begin: Test Mapping - defaults");
-    
     // default to a string literal
     assertEquals("PKD", DataSource.builder().withFrom("//Doo/Dud").withDefault("PKD").build().resolve(doc, postGobiOrdersHelper).get());
 

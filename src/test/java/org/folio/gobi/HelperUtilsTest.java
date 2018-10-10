@@ -71,8 +71,7 @@ public class HelperUtilsTest {
   @Test
   public final void testReadJsonAndCreateDefaultMapping() throws Exception {
 	  
-	  //final String testdataPath = "ConfigData/test_default_mapping.json";
-	  //Assuming we will get a json object below is test to extract default mappings from json file
+	//Assuming we will get a json object below is test to extract default mappings from json file
 	  /*
 		{
 		    "orderMappings":[
@@ -124,16 +123,12 @@ public class HelperUtilsTest {
 	  mappingsArray2.add(mappingsObj2);
 	  
 	  orderMappingsObj1.put("mappings", mappingsArray1);
-	  //orderMappingsObj1.put("mappings", mappingsArray2);
 	  
 	  JsonArray orderMappingsArray1 = new JsonArray();
 	  orderMappingsArray1.add(orderMappingsObj1);
 	  JsonObject Obj = new JsonObject();
 	  
-	  
 	  Obj.put("orderMappings", orderMappingsArray1);
-
-
   }
   
   @Test

@@ -35,7 +35,6 @@ public class HelperUtils {
   }
 
   public static JsonObject verifyAndExtractBody(org.folio.rest.tools.client.Response response) {
-    logger.info("This is in verifyAndExtractBody" + response.toString());
     if (response == null) {
       throw new CompletionException(new NullPointerException("response is null"));
     }
@@ -112,7 +111,6 @@ public class HelperUtils {
             if (mappingList != null) {
               for (Mapping mapping : mappingList) {
                 logger.info("Mapping exists for type: " + orderType.value() + ", field: " + mapping.getField());
-                //final Field field = Field.valueOf(mapping.getField().toString());
                 org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
                 DataSource dataSource = extractOrderMapping(ds, map);
                 map.put(mapping.getField(), dataSource);

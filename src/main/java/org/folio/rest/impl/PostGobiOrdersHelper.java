@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-
 import java.io.Reader;
 import java.util.Base64;
 import java.util.Map;
@@ -52,8 +51,6 @@ public class PostGobiOrdersHelper {
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
 
-  
-  
   private final HttpClientInterface httpClient;
   private final Context ctx;
   private final Map<String, String> okapiHeaders;
@@ -69,47 +66,6 @@ public class PostGobiOrdersHelper {
     this.asyncResultHandler = asyncResultHandler;
   }
   
-  
- 
-//  public CompletableFuture<CompositePurchaseOrder> defaultMapping(Document doc) {
-//
-//	// Map<OrderMapping.OrderType, Map<Mapping.Field, DataSource>>
-//	  
-//	  try {
-//		  Map<OrderMapping.OrderType, Map<Mapping.Field, DataSource>> defaultMapping = 
-//				  new LinkedHashMap<OrderMapping.OrderType, Map<Mapper.Field, DataSource>>();
-//				  
-//		  Map<Field, DataSource> mappings = new EnumMap<>(Field.class);
-//		  Json.decodeValue(buf, clazz)
-//		  JsonObject jo = new JsonObject();
-//		  final JsonArray orderMappingsArray = jo.getJsonArray("orderMappings");	//get ordermappings array
-//		  for(int i=0;i<orderMappingsArray.size();i++) {
-//			  JsonObject jsonOrder = orderMappingsArray.getJsonObject(i);			//get ith json object in ordermapping array
-//			  String orderType = jsonOrder.getString("orderType");					//get orderType
-//			  JsonArray mappingsArray = jsonOrder.getJsonArray("mappings");			//get mappings array
-//			  for(int j=0;j<mappingsArray.size();j++) {								//iterate through mappings array
-//				  JsonObject mappingsObject = new JsonObject();						
-//				  mappingsObject = mappingsArray.getJsonObject(j);					//get jth object in mappings array
-//				  String field = mappingsObject.getString("field");					//get field
-//				  // Field.ACCOUNT_NUMBER
-//				  DataSource a = mappings.get(field);
-//				  Map<String, Object> dataSourceMap = mappingsObject.getMap();		
-//				  if(!dataSourceMap.isEmpty()) {
-//					  if(dataSourceMap.containsKey("from")) {
-//						  
-//					  }
-//				  }
-//				  
-//			  }
-//		  }
-//	  }
-//	  catch (Exception e) {
-//	      logger.error("Exception mapping request", e);
-//	      //future.completeExceptionally(e);
-//	    }
-//	  return CompletableFuture.completedFuture(null);
-//  }
-  
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
     final OrderMapping.OrderType orderType = getOrderType(doc);
 
@@ -119,8 +75,6 @@ public class PostGobiOrdersHelper {
       Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping();
       
       Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType);
-      
-      
 
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
         .withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
@@ -156,10 +110,10 @@ public class PostGobiOrdersHelper {
         .withFrom("//ListPrice/Currency")
         .withDefault("USD")
         .build());
-//      mappings.put(Field.FUND_CODE, DataSource.builder()
-//        .withFrom("//FundCode")
-//        .withDefault(0)
-//        .build());
+      mappings.put(Mapping.Field.FUND_CODE, DataSource.builder()
+        .withFrom("//FundCode")
+        .withDefault(0)
+        .build());
       mappings.put(Mapping.Field.TITLE, DataSource.builder()
         .withFrom("//datafield[@tag='245']/*")
         .withCombinator(Mapper::concat)
@@ -173,9 +127,9 @@ public class PostGobiOrdersHelper {
       mappings.put(Mapping.Field.ACCESS_PROVIDER, DataSource.builder()
         .withFrom("//PurchaseOrder/VendorPOCode")
         .build());
-//      mappings.put(Field.NOTE_FROM_VENDOR, DataSource.builder()
-//        .withFrom("//PurchaseOrder/VendorCode")
-//        .build());
+      mappings.put(Mapping.Field.NOTE_FROM_VENDOR, DataSource.builder()
+        .withFrom("//PurchaseOrder/VendorCode")
+        .build());
       mappings.put(Mapping.Field.PRODUCT_ID, DataSource.builder()
         .withFrom("//datafield[@tag='020']/subfield[@code='a']")
         .build());

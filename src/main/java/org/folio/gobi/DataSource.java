@@ -42,7 +42,7 @@ public class DataSource {
     xpath = xpathFactory.newXPath();
   }
 
-  public CompletableFuture<Object> resolve(Document doc ,PostGobiOrdersHelper gobiHelper) {
+  public CompletableFuture<Object> resolve(Document doc, PostGobiOrdersHelper gobiHelper) {
     CompletableFuture<Object> future = new CompletableFuture<>();
 
     if (from != null) {

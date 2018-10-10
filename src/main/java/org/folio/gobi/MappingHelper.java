@@ -52,7 +52,8 @@ public class MappingHelper {
   public static org.folio.gobi.DataSource getDS(Mapping mapping,
       Map<Field, org.folio.gobi.DataSource> fieldDataSourceMapping) {
     List<String> PostGobiOrdersHelperList = Arrays.asList("lookupLocationId", "lookupMaterialTypeId", "lookupVendorId",
-        "lookupWorkflowStatusId", "lookupReceiptStatusId", "lookupPaymentStatusId", "lookupActivationStatusId", "lookupFundId");
+        "lookupWorkflowStatusId", "lookupReceiptStatusId", "lookupPaymentStatusId", "lookupActivationStatusId",
+        "lookupFundId");
 
     org.folio.gobi.DataSource ds;
 
