@@ -73,7 +73,6 @@ public class PostGobiOrdersHelper {
     
     try {
       Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping();
-      
       Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType);
 
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
@@ -104,7 +103,7 @@ public class PostGobiOrdersHelper {
           .withDefault(mappings.get(Mapping.Field.LIST_PRICE))
           .withTranslation(Mapper::toDouble)
           .build())
-        //.withTranslation(Mapper::toDouble)
+        .withTranslation(Mapper::toDouble)
         .build());
       mappings.put(Mapping.Field.CURRENCY, DataSource.builder()
         .withFrom("//ListPrice/Currency")
@@ -310,7 +309,7 @@ public class PostGobiOrdersHelper {
   //TO DO - Needs implementation
   public CompletableFuture<String> lookupFundId(String fundCode) {
 	    return CompletableFuture.completedFuture(UUID.randomUUID().toString());
-	  }
+  }
   
   public CompletableFuture<String> lookupActivationStatusId(String activationStatusCode) {
     try {
