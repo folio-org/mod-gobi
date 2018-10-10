@@ -130,8 +130,7 @@ public class MappingHelper {
         return "";
       }
     } catch (IOException e) {
-      logger.error(String.format("Unable to read mock configuration in %s file", path));
-      e.printStackTrace();
+      logger.error(String.format("Unable to read mock configuration in %s file", path), e);
     }
     return "";
   }
