@@ -116,10 +116,12 @@ public class Mapper {
         .resolve(doc, gobiHelper)
         .thenAccept(o -> eresource.setUserLimit((Integer) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Mapping.Field.VENDOR_ID)
-        .resolve(doc, gobiHelper)
-        .thenAccept(o -> vendor.setRefNumber((String) o))
-        .exceptionally(Mapper::logException));
+//      if(mappings.containsKey(Mapping.Field.VENDOR_ID)) {
+//      futures.add(mappings.get(Mapping.Field.VENDOR_ID)
+//        .resolve(doc, gobiHelper)
+//        .thenAccept(o -> vendor.setRefNumber((String) o))
+//        .exceptionally(Mapper::logException));
+//      }
       futures.add(mappings.get(Mapping.Field.INSTRUCTIONS)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> vendor.setInstructions((String) o))

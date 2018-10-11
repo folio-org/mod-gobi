@@ -5,6 +5,26 @@
       "orderType": "ListedPrintMonograph",
       "mappings": [
         {
+          "field": "ACCESS_PROVIDER",
+          "dataSource": {
+            "from": "//PurchaseOption/VendorPOCode",
+            "translation": "lookupVendorId"
+          }
+        },  
+        {
+          "field": "USER_LIMIT",
+          "dataSource": {
+            "from": "//PurchaseOption/Code",
+            "translation": "getPurchaseOptionCode"
+          }
+        },  
+        {
+          "field": "INSTRUCTIONS",
+          "dataSource": {
+            "from": "//OrderNotes"
+          }
+        },                  
+        {
           "field": "ACCOUNT_NUMBER",
           "dataSource": {
             "from": "//SubAccount",
@@ -229,6 +249,32 @@
     {
       "orderType": "UnlistedPrintMonograph",
       "mappings": [
+        {
+          "field": "PRODUCT_ID",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='a']"
+          }
+        },
+        {      
+          "field": "ACCESS_PROVIDER",
+          "dataSource": {
+            "from": "//PurchaseOption/VendorPOCode",
+            "translation": "lookupVendorId"
+          }
+        },   
+        {
+          "field": "USER_LIMIT",
+          "dataSource": {
+            "from": "//PurchaseOption/Code",
+            "translation": "getPurchaseOptionCode"
+          }
+        }, 
+        {
+          "field": "INSTRUCTIONS",
+          "dataSource": {
+            "from": "//OrderNotes"
+          }
+        },                      
         {
           "field": "ACCOUNT_NUMBER",
           "dataSource": {
@@ -716,12 +762,95 @@
           "dataSource": {
             "default": "100"
           }
-        }
+        },
+        {
+          "field": "USER_LIMIT",
+          "dataSource": {
+            "from": "//PurchaseOption/Code",
+            "translation": "getPurchaseOptionCode"
+          }
+        }          
       ]
     },
    {
       "orderType": "ListedPrintSerial",
       "mappings": [
+        {
+          "field": "MATERIAL_TYPE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData1']/Value",
+            "translation": "lookupMaterialTypeId"
+          }
+        },  
+        {
+          "field": "RECEIVING_NOTE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData2']/Value"
+          }
+        },  
+        {
+          "field": "PRODUCT_ID",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='a']"
+          }
+        },  
+        {
+          "field": "LOCATION",
+          "dataSource": {
+            "from": "//Location"
+          }
+        }, 
+        {
+          "field": "LIST_PRICE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "default": "0",
+            "translation": "toDouble"
+          }
+        },  
+        {
+          "field": "ESTIMATED_PRICE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "defaultMapping": {
+              "dataSource": {
+                "from": "//NetPrice/Amount|//Quantity",
+                "combinator": "multiply",
+                "fromOtherField": "LIST_PRICE",
+                "translation": "toDouble"
+              }
+            },
+            "translation": "toDouble"
+          }
+        }, 
+        {
+          "field": "CURRENCY",
+          "dataSource": {
+            "from": "//ListPrice/Currency",
+            "default": "USD"
+          }
+        },
+        {
+          "field": "ACCESS_PROVIDER",
+          "dataSource": {
+            "from": "//PurchaseOption/VendorPOCode",
+            "translation": "lookupVendorId"
+          }
+        },    
+        {
+          "field": "USER_LIMIT",
+          "dataSource": {
+            "from": "//PurchaseOption/Code",
+            "translation": "getPurchaseOptionCode"
+          }
+        },                                                       
+        {
+          "field": "ACCOUNT_NUMBER",
+          "dataSource": {
+            "from": "//SubAccount",
+            "default": "0"
+          }
+        },
         {
           "field": "TITLE",
           "dataSource": {
@@ -809,6 +938,12 @@
           }
         },
         {
+          "field": "REQUESTER",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData3']/Value"
+          }
+        },        
+        {
           "field": "ACQUISITION_METHOD",
           "dataSource": {
             "default": "Purchase at Vendor System"
@@ -843,12 +978,64 @@
           "dataSource": {
             "default": "Awaiting Payment"
           }
-        }
+        },
+        {
+          "field": "VENDOR_ID",
+          "dataSource": {
+            "default": "GOBI",
+            "translateDefault" : true
+          }
+        }        
       ]
     },
     {
       "orderType": "ListedElectronicSerial",
       "mappings": [
+        {
+          "field": "ACCOUNT_NUMBER",
+          "dataSource": {
+            "from": "//SubAccount",
+            "default": "0"
+          }
+        },
+        {
+          "field": "REQUESTER",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData3']/Value"
+          }
+        }, 
+        { 
+          "field": "MATERIAL_TYPE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData1']/Value",
+            "translation": "lookupMaterialTypeId"
+          }
+        },  
+        {
+          "field": "RECEIVING_NOTE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData2']/Value"
+          }
+        }, 
+        {
+          "field": "PRODUCT_ID",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='a']"
+          }
+        },  
+        {
+          "field": "LOCATION",
+          "dataSource": {
+            "from": "//Location"
+          }
+        },      
+        {
+          "field": "USER_LIMIT",
+          "dataSource": {
+            "from": "//PurchaseOption/Code",
+            "translation": "getPurchaseOptionCode"
+          }
+        },                        
         {
           "field": "TITLE",
           "dataSource": {
@@ -961,6 +1148,14 @@
           }
         },
         {
+          "field": "VENDOR_ID",
+          "dataSource": {
+            "default": "GOBI",
+            "translation" : "lookupVendorId",
+            "translateDefault" : true
+          }
+        },        
+        {
           "field": "CREATE_INVENTORY",
           "dataSource": {
             "default": true
@@ -1026,6 +1221,88 @@
       "orderType": "UnlistedPrintSerial",
       "mappings": [
         {
+          "field": "REQUESTER",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData3']/Value"
+          }
+        },     
+        {
+          "field": "MATERIAL_TYPE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData1']/Value",
+            "translation": "lookupMaterialTypeId"
+          }
+        },   
+        {
+          "field": "RECEIVING_NOTE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData2']/Value"
+          }
+        },
+        {
+          "field": "PRODUCT_ID",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='a']"
+          }
+        }, 
+        {
+          "field": "LOCATION",
+          "dataSource": {
+            "from": "//Location"
+          }
+        },    
+        {
+          "field": "LIST_PRICE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "default": "0",
+            "translation": "toDouble"
+          }
+        },  
+        {
+          "field": "ESTIMATED_PRICE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "defaultMapping": {
+              "dataSource": {
+                "from": "//NetPrice/Amount|//Quantity",
+                "combinator": "multiply",
+                "fromOtherField": "LIST_PRICE",
+                "translation": "toDouble"
+              }
+            },
+            "translation": "toDouble"
+          }
+        },  
+        {
+          "field": "CURRENCY",
+          "dataSource": {
+            "from": "//ListPrice/Currency",
+            "default": "USD"
+          }
+        }, 
+        {
+          "field": "ACCESS_PROVIDER",
+          "dataSource": {
+            "from": "//PurchaseOption/VendorPOCode",
+            "translation": "lookupVendorId"
+          }
+        },  
+        {
+          "field": "USER_LIMIT",
+          "dataSource": {
+            "from": "//PurchaseOption/Code",
+            "translation": "getPurchaseOptionCode"
+          }
+        },                                                    
+        {
+          "field": "ACCOUNT_NUMBER",
+          "dataSource": {
+            "from": "//SubAccount",
+            "default": "0"
+          }
+        },
+        {
           "field": "TITLE",
           "dataSource": {
             "from": "//datafield[@tag='245']/*",
@@ -1087,6 +1364,14 @@
             "default": "GOBI Library Solutions"
           }
         },
+        {
+          "field": "VENDOR_ID",
+          "dataSource": {
+            "default": "GOBI",
+            "translation" : "lookupVendorId",
+            "translateDefault" : true
+          }
+        },        
         {
           "field": "FUND_PERCENTAGE",
           "dataSource": {
