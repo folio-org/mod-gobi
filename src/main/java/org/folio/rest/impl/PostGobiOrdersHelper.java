@@ -55,7 +55,6 @@ public class PostGobiOrdersHelper {
   private final Context ctx;
   private final Map<String, String> okapiHeaders;
   private final Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler;
-  
 
   public PostGobiOrdersHelper(HttpClientInterface httpClient,
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Map<String, String> okapiHeaders,
@@ -76,12 +75,6 @@ public class PostGobiOrdersHelper {
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
         .withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
         .build());
-//      mappings.put(Mapping.Field.VENDOR_ID, DataSource.builder()
-//      .withDefault("GOBI")    //        .withDefault("GOBI")
-//      //.withTranslation(this::lookupVendorId)  //        //.withTranslation(this::lookupVendorId)
-//      .withTranslateDefault(true) //        .withTranslateDefault(true)
-//      .build());
-      
       lookupOrderMappings(orderType).thenAccept(m -> {
         // Override the default mappings with the configured mappings
         mappings.putAll(m);

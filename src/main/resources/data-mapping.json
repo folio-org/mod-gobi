@@ -782,21 +782,7 @@
             "translation": "toDouble",
             "translateDefault": true
           }
-        },
-        {
-          "field": "ACCESS_PROVIDER",
-          "dataSource": {
-            "from": "//PurchaseOption/VendorPOCode",
-            "translation": "lookupVendorId"
-          }
-        },    
-        {
-          "field": "USER_LIMIT",
-          "dataSource": {
-            "from": "//PurchaseOption/Code",
-            "translation": "getPurchaseOptionCode"
-          }
-        },                                                       
+        },                                                      
         {
           "field": "ACCOUNT_NUMBER",
           "dataSource": {
@@ -945,13 +931,6 @@
             "default": "0"
           }
         },
-        { 
-          "field": "MATERIAL_TYPE",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData1']/Value",
-            "translation": "lookupMaterialTypeId"
-          }
-        },
         {
           "field": "PRODUCT_ID",
           "dataSource": {
@@ -1017,7 +996,8 @@
           "dataSource": {
             "from": "//ListPrice/Amount",
             "default": "0",
-            "translation": "toDouble"
+            "translation": "toDouble",
+            "translateDefault": true
           }
         },
         {
@@ -1161,15 +1141,7 @@
           "dataSource": {
             "from": "//datafield[@tag='020']/subfield[@code='a']"
           }
-        },  
-        {
-          "field": "LIST_PRICE",
-          "dataSource": {
-            "from": "//ListPrice/Amount",
-            "default": "0",
-            "translation": "toDouble"
-          }
-        },  
+        }, 
         {
           "field": "ESTIMATED_PRICE",
           "dataSource": {
@@ -1274,15 +1246,7 @@
           "dataSource": {
             "default": "GOBI Library Solutions"
           }
-        },
-        {
-          "field": "VENDOR_ID",
-          "dataSource": {
-            "default": "GOBI",
-            "translation" : "lookupVendorId",
-            "translateDefault" : true
-          }
-        },        
+        },      
         {
           "field": "FUND_PERCENTAGE",
           "dataSource": {

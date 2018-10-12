@@ -94,62 +94,57 @@ public class MappingHelper {
     if (translation != null) {
 
       t = (data, postGobiHelper) -> {
-
         Object translatedValue;
         try {
-          
 
-        switch (translation) {
-        case GET_PURCHASE_OPTION_CODE:
-          translatedValue = postGobiHelper.getPurchaseOptionCode(data);
-          break;
-        case LOOKUP_ACTIVATION_STATUS_ID:
-          translatedValue = postGobiHelper.lookupActivationStatusId(data);
-          break;
-        case LOOKUP_FUND_ID:
-          translatedValue = postGobiHelper.lookupFundId(data);
-          break;
-        case LOOKUP_LOCATION_ID:
-          translatedValue = postGobiHelper.lookupLocationId(data);
-          break;
-        case LOOKUP_MATERIAL_TYPE_ID:
-          translatedValue = postGobiHelper.lookupMaterialTypeId(data);
-          break;
-        case LOOKUP_PAYMENT_STATUS_ID:
-          translatedValue = postGobiHelper.lookupPaymentStatusId(data);
-          break;
-        case LOOKUP_RECEIPT_STATUS_ID:
-          translatedValue = postGobiHelper.lookupReceiptStatusId(data);
-          break;
-        case LOOKUP_VENDOR_ID:
-          translatedValue = postGobiHelper.lookupVendorId(data);
-          break;
-        case LOOKUP_WORKFLOW_STATUS_ID:
-          translatedValue = postGobiHelper.lookupWorkflowStatusId(data);
-          break;
-        case TO_DATE:
-          translatedValue = Mapper.toDate(data, postGobiHelper);
-          break;
-        case TO_DOUBLE:
-          translatedValue = Mapper.toDouble(data, postGobiHelper);
-          break;
-        case TO_INTEGER:
-          translatedValue = Mapper.toInteger(data, postGobiHelper);
-          break;
-        default:
-          throw new IllegalArgumentException("No such Translation available: " + translation);
-         
-        }
-        return (CompletableFuture<Object>) translatedValue;
-        }
-        catch(Exception e) {
+          switch (translation) {
+          case GET_PURCHASE_OPTION_CODE:
+            translatedValue = postGobiHelper.getPurchaseOptionCode(data);
+            break;
+          case LOOKUP_ACTIVATION_STATUS_ID:
+            translatedValue = postGobiHelper.lookupActivationStatusId(data);
+            break;
+          case LOOKUP_FUND_ID:
+            translatedValue = postGobiHelper.lookupFundId(data);
+            break;
+          case LOOKUP_LOCATION_ID:
+            translatedValue = postGobiHelper.lookupLocationId(data);
+            break;
+          case LOOKUP_MATERIAL_TYPE_ID:
+            translatedValue = postGobiHelper.lookupMaterialTypeId(data);
+            break;
+          case LOOKUP_PAYMENT_STATUS_ID:
+            translatedValue = postGobiHelper.lookupPaymentStatusId(data);
+            break;
+          case LOOKUP_RECEIPT_STATUS_ID:
+            translatedValue = postGobiHelper.lookupReceiptStatusId(data);
+            break;
+          case LOOKUP_VENDOR_ID:
+            translatedValue = postGobiHelper.lookupVendorId(data);
+            break;
+          case LOOKUP_WORKFLOW_STATUS_ID:
+            translatedValue = postGobiHelper.lookupWorkflowStatusId(data);
+            break;
+          case TO_DATE:
+            translatedValue = Mapper.toDate(data, postGobiHelper);
+            break;
+          case TO_DOUBLE:
+            translatedValue = Mapper.toDouble(data, postGobiHelper);
+            break;
+          case TO_INTEGER:
+            translatedValue = Mapper.toInteger(data, postGobiHelper);
+            break;
+          default:
+            throw new IllegalArgumentException("No such Translation available: " + translation);
+          }
+          return (CompletableFuture<Object>) translatedValue;
+        } catch (Exception e) {
           logger.error("Exception in Mapperhelper", e);
         }
         return null;
       };
-      
     }
-  
+
     return org.folio.gobi.DataSource.builder().withFrom(dataSourceFrom).withDefault(defaultValue).withTranslation(t)
         .withTranslateDefault(translateDefault == null ? false : translateDefault.booleanValue()).withCombinator(nc).build();
 
