@@ -52,43 +52,61 @@ public class Mapper {
       Vendor vendor = new Vendor();
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
-
+      if(mappings.containsKey(Mapping.Field.CREATED_BY)) {
       futures.add(mappings.get(Mapping.Field.CREATED_BY)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> po.setCreatedBy((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.ACCOUNT_NUMBER)) {
       futures.add(mappings.get(Mapping.Field.ACCOUNT_NUMBER)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> pol.setAccountNumber((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.ACQUISITION_METHOD)) {
       futures.add(mappings.get(Mapping.Field.ACQUISITION_METHOD)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> pol.setAcquisitionMethod((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.REQUESTER)) {
       futures.add(mappings.get(Mapping.Field.REQUESTER)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> pol.setRequester((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.TITLE)) {
       futures.add(mappings.get(Mapping.Field.TITLE)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> detail.setTitle((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.MATERIAL_TYPE)) {
       futures.add(mappings.get(Mapping.Field.MATERIAL_TYPE)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> detail.setMaterialType((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.RECEIVING_NOTE)) {
       futures.add(mappings.get(Mapping.Field.RECEIVING_NOTE)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> detail.setReceivingNote((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.PRODUCT_ID)) {
       futures.add(mappings.get(Mapping.Field.PRODUCT_ID)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> detail.setProductId((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.LOCATION)) {
       futures.add(mappings.get(Mapping.Field.LOCATION)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> location.setLocationId((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.QUANTITY)) {
       futures.add(mappings.get(Mapping.Field.QUANTITY)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> {
@@ -96,36 +114,49 @@ public class Mapper {
           location.setQuantity((Integer) o);
         })
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.LIST_PRICE)) {
       futures.add(mappings.get(Mapping.Field.LIST_PRICE)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> cost.setListPrice((Double) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.ESTIMATED_PRICE)) {
       futures.add(mappings.get(Mapping.Field.ESTIMATED_PRICE)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> cost.setEstimatedPrice((Double) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.CURRENCY)) {
       futures.add(mappings.get(Mapping.Field.CURRENCY)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> cost.setCurrency((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.ACCESS_PROVIDER)) {
       futures.add(mappings.get(Mapping.Field.ACCESS_PROVIDER)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> eresource.setAccessProvider((String) o))
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.USER_LIMIT)) {
       futures.add(mappings.get(Mapping.Field.USER_LIMIT)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> eresource.setUserLimit((Integer) o))
         .exceptionally(Mapper::logException));
-//      if(mappings.containsKey(Mapping.Field.VENDOR_ID)) {
-//      futures.add(mappings.get(Mapping.Field.VENDOR_ID)
-//        .resolve(doc, gobiHelper)
-//        .thenAccept(o -> vendor.setRefNumber((String) o))
-//        .exceptionally(Mapper::logException));
-//      }
+      }
+      if(mappings.containsKey(Mapping.Field.VENDOR_ID)) {
+      futures.add(mappings.get(Mapping.Field.VENDOR_ID)
+        .resolve(doc, gobiHelper)
+        .thenAccept(o -> vendor.setRefNumber((String) o))
+        .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.INSTRUCTIONS)) {
       futures.add(mappings.get(Mapping.Field.INSTRUCTIONS)
         .resolve(doc, gobiHelper)
         .thenAccept(o -> vendor.setInstructions((String) o))
         .exceptionally(Mapper::logException));
+      }
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()])).thenAccept(v -> {
         pol.setDetails(detail);
         pol.setCost(cost);

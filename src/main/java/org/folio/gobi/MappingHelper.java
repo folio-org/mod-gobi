@@ -3,7 +3,6 @@ package org.folio.gobi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,15 +53,11 @@ public class MappingHelper {
     return defaultMapping;
   }
 
+  @SuppressWarnings("unchecked")
   public static org.folio.gobi.DataSource getDS(Mapping mapping,
       Map<Field, org.folio.gobi.DataSource> fieldDataSourceMapping) {
-    List<String> postGobiOrdersHelperList = Arrays.asList("lookupLocationId", "lookupMaterialTypeId", "lookupVendorId",
-        "lookupWorkflowStatusId", "lookupReceiptStatusId", "lookupPaymentStatusId", "lookupActivationStatusId",
-        "lookupFundId");
 
-    org.folio.gobi.DataSource ds;
-
-    Object defaultValue = new Object();
+    Object defaultValue = null;
     if (mapping.getDataSource().getDefault() != null) {
       defaultValue = mapping.getDataSource().getDefault();
     } else if (mapping.getDataSource().getFromOtherField() != null) {
@@ -72,6 +67,8 @@ public class MappingHelper {
       defaultValue = getDS(mapping.getDataSource().getDefaultMapping(), fieldDataSourceMapping);
     }
 
+    Boolean translateDefault = mapping.getDataSource().getTranslateDefault();
+    
     String dataSourceFrom = mapping.getDataSource().getFrom();
 
     org.folio.rest.mappings.model.DataSource.Combinator combinator = mapping.getDataSource().getCombinator();
@@ -94,31 +91,68 @@ public class MappingHelper {
 
     org.folio.rest.mappings.model.DataSource.Translation translation = mapping.getDataSource().getTranslation();
     Translation<?> t = null;
-    Method translationMethod;
     if (translation != null) {
-      try {
-        if (postGobiOrdersHelperList.contains(translation.toString())) {
-          translationMethod = PostGobiOrdersHelper.class.getMethod(translation.toString(), String.class);
-        } else {
-          translationMethod = Mapper.class.getMethod(translation.toString(), String.class, PostGobiOrdersHelper.class);
+
+      t = (data, postGobiHelper) -> {
+
+        Object translatedValue;
+        try {
+          
+
+        switch (translation) {
+        case GET_PURCHASE_OPTION_CODE:
+          translatedValue = postGobiHelper.getPurchaseOptionCode(data);
+          break;
+        case LOOKUP_ACTIVATION_STATUS_ID:
+          translatedValue = postGobiHelper.lookupActivationStatusId(data);
+          break;
+        case LOOKUP_FUND_ID:
+          translatedValue = postGobiHelper.lookupFundId(data);
+          break;
+        case LOOKUP_LOCATION_ID:
+          translatedValue = postGobiHelper.lookupLocationId(data);
+          break;
+        case LOOKUP_MATERIAL_TYPE_ID:
+          translatedValue = postGobiHelper.lookupMaterialTypeId(data);
+          break;
+        case LOOKUP_PAYMENT_STATUS_ID:
+          translatedValue = postGobiHelper.lookupPaymentStatusId(data);
+          break;
+        case LOOKUP_RECEIPT_STATUS_ID:
+          translatedValue = postGobiHelper.lookupReceiptStatusId(data);
+          break;
+        case LOOKUP_VENDOR_ID:
+          translatedValue = postGobiHelper.lookupVendorId(data);
+          break;
+        case LOOKUP_WORKFLOW_STATUS_ID:
+          translatedValue = postGobiHelper.lookupWorkflowStatusId(data);
+          break;
+        case TO_DATE:
+          translatedValue = Mapper.toDate(data, postGobiHelper);
+          break;
+        case TO_DOUBLE:
+          translatedValue = Mapper.toDouble(data, postGobiHelper);
+          break;
+        case TO_INTEGER:
+          translatedValue = Mapper.toInteger(data, postGobiHelper);
+          break;
+        default:
+          throw new IllegalArgumentException("No such Translation available: " + translation);
+         
         }
-
-        t = (data, postGobiHelper) -> {
-          try {
-            return (CompletableFuture<Object>) translationMethod.invoke(null, data, postGobiHelper);
-          } catch (Exception e) {
-            logger.error("Unable to invoke translation method: " + translation, e);
-          }
-          return null;
-        };
-      } catch (NoSuchMethodException e) {
-        logger.error("Translation method not found: " + translation, e);
-      }
+        return (CompletableFuture<Object>) translatedValue;
+        }
+        catch(Exception e) {
+          logger.error("Exception in Mapperhelper", e);
+        }
+        return null;
+      };
+      
     }
-    ds = org.folio.gobi.DataSource.builder().withFrom(dataSourceFrom).withDefault(defaultValue).withTranslation(t)
-        .withTranslateDefault(true).withCombinator(nc).build();
+  
+    return org.folio.gobi.DataSource.builder().withFrom(dataSourceFrom).withDefault(defaultValue).withTranslation(t)
+        .withTranslateDefault(translateDefault == null ? false : translateDefault.booleanValue()).withCombinator(nc).build();
 
-    return ds;
   }
 
   public static String readMappingsFile(final String path) {

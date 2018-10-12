@@ -76,6 +76,12 @@ public class PostGobiOrdersHelper {
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
         .withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
         .build());
+//      mappings.put(Mapping.Field.VENDOR_ID, DataSource.builder()
+//      .withDefault("GOBI")    //        .withDefault("GOBI")
+//      //.withTranslation(this::lookupVendorId)  //        //.withTranslation(this::lookupVendorId)
+//      .withTranslateDefault(true) //        .withTranslateDefault(true)
+//      .build());
+      
       lookupOrderMappings(orderType).thenAccept(m -> {
         // Override the default mappings with the configured mappings
         mappings.putAll(m);
