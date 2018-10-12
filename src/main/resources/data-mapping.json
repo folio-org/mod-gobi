@@ -1128,14 +1128,7 @@
     },
     {
       "orderType": "UnlistedPrintSerial",
-      "mappings": [   
-        {
-          "field": "MATERIAL_TYPE",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData1']/Value",
-            "translation": "lookupMaterialTypeId"
-          }
-        },
+      "mappings": [
         {
           "field": "PRODUCT_ID",
           "dataSource": {
