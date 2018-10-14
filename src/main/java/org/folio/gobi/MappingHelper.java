@@ -29,28 +29,32 @@ public class MappingHelper {
   private MappingHelper() {
     throw new IllegalStateException("MappingHelper class cannot be instantiated");
   }
-  
-  public static Map<OrderType, Map<Field, DataSource>> defaultMapping() {
+
+  public static Map<OrderType, Map<Field, DataSource>> defaultMapping() throws IOException {
 
     Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new LinkedHashMap<>();
 
     String jsonAsString = readMappingsFile(PATH);
-    final Mappings mappings = Json.decodeValue(jsonAsString, Mappings.class);
-    final List<OrderMapping> orderMappingList = mappings.getOrderMappings(); // get orderMappings list
-    for (OrderMapping orderMapping : orderMappingList) { // iterate through orderMappings list
-      Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new LinkedHashMap<>();
-      OrderType orderType = orderMapping.getOrderType(); // get orderType from orderMapping
-      List<Mapping> mappingsList = orderMapping.getMappings(); // get mappings list
-      for (int i = 0; i < mappingsList.size(); i++) { // iterate
-        Mapping mapping = mappingsList.get(i); // get mapping
-        Mapping.Field field = mapping.getField(); // get field
-        org.folio.gobi.DataSource dataSource = getDS(mapping, fieldDataSourceMapping);
-        fieldDataSourceMapping.put(field, dataSource);
+    if (jsonAsString != "" && jsonAsString != null) {
+      final Mappings mappings = Json.decodeValue(jsonAsString, Mappings.class);
+      final List<OrderMapping> orderMappingList = mappings.getOrderMappings(); // get orderMappings list
+      for (OrderMapping orderMapping : orderMappingList) { // iterate through orderMappings list
+        Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new LinkedHashMap<>();
+        OrderType orderType = orderMapping.getOrderType(); // get orderType from orderMapping
+        List<Mapping> mappingsList = orderMapping.getMappings(); // get mappings list
+        for (int i = 0; i < mappingsList.size(); i++) { // iterate
+          Mapping mapping = mappingsList.get(i); // get mapping
+          Mapping.Field field = mapping.getField(); // get field
+          org.folio.gobi.DataSource dataSource = getDS(mapping, fieldDataSourceMapping);
+          fieldDataSourceMapping.put(field, dataSource);
+        }
+        defaultMapping.put(orderType, fieldDataSourceMapping);
       }
-      defaultMapping.put(orderType, fieldDataSourceMapping);
-    }
-    logger.info(mappings.toString());
-    return defaultMapping;
+
+      logger.info(mappings.toString());
+      return defaultMapping;
+    } else
+      return defaultMapping;
   }
 
   @SuppressWarnings("unchecked")
