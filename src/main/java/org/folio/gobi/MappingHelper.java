@@ -30,12 +30,12 @@ public class MappingHelper {
     throw new IllegalStateException("MappingHelper class cannot be instantiated");
   }
 
-  public static Map<OrderType, Map<Field, DataSource>> defaultMapping() throws IOException {
+  public static Map<OrderType, Map<Field, DataSource>> defaultMapping() {
 
     Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new LinkedHashMap<>();
 
     String jsonAsString = readMappingsFile(PATH);
-    if (jsonAsString != "" && jsonAsString != null) {
+    if (jsonAsString != "" || jsonAsString != null) {
       final Mappings mappings = Json.decodeValue(jsonAsString, Mappings.class);
       final List<OrderMapping> orderMappingList = mappings.getOrderMappings(); // get orderMappings list
       for (OrderMapping orderMapping : orderMappingList) { // iterate through orderMappings list
@@ -53,8 +53,9 @@ public class MappingHelper {
 
       logger.info(mappings.toString());
       return defaultMapping;
-    } else
+    } else {
       return defaultMapping;
+    }
   }
 
   @SuppressWarnings("unchecked")

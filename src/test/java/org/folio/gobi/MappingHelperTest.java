@@ -24,8 +24,8 @@ public class MappingHelperTest {
 
   private static final Logger logger = LoggerFactory.getLogger(MappingHelper.class);
   private static final String PATH = "MappingHelper/default-mappings.json";
-  private static final String expectedOrderType1 = "ListedPrintMonograph";
-  private static final String expectedOrderType2 = "UnlistedPrintMonograph";
+  private static final String EXPECTEDORDERTYPE1 = "ListedPrintMonograph";
+  private static final String EXPECTEDORDERTYPE2 = "UnlistedPrintMonograph";
   
   private static String actualDefaultMappingJson = null;
   private static Mappings actualMappings = null;
@@ -84,7 +84,7 @@ public class MappingHelperTest {
         "      ]\n" + 
         "    } \n" + 
         "  ]\n" + 
-        "} ";
+        "} \n";
     
     actualDefaultMappingJson = MappingHelper.readMappingsFile(PATH);
     assertEquals(expectedDefaultMappingJson, actualDefaultMappingJson);
@@ -92,16 +92,16 @@ public class MappingHelperTest {
     final List<OrderMapping> orderMappingList = actualMappings.getOrderMappings(); // get orderMappings list
     OrderType orderType1 = orderMappingList.get(0).getOrderType();
     OrderType orderType2 = orderMappingList.get(1).getOrderType();
-    assertEquals(expectedOrderType1, orderType1.toString());
-    assertEquals(expectedOrderType2, orderType2.toString());
+    assertEquals(EXPECTEDORDERTYPE1, orderType1.toString());
+    assertEquals(EXPECTEDORDERTYPE2, orderType2.toString());
     List<Mapping> mappingsList1 = orderMappingList.get(0).getMappings();
     List<Mapping> mappingsList2 = orderMappingList.get(1).getMappings();
     mapping1 = mappingsList1.get(0);
     mapping2 = mappingsList2.get(0);
-    assertEquals(mappingsList1.size(), 2);
-    assertEquals(mappingsList2.size(), 3);
-    assertEquals(mapping1.getField().toString(), "ACCESS_PROVIDER");
-    assertEquals(mapping2.getField().toString(), "PRODUCT_ID");
+    assertEquals(2, mappingsList1.size());
+    assertEquals(3, mappingsList2.size());
+    assertEquals("ACCESS_PROVIDER", mapping1.getField().toString());
+    assertEquals("PRODUCT_ID", mapping2.getField().toString());
   }
 
   @Test(expected=NullPointerException.class)
@@ -116,8 +116,8 @@ public class MappingHelperTest {
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType ListedPrintMonograph");
     Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping1 = new LinkedHashMap<>();
     org.folio.gobi.DataSource dataSource = MappingHelper.getDS(mapping1, fieldDataSourceMapping1);
-    assertEquals(dataSource.from, "//PurchaseOption/VendorPOCode");
-    assertEquals(dataSource.translateDefValue, false);
+    assertEquals("//PurchaseOption/VendorPOCode", dataSource.from);
+    assertEquals(false, dataSource.translateDefValue);
   }
 
   @Test
@@ -126,8 +126,8 @@ public class MappingHelperTest {
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType UnlistedPrintMonograph");
     Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping2 = new LinkedHashMap<>();
     org.folio.gobi.DataSource dataSource = MappingHelper.getDS(mapping2, fieldDataSourceMapping2);
-    assertEquals(dataSource.from, "//datafield[@tag='020']/subfield[@code='a']");
-    assertEquals(dataSource.translateDefValue, false);
+    assertEquals("//datafield[@tag='020']/subfield[@code='a']", dataSource.from);
+    assertEquals(false, dataSource.translateDefValue);
     assertNotNull(dataSource.combinator);
   }
 }

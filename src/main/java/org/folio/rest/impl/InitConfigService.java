@@ -1,7 +1,5 @@
 package org.folio.rest.impl;
 
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
 import org.folio.gobi.MappingHelper;
 import org.folio.rest.resource.interfaces.PostDeployVerticle;
@@ -17,11 +15,7 @@ public class InitConfigService implements PostDeployVerticle {
   @Override
   public void init(Vertx vertx, Context context, Handler<AsyncResult<Boolean>> handler) {
     logger.info("Init Config Service");
-    try {
-      MappingHelper.defaultMapping();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    MappingHelper.defaultMapping();
     handler.handle(io.vertx.core.Future.succeededFuture(true));
   }
 

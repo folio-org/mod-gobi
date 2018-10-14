@@ -124,6 +124,7 @@ public class HelperUtils {
     return map;
   }
 
+  @SuppressWarnings("unchecked")
   public static DataSource extractOrderMapping(org.folio.rest.mappings.model.DataSource dataSource, Map<Mapping.Field, DataSource> map){
     org.folio.rest.mappings.model.DataSource.Combinator combinator = dataSource.getCombinator();
     NodeCombinator nc = null;
