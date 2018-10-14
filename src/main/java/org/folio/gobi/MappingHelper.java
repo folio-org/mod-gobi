@@ -35,7 +35,6 @@ public class MappingHelper {
     Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new LinkedHashMap<>();
 
     String jsonAsString = readMappingsFile(PATH);
-    if (jsonAsString != "" || jsonAsString != null) {
       final Mappings mappings = Json.decodeValue(jsonAsString, Mappings.class);
       final List<OrderMapping> orderMappingList = mappings.getOrderMappings(); // get orderMappings list
       for (OrderMapping orderMapping : orderMappingList) { // iterate through orderMappings list
@@ -53,9 +52,6 @@ public class MappingHelper {
 
       logger.info(mappings.toString());
       return defaultMapping;
-    } else {
-      return defaultMapping;
-    }
   }
 
   @SuppressWarnings("unchecked")
