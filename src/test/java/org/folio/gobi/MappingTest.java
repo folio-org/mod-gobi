@@ -37,7 +37,7 @@ public class MappingTest {
   public void setUp() throws Exception {
     InputStream data = this.getClass().getClassLoader().getResourceAsStream(testdataPath);
     doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
-    okapiHeaders.put("X-okapi-url", "http://localhost:" + port);
+    okapiHeaders.put("x-okapi-url", "http://localhost:" + port);
     okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
     postGobiOrdersHelper = new PostGobiOrdersHelper(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders, vertx.getOrCreateContext());
   }
