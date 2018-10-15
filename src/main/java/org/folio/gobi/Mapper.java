@@ -15,7 +15,6 @@ import org.folio.rest.acq.model.Eresource;
 import org.folio.rest.acq.model.Location;
 import org.folio.rest.acq.model.PurchaseOrder;
 import org.folio.rest.acq.model.Vendor;
-import org.folio.rest.impl.PostGobiOrdersHelper;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -30,11 +29,9 @@ public class Mapper {
   private static final Logger logger = LoggerFactory.getLogger(Mapper.class);
 
   private final Map<Mapping.Field, DataSource> mappings;
-  private final PostGobiOrdersHelper gobiHelper;
 
-  public Mapper(Map<Mapping.Field, DataSource> mappings, PostGobiOrdersHelper gobiHelper) {
+  public Mapper(Map<Mapping.Field, DataSource> mappings) {
     this.mappings = mappings;
-    this.gobiHelper = gobiHelper;
   }
 
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
@@ -54,61 +51,61 @@ public class Mapper {
       List<CompletableFuture<?>> futures = new ArrayList<>();
       if(mappings.containsKey(Mapping.Field.CREATED_BY)) {
       futures.add(mappings.get(Mapping.Field.CREATED_BY)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> po.setCreatedBy((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.ACCOUNT_NUMBER)) {
       futures.add(mappings.get(Mapping.Field.ACCOUNT_NUMBER)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> pol.setAccountNumber((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.ACQUISITION_METHOD)) {
       futures.add(mappings.get(Mapping.Field.ACQUISITION_METHOD)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> pol.setAcquisitionMethod((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.REQUESTER)) {
       futures.add(mappings.get(Mapping.Field.REQUESTER)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> pol.setRequester((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.TITLE)) {
       futures.add(mappings.get(Mapping.Field.TITLE)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> detail.setTitle((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.MATERIAL_TYPE)) {
       futures.add(mappings.get(Mapping.Field.MATERIAL_TYPE)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> detail.setMaterialType((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.RECEIVING_NOTE)) {
       futures.add(mappings.get(Mapping.Field.RECEIVING_NOTE)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> detail.setReceivingNote((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.PRODUCT_ID)) {
       futures.add(mappings.get(Mapping.Field.PRODUCT_ID)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> detail.setProductId((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.LOCATION)) {
       futures.add(mappings.get(Mapping.Field.LOCATION)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> location.setLocationId((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.QUANTITY)) {
       futures.add(mappings.get(Mapping.Field.QUANTITY)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> {
           cost.setQuantity((Integer) o);
           location.setQuantity((Integer) o);
@@ -117,43 +114,43 @@ public class Mapper {
       }
       if(mappings.containsKey(Mapping.Field.LIST_PRICE)) {
       futures.add(mappings.get(Mapping.Field.LIST_PRICE)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> cost.setListPrice((Double) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.ESTIMATED_PRICE)) {
       futures.add(mappings.get(Mapping.Field.ESTIMATED_PRICE)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> cost.setEstimatedPrice((Double) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.CURRENCY)) {
       futures.add(mappings.get(Mapping.Field.CURRENCY)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> cost.setCurrency((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.ACCESS_PROVIDER)) {
       futures.add(mappings.get(Mapping.Field.ACCESS_PROVIDER)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> eresource.setAccessProvider((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.USER_LIMIT)) {
       futures.add(mappings.get(Mapping.Field.USER_LIMIT)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> eresource.setUserLimit((Integer) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.VENDOR_ID)) {
       futures.add(mappings.get(Mapping.Field.VENDOR_ID)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> vendor.setRefNumber((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.INSTRUCTIONS)) {
       futures.add(mappings.get(Mapping.Field.INSTRUCTIONS)
-        .resolve(doc, gobiHelper)
+        .resolve(doc)
         .thenAccept(o -> vendor.setInstructions((String) o))
         .exceptionally(Mapper::logException));
       }
@@ -182,17 +179,17 @@ public class Mapper {
     return null;
   }
 
-  public static CompletableFuture<Integer> toInteger(String s, PostGobiOrdersHelper gobiHelper) {
+  public static CompletableFuture<Integer> toInteger(String s) {
     Integer val = s != null ? Integer.parseInt(s) : null;
     return CompletableFuture.completedFuture(val);
   }
 
-  public static CompletableFuture<Double> toDouble(String s, PostGobiOrdersHelper gobiHelper) {
+  public static CompletableFuture<Double> toDouble(String s) {
     Double val = s != null ? Double.parseDouble(s) : null;
     return CompletableFuture.completedFuture(val);
   }
 
-  public static CompletableFuture<Date> toDate(String s, PostGobiOrdersHelper gobiHelper) {
+  public static CompletableFuture<Date> toDate(String s) {
     DateTime val = s != null ? DateTime.parse(s) : DateTime.now();
     return CompletableFuture.completedFuture(val.toDate());
   }
@@ -224,7 +221,7 @@ public class Mapper {
   }
 
   public static interface Translation<T> {
-    public CompletableFuture<T> apply(String s, PostGobiOrdersHelper gobiHelper);
+    public CompletableFuture<T> apply(String s);
   }
 
   public static interface NodeCombinator {

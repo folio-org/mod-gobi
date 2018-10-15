@@ -70,7 +70,7 @@ public class PostGobiOrdersHelper {
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
     
     try {
-      Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping();
+      Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping(this);
       Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType); 
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
         .withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
@@ -78,7 +78,7 @@ public class PostGobiOrdersHelper {
       lookupOrderMappings(orderType).thenAccept(m -> {
         // Override the default mappings with the configured mappings
         mappings.putAll(m);
-        new Mapper(mappings, this).map(doc)
+        new Mapper(mappings).map(doc)
           .thenAccept(future::complete);
       }).exceptionally(e -> {
         logger.error("Exception looking up mappings", e);

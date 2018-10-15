@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+ package org.folio.rest.impl;
 
 import org.apache.log4j.Logger;
 import org.folio.gobi.MappingHelper;
@@ -15,7 +15,7 @@ public class InitConfigService implements PostDeployVerticle {
   @Override
   public void init(Vertx vertx, Context context, Handler<AsyncResult<Boolean>> handler) {
     logger.info("Init Config Service");
-    MappingHelper.defaultMapping();
+    logger.info("Loading default mappings from: " + MappingHelper.PATH);
     handler.handle(io.vertx.core.Future.succeededFuture(true));
   }
 

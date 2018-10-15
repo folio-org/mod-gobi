@@ -148,9 +148,9 @@ public class HelperUtils {
     if (translation != null) {
       try {
         Method translationMethod = Mapper.class.getMethod(translation.toString(), String.class);
-        t = (data, postGobiHelper) -> {
+        t = (data) -> {
           try {
-            return (CompletableFuture<Object>) translationMethod.invoke(null, data, postGobiHelper);
+            return (CompletableFuture<Object>) translationMethod.invoke(null, data);
           } catch (Exception e) {
             logger.error("Unable to invoke translation method: " + translation, e);
           }
