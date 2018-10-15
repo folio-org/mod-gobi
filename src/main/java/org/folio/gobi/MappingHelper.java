@@ -147,7 +147,7 @@ public class MappingHelper {
     }
 
     return org.folio.gobi.DataSource.builder().withFrom(dataSourceFrom).withDefault(defaultValue).withTranslation(t)
-        .withTranslateDefault(translateDefault == null ? false : translateDefault.booleanValue()).withCombinator(nc).build();
+        .withTranslateDefault(translateDefault != null && translateDefault.booleanValue()).withCombinator(nc).build();
 
   }
 
