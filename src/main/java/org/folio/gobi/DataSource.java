@@ -10,7 +10,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
-import org.folio.rest.impl.PostGobiOrdersHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 

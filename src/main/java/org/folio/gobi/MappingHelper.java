@@ -94,7 +94,7 @@ public class MappingHelper {
     Translation<?> t = null;
     if (translation != null) {
 
-      t = (data) -> {
+      t = data -> {
         Object translatedValue;
         try {
 

@@ -148,7 +148,7 @@ public class HelperUtils {
     if (translation != null) {
       try {
         Method translationMethod = Mapper.class.getMethod(translation.toString(), String.class);
-        t = (data) -> {
+        t = data -> {
           try {
             return (CompletableFuture<Object>) translationMethod.invoke(null, data);
           } catch (Exception e) {
