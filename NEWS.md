@@ -1,4 +1,5 @@
 ## 1.0.1 Unreleased
+ * Requires `locations` interface 2.1 or 3.0
  * [MODGOBI-28](https://issues.folio.org/browse/MODGOBI-28)
  * [MODGOBI-27](https://issues.folio.org/browse/MODGOBI-27)
  * [MODGOBI-26](https://issues.folio.org/browse/MODGOBI-26)
