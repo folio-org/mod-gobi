@@ -24,39 +24,39 @@ import io.vertx.core.json.Json;
 public class MappingHelper {
   private static final Logger logger = Logger.getLogger(MappingHelper.class);
 
-  private static final String PATH = "data-mapping.json";
+  public static final String PATH = "data-mapping.json";
 
   private MappingHelper() {
     throw new IllegalStateException("MappingHelper class cannot be instantiated");
   }
 
-  public static Map<OrderType, Map<Field, DataSource>> defaultMapping() {
+  private static final Mappings defaultMappings = Json.decodeValue(readMappingsFile(PATH), Mappings.class);
+  
+  public static Map<OrderType, Map<Field, DataSource>> defaultMapping(PostGobiOrdersHelper postGobiOrdersHelper) {
 
     Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new LinkedHashMap<>();
 
-    String jsonAsString = readMappingsFile(PATH);
-      final Mappings mappings = Json.decodeValue(jsonAsString, Mappings.class);
-      final List<OrderMapping> orderMappingList = mappings.getOrderMappings(); // get orderMappings list
-      for (OrderMapping orderMapping : orderMappingList) { // iterate through orderMappings list
-        Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new LinkedHashMap<>();
-        OrderType orderType = orderMapping.getOrderType(); // get orderType from orderMapping
-        List<Mapping> mappingsList = orderMapping.getMappings(); // get mappings list
-        for (int i = 0; i < mappingsList.size(); i++) { // iterate
-          Mapping mapping = mappingsList.get(i); // get mapping
-          Mapping.Field field = mapping.getField(); // get field
-          org.folio.gobi.DataSource dataSource = getDS(mapping, fieldDataSourceMapping);
-          fieldDataSourceMapping.put(field, dataSource);
-        }
-        defaultMapping.put(orderType, fieldDataSourceMapping);
+    final List<OrderMapping> orderMappingList = defaultMappings.getOrderMappings(); // get orderMappings list
+    for (OrderMapping orderMapping : orderMappingList) { // iterate through orderMappings list
+      Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new LinkedHashMap<>();
+      OrderType orderType = orderMapping.getOrderType(); // get orderType from orderMapping
+      List<Mapping> mappingsList = orderMapping.getMappings(); // get mappings list
+      for (int i = 0; i < mappingsList.size(); i++) { // iterate
+        Mapping mapping = mappingsList.get(i); // get mapping
+        Mapping.Field field = mapping.getField(); // get field
+        org.folio.gobi.DataSource dataSource = getDS(mapping, fieldDataSourceMapping, postGobiOrdersHelper);
+        fieldDataSourceMapping.put(field, dataSource);
       }
+      defaultMapping.put(orderType, fieldDataSourceMapping);
+    }
 
-      logger.info(mappings.toString());
-      return defaultMapping;
+    logger.info(defaultMappings.toString());
+    return defaultMapping;
   }
 
   @SuppressWarnings("unchecked")
   public static org.folio.gobi.DataSource getDS(Mapping mapping,
-      Map<Field, org.folio.gobi.DataSource> fieldDataSourceMapping) {
+      Map<Field, org.folio.gobi.DataSource> fieldDataSourceMapping, PostGobiOrdersHelper postGobiOrdersHelper) {
 
     Object defaultValue = null;
     if (mapping.getDataSource().getDefault() != null) {
@@ -65,7 +65,7 @@ public class MappingHelper {
       String otherField = mapping.getDataSource().getFromOtherField().value();
       defaultValue = fieldDataSourceMapping.get(Field.valueOf(otherField));
     } else if (mapping.getDataSource().getDefaultMapping() != null) {
-      defaultValue = getDS(mapping.getDataSource().getDefaultMapping(), fieldDataSourceMapping);
+      defaultValue = getDS(mapping.getDataSource().getDefaultMapping(), fieldDataSourceMapping, postGobiOrdersHelper);
     }
 
     Boolean translateDefault = mapping.getDataSource().getTranslateDefault();
@@ -94,46 +94,46 @@ public class MappingHelper {
     Translation<?> t = null;
     if (translation != null) {
 
-      t = (data, postGobiHelper) -> {
+      t = (data) -> {
         Object translatedValue;
         try {
 
           switch (translation) {
           case GET_PURCHASE_OPTION_CODE:
-            translatedValue = postGobiHelper.getPurchaseOptionCode(data);
+            translatedValue = postGobiOrdersHelper.getPurchaseOptionCode(data);
             break;
           case LOOKUP_ACTIVATION_STATUS_ID:
-            translatedValue = postGobiHelper.lookupActivationStatusId(data);
+            translatedValue = postGobiOrdersHelper.lookupActivationStatusId(data);
             break;
           case LOOKUP_FUND_ID:
-            translatedValue = postGobiHelper.lookupFundId(data);
+            translatedValue = postGobiOrdersHelper.lookupFundId(data);
             break;
           case LOOKUP_LOCATION_ID:
-            translatedValue = postGobiHelper.lookupLocationId(data);
+            translatedValue = postGobiOrdersHelper.lookupLocationId(data);
             break;
           case LOOKUP_MATERIAL_TYPE_ID:
-            translatedValue = postGobiHelper.lookupMaterialTypeId(data);
+            translatedValue = postGobiOrdersHelper.lookupMaterialTypeId(data);
             break;
           case LOOKUP_PAYMENT_STATUS_ID:
-            translatedValue = postGobiHelper.lookupPaymentStatusId(data);
+            translatedValue = postGobiOrdersHelper.lookupPaymentStatusId(data);
             break;
           case LOOKUP_RECEIPT_STATUS_ID:
-            translatedValue = postGobiHelper.lookupReceiptStatusId(data);
+            translatedValue = postGobiOrdersHelper.lookupReceiptStatusId(data);
             break;
           case LOOKUP_VENDOR_ID:
-            translatedValue = postGobiHelper.lookupVendorId(data);
+            translatedValue = postGobiOrdersHelper.lookupVendorId(data);
             break;
           case LOOKUP_WORKFLOW_STATUS_ID:
-            translatedValue = postGobiHelper.lookupWorkflowStatusId(data);
+            translatedValue = postGobiOrdersHelper.lookupWorkflowStatusId(data);
             break;
           case TO_DATE:
-            translatedValue = Mapper.toDate(data, postGobiHelper);
+            translatedValue = Mapper.toDate(data);
             break;
           case TO_DOUBLE:
-            translatedValue = Mapper.toDouble(data, postGobiHelper);
+            translatedValue = Mapper.toDouble(data);
             break;
           case TO_INTEGER:
-            translatedValue = Mapper.toInteger(data, postGobiHelper);
+            translatedValue = Mapper.toInteger(data);
             break;
           default:
             throw new IllegalArgumentException("No such Translation available: " + translation);
