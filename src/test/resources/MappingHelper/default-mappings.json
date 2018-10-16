@@ -1,0 +1,49 @@
+{
+  "orderMappings":
+  [
+    {
+      "orderType": "ListedPrintMonograph",
+      "mappings": [
+        {
+          "field": "ACCESS_PROVIDER",
+          "dataSource": {
+            "from": "//PurchaseOption/VendorPOCode",
+            "translation": "lookupVendorId"
+          }
+        },  
+        {
+          "field": "USER_LIMIT",
+          "dataSource": {
+            "from": "//PurchaseOption/Code",
+            "translation": "getPurchaseOptionCode"
+          }
+        }
+      ]
+    },
+    {
+      "orderType": "UnlistedPrintMonograph",
+      "mappings": [
+        {
+          "field": "PRODUCT_ID",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='a']"
+          }
+        },
+        {
+          "field": "USER_LIMIT",
+          "dataSource": {
+            "from": "//PurchaseOption/Code",
+            "translation": "getPurchaseOptionCode"
+          }
+        },
+        {
+          "field": "CONTRIBUTOR",
+          "dataSource": {
+            "from": "//datafield[@tag='100']/*",
+            "combinator": "concat"
+          }
+        } 
+      ]
+    } 
+  ]
+} 

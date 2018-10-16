@@ -18,11 +18,11 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.folio.gobi.DataSource;
-import org.folio.gobi.Mapper.Field;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
 import org.folio.rest.gobi.model.GobiResponse;
+import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.OrderMapping;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.NetworkUtils;
@@ -377,13 +377,13 @@ public class PostGobiOrdersHelperTest {
       pgoh.lookupOrderMappings(OrderMapping.OrderType.fromValue("ListedElectronicMonograph"))
         .thenAccept(map -> {
           context.assertNotNull(map);
-          context.assertNotNull(map.get(Field.CURRENCY));
-          DataSource ds = map.get(Field.CURRENCY);
+          context.assertNotNull(map.get(Mapping.Field.CURRENCY));
+          DataSource ds = map.get(Mapping.Field.CURRENCY);
           context.assertEquals("//ListPrice/Currency", ds.from);
           context.assertEquals("USD", ds.defValue);
 
-          context.assertNotNull(map.get(Field.LIST_PRICE));
-          ds = map.get(Field.LIST_PRICE);
+          context.assertNotNull(map.get(Mapping.Field.LIST_PRICE));
+          ds = map.get(Mapping.Field.LIST_PRICE);
           context.assertEquals("//ListPrice/Amount", ds.from);
           context.assertEquals("0", ds.defValue);
           try {
@@ -393,8 +393,8 @@ public class PostGobiOrdersHelperTest {
             logger.error("Failed to execute translation LIST_PRICE", e);
           }
 
-          context.assertNotNull((map.get(Field.ESTIMATED_PRICE)));
-          ds = map.get(Field.ESTIMATED_PRICE);
+          context.assertNotNull((map.get(Mapping.Field.ESTIMATED_PRICE)));
+          ds = map.get(Mapping.Field.ESTIMATED_PRICE);
           context.assertEquals("//NetPrice/Amount", ds.from);
           context.assertNotNull(ds.defValue);
           DataSource defVal = (DataSource) ds.defValue;

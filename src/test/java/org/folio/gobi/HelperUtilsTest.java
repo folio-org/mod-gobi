@@ -3,14 +3,14 @@ package org.folio.gobi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.folio.rest.mappings.model.Mapping;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HelperUtilsTest {
@@ -69,6 +69,69 @@ public class HelperUtilsTest {
   }
 
   @Test
+  public final void testReadJsonAndCreateDefaultMapping() throws Exception {
+	  
+	//Assuming we will get a json object below is test to extract default mappings from json file
+	  /*
+		{
+		    "orderMappings":[
+	        {
+	            "orderType":"ListedPrintMonograph",
+	            "mappings":[{
+	                "field":"ACCOUNT_NUMBER",
+	                "dataSource":{
+	                    "from":"//SubAccount",
+	                    "default":"0"
+	                }
+	            }]
+	        }]
+		}
+	   */
+	  Map<String, Object> dataSourceMap1 = new LinkedHashMap<String, Object>();
+	  dataSourceMap1.put("from", "//SubAccount");
+	  dataSourceMap1.put("default", "0");
+	  JsonObject dataSourceObj1 = new JsonObject(dataSourceMap1);
+	  JsonObject mappingsObj1 = new JsonObject();
+	  mappingsObj1.put("field", "ACCOUNT_NUMBER");
+	  mappingsObj1.put("dataSource", dataSourceObj1);
+	  JsonArray mappingsArray1 = new JsonArray();
+	  mappingsArray1.add(mappingsObj1);
+	  JsonObject orderMappingsObj1 = new JsonObject();
+	  orderMappingsObj1.put("orderType", "ListedPrintMonograph");
+	  
+	  /*
+		{
+	    	"orderMappings":[
+	        {
+	            "orderType":"ListedPrintMonograph",
+	            "mappings":[{
+					"field": "ACQUISITION_METHOD",
+					"dataSource": {
+						"default": "Purchase at Vendor System"
+					}
+	        	}]
+			}]
+		}
+	   */
+	  Map<String, Object> dataSourceMap2 = new LinkedHashMap<String, Object>();
+	  dataSourceMap2.put("default", "Purchase at Vendor System");
+	  JsonObject dataSourceObj2 = new JsonObject(dataSourceMap2);
+	  JsonObject mappingsObj2 = new JsonObject();
+	  mappingsObj2.put("field", "ACQUISITION_METHOD");
+	  mappingsObj2.put("dataSource", dataSourceObj2);
+	  JsonArray mappingsArray2 = new JsonArray();
+	  mappingsArray2.add(mappingsObj2);
+	  
+	  orderMappingsObj1.put("mappings", mappingsArray1);
+	  
+	  JsonArray orderMappingsArray1 = new JsonArray();
+	  orderMappingsArray1.add(orderMappingsObj1);
+	  JsonObject Obj = new JsonObject();
+	  
+	  Obj.put("orderMappings", orderMappingsArray1);
+  }
+  
+  @Test
   public final void testExtractOrderMappingWithOtherField() throws Exception {
     org.folio.rest.mappings.model.DataSource jsonDs = new org.folio.rest.mappings.model.DataSource();
 
@@ -79,13 +142,13 @@ public class HelperUtilsTest {
     jsonDs.setFrom(jsonFrom);
     jsonDs.setFromOtherField(org.folio.rest.mappings.model.DataSource.FromOtherField.LIST_PRICE);
 
-    Map<Mapper.Field, DataSource> map = new EnumMap<>(Mapper.Field.class);
+    Map<Mapping.Field, DataSource> map = new EnumMap<>(Mapping.Field.class);
     DataSource dataSrc = DataSource.builder()
       .withFrom(listPriceFrom)
       .withDefault(listPriceVal)
       .build();
 
-    map.put(Mapper.Field.LIST_PRICE, dataSrc);
+    map.put(Mapping.Field.LIST_PRICE, dataSrc);
 
     DataSource outputDs = HelperUtils.extractOrderMapping(jsonDs, map);
     assertNotNull(outputDs);

@@ -15,6 +15,7 @@ import org.folio.rest.acq.model.Eresource;
 import org.folio.rest.acq.model.Location;
 import org.folio.rest.acq.model.PurchaseOrder;
 import org.folio.rest.acq.model.Vendor;
+import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,37 +28,9 @@ public class Mapper {
 
   private static final Logger logger = LoggerFactory.getLogger(Mapper.class);
 
-  public enum Field {
-    ACCOUNT_NUMBER("account_number"),
-    ACQUISITION_METHOD("acquisition_method"),
-    QUANTITY("quantity"),
-    LIST_PRICE("list_price"),
-    ESTIMATED_PRICE("estimated_price"),
-    CURRENCY("currency"),
-    FUND_CODE("fund_code"),
-    CREATED_BY("created_by"),
-    TITLE("title"),
-    MATERIAL_TYPE("material_type"),
-    RECEIVING_NOTE("receiving_note"),
-    REQUESTER("requester"),
-    VENDOR_ID("vendor_id"),
-    INSTRUCTIONS("instruction_to_vendor"),
-    NOTE_FROM_VENDOR("note_from_vendor"),
-    USER_LIMIT("user_limit"),
-    LOCATION("location"),
-    PRODUCT_ID("product_id"),
-    ACCESS_PROVIDER("access_provider");
+  private final Map<Mapping.Field, DataSource> mappings;
 
-    public final String fieldName;
-
-    Field(String fieldName) {
-      this.fieldName = fieldName;
-    }
-  }
-
-  private final Map<Field, DataSource> mappings;
-
-  public Mapper(Map<Field, DataSource> mappings) {
+  public Mapper(Map<Mapping.Field, DataSource> mappings) {
     this.mappings = mappings;
   }
 
@@ -76,78 +49,111 @@ public class Mapper {
       Vendor vendor = new Vendor();
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
-
-      futures.add(mappings.get(Field.CREATED_BY)
+      if(mappings.containsKey(Mapping.Field.CREATED_BY)) {
+      futures.add(mappings.get(Mapping.Field.CREATED_BY)
         .resolve(doc)
         .thenAccept(o -> po.setCreatedBy((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.ACCOUNT_NUMBER)
+      }
+      if(mappings.containsKey(Mapping.Field.ACCOUNT_NUMBER)) {
+      futures.add(mappings.get(Mapping.Field.ACCOUNT_NUMBER)
         .resolve(doc)
         .thenAccept(o -> pol.setAccountNumber((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.ACQUISITION_METHOD)
+      }
+      if(mappings.containsKey(Mapping.Field.ACQUISITION_METHOD)) {
+      futures.add(mappings.get(Mapping.Field.ACQUISITION_METHOD)
         .resolve(doc)
         .thenAccept(o -> pol.setAcquisitionMethod((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.REQUESTER)
+      }
+      if(mappings.containsKey(Mapping.Field.REQUESTER)) {
+      futures.add(mappings.get(Mapping.Field.REQUESTER)
         .resolve(doc)
         .thenAccept(o -> pol.setRequester((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.TITLE)
+      }
+      if(mappings.containsKey(Mapping.Field.TITLE)) {
+      futures.add(mappings.get(Mapping.Field.TITLE)
         .resolve(doc)
         .thenAccept(o -> detail.setTitle((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.MATERIAL_TYPE)
+      }
+      if(mappings.containsKey(Mapping.Field.MATERIAL_TYPE)) {
+      futures.add(mappings.get(Mapping.Field.MATERIAL_TYPE)
         .resolve(doc)
         .thenAccept(o -> detail.setMaterialType((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.RECEIVING_NOTE)
+      }
+      if(mappings.containsKey(Mapping.Field.RECEIVING_NOTE)) {
+      futures.add(mappings.get(Mapping.Field.RECEIVING_NOTE)
         .resolve(doc)
         .thenAccept(o -> detail.setReceivingNote((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.PRODUCT_ID)
+      }
+      if(mappings.containsKey(Mapping.Field.PRODUCT_ID)) {
+      futures.add(mappings.get(Mapping.Field.PRODUCT_ID)
         .resolve(doc)
         .thenAccept(o -> detail.setProductId((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.LOCATION)
+      }
+      if(mappings.containsKey(Mapping.Field.LOCATION)) {
+      futures.add(mappings.get(Mapping.Field.LOCATION)
         .resolve(doc)
         .thenAccept(o -> location.setLocationId((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.QUANTITY)
+      }
+      if(mappings.containsKey(Mapping.Field.QUANTITY)) {
+      futures.add(mappings.get(Mapping.Field.QUANTITY)
         .resolve(doc)
         .thenAccept(o -> {
           cost.setQuantity((Integer) o);
           location.setQuantity((Integer) o);
         })
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.LIST_PRICE)
+      }
+      if(mappings.containsKey(Mapping.Field.LIST_PRICE)) {
+      futures.add(mappings.get(Mapping.Field.LIST_PRICE)
         .resolve(doc)
         .thenAccept(o -> cost.setListPrice((Double) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.ESTIMATED_PRICE)
+      }
+      if(mappings.containsKey(Mapping.Field.ESTIMATED_PRICE)) {
+      futures.add(mappings.get(Mapping.Field.ESTIMATED_PRICE)
         .resolve(doc)
         .thenAccept(o -> cost.setEstimatedPrice((Double) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.CURRENCY)
+      }
+      if(mappings.containsKey(Mapping.Field.CURRENCY)) {
+      futures.add(mappings.get(Mapping.Field.CURRENCY)
         .resolve(doc)
         .thenAccept(o -> cost.setCurrency((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.ACCESS_PROVIDER)
+      }
+      if(mappings.containsKey(Mapping.Field.ACCESS_PROVIDER)) {
+      futures.add(mappings.get(Mapping.Field.ACCESS_PROVIDER)
         .resolve(doc)
         .thenAccept(o -> eresource.setAccessProvider((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.USER_LIMIT)
+      }
+      if(mappings.containsKey(Mapping.Field.USER_LIMIT)) {
+      futures.add(mappings.get(Mapping.Field.USER_LIMIT)
         .resolve(doc)
         .thenAccept(o -> eresource.setUserLimit((Integer) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.VENDOR_ID)
+      }
+      if(mappings.containsKey(Mapping.Field.VENDOR_ID)) {
+      futures.add(mappings.get(Mapping.Field.VENDOR_ID)
         .resolve(doc)
         .thenAccept(o -> vendor.setRefNumber((String) o))
         .exceptionally(Mapper::logException));
-      futures.add(mappings.get(Field.INSTRUCTIONS)
+      }
+      if(mappings.containsKey(Mapping.Field.INSTRUCTIONS)) {
+      futures.add(mappings.get(Mapping.Field.INSTRUCTIONS)
         .resolve(doc)
         .thenAccept(o -> vendor.setInstructions((String) o))
         .exceptionally(Mapper::logException));
+      }
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()])).thenAccept(v -> {
         pol.setDetails(detail);
         pol.setCost(cost);

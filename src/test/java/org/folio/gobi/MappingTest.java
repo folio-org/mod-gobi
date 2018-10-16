@@ -3,11 +3,14 @@ package org.folio.gobi;
 import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,11 +24,15 @@ public class MappingTest {
 
   public static final String testdataPath = "Mapping/testdata.xml";
   private Document doc;
+  private int port = NetworkUtils.nextFreePort();
+  private Map<String, String> okapiHeaders = new HashMap<>();
 
   @Before
   public void setUp() throws Exception {
     InputStream data = this.getClass().getClassLoader().getResourceAsStream(testdataPath);
     doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
+    okapiHeaders.put("x-okapi-url", "http://localhost:" + port);
+    okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
   }
 
   @After
@@ -35,7 +42,6 @@ public class MappingTest {
   @Test
   public void testBasicXPath() throws Exception {
     logger.info("begin: Test Mapping - xpath evalutation");
-
     assertEquals("Hello World", DataSource.builder().withFrom("//Doo/Dah").build().resolve(doc).get());
     assertEquals("DIT", DataSource.builder().withFrom("//Bar[@attr='dit']").build().resolve(doc).get());
   }
@@ -43,7 +49,6 @@ public class MappingTest {
   @Test
   public void testDefaults() throws Exception {
     logger.info("begin: Test Mapping - defaults");
-
     // default to a string literal
     assertEquals("PKD", DataSource.builder().withFrom("//Doo/Dud").withDefault("PKD").build().resolve(doc).get());
 
@@ -88,8 +93,6 @@ public class MappingTest {
 
   @Test(expected = ExecutionException.class)
   public void testExceptionInTranslator() throws Exception {
-    logger.info("begin: Test Exception in applyTranslator()");
-
     DataSource.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get();
   }
 
