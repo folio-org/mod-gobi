@@ -94,9 +94,7 @@ public class DataSource {
     if (o == null) {
       if (defValue instanceof DataSource) {
         if (translateDefValue) {
-          return ((DataSource) defValue).resolve(doc).thenApply(v -> 
-            applyTranslation(v.toString())
-          );
+          return ((DataSource) defValue).resolve(doc).thenApply(v -> applyTranslation(v.toString()));
         } else {
           return ((DataSource) defValue).resolve(doc);
         }
