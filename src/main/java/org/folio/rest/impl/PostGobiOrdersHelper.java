@@ -228,7 +228,6 @@ public class PostGobiOrdersHelper {
 
   // TO DO - Needs implementation
   public CompletableFuture<String> lookupFundId(String fundCode) {
-    fundCode = "test"; // This is to hide SonarQube warning. Remove during actual implementation.
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());
   }
   
