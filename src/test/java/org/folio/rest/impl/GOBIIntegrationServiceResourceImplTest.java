@@ -112,7 +112,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   @Test
   public final void testGetGobiValidate(TestContext context) {
-    logger.info("Begin: Testing for 200 - valid call");
+    logger.info("Begin: Testing for Get Gobi Validate 200 - valid call");
 
     final Async asyncLocal = context.async();
 
@@ -134,19 +134,20 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   @Test
   public final void testPostGobiValidate(TestContext context) {
-    logger.info("Begin: Testing for 200 - valid call");
+    logger.info("Begin: Testing for Post Gobi Validate 200 - valid call");
 
     final Async asyncLocal = context.async();
 
     RestAssured
       .given()
         .header(tenantHeader)
+        .header(tokenHeader)
         .header(urlHeader)
         .header(contentTypeHeaderXML)
       .when()
         .post(validatePath)
       .then()
-        .statusCode(200);
+        .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>"));
 
     asyncLocal.complete();
 

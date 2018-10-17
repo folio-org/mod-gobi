@@ -77,6 +77,5 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
     OutStream outStream = new OutStream();
     outStream.setData(data);
     asyncResultHandler.handle(Future.succeededFuture(PostGobiValidateResponse.withXmlOK(outStream)));
-
   }
 }
