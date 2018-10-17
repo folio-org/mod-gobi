@@ -126,7 +126,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     asyncLocal.complete();
 
-    logger.info("End: Testing for 200 - valid call");
+    logger.info("End: Testing for Get Gobi Validate 200 - valid call");
   }
 
   @Test
@@ -147,7 +147,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     asyncLocal.complete();
 
-    logger.info("End: Testing for 200 - valid call");
+    logger.info("End: Testing for Post Gobi Validate 200 - valid call");
   }
   
   @Test
