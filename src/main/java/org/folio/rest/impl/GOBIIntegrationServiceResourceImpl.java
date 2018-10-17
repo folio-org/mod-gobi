@@ -3,6 +3,9 @@ package org.folio.rest.impl;
 import java.io.Reader;
 import java.util.Map;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.gobi.model.GobiResponse;
@@ -28,7 +31,7 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
   public void getGobiValidate(Map<String, String> okapiHeaders,
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext)
       throws Exception {
-    asyncResultHandler.handle(Future.succeededFuture(GetGobiValidateResponse.withNoContent()));
+    asyncResultHandler.handle(Future.succeededFuture(GetGobiValidateResponse.withOK()));
   }
 
   @Override
@@ -64,5 +67,17 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
     final String tenantId = TenantTool.calculateTenantId(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TENANT));
 
     return HttpClientFactory.getHttpClient(okapiURL, tenantId);
+  }
+
+  @Override
+  public void postGobiValidate(Reader entity, Map<String, String> okapiHeaders,
+      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) throws Exception {
+    
+    HttpClientInterface httpClient = getHttpClient(okapiHeaders);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders,
+        vertxContext);
+    //Convert me.escoffier.vertx.completablefuture.VertxCompletableFuture to javax.ws.rs.core.StreamingOutput
+    asyncResultHandler.handle(Future.succeededFuture(PostGobiValidateResponse.withXmlOK((StreamingOutput) helper.parse(entity))));
+    
   }
 }

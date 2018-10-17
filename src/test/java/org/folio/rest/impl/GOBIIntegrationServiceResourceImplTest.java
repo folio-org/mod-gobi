@@ -124,7 +124,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       .when()
         .get(validatePath)
       .then()
-        .statusCode(204)
+        .statusCode(200)
         .content(Matchers.equalTo(""));
 
     asyncLocal.complete();
@@ -132,6 +132,29 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("End: Testing for 204 - valid call");
   }
 
+  @Test
+  public final void testPostGobiValidate(TestContext context) {
+    logger.info("Begin: Testing for 200 - valid call");
+
+    final Async asyncLocal = context.async();
+
+    RestAssured
+      .given()
+        .header(tenantHeader)
+        .header(urlHeader)
+        .header(contentTypeHeaderXML)
+        .body("<test>POST - OK</test>")
+      .when()
+        .post(validatePath)
+      .then()
+        .statusCode(200)
+        .content(Matchers.equalTo(""));
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing for 204 - valid call");
+  }
+  
   @Test
   public final void testPostGobiOrdersPOListedElectronicMonograph(TestContext context) throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed electronic monograph");
