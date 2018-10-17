@@ -112,7 +112,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   @Test
   public final void testGetGobiValidate(TestContext context) {
-    logger.info("Begin: Testing for 204 - valid call");
+    logger.info("Begin: Testing for 200 - valid call");
 
     final Async asyncLocal = context.async();
 
@@ -129,7 +129,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     asyncLocal.complete();
 
-    logger.info("End: Testing for 204 - valid call");
+    logger.info("End: Testing for 200 - valid call");
   }
 
   @Test
@@ -143,16 +143,14 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(tenantHeader)
         .header(urlHeader)
         .header(contentTypeHeaderXML)
-        .body("<test>POST - OK</test>")
       .when()
         .post(validatePath)
       .then()
-        .statusCode(200)
-        .content(Matchers.equalTo(""));
+        .statusCode(200);
 
     asyncLocal.complete();
 
-    logger.info("End: Testing for 204 - valid call");
+    logger.info("End: Testing for 200 - valid call");
   }
   
   @Test

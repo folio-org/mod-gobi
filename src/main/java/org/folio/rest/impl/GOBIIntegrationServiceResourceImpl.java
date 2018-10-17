@@ -4,7 +4,6 @@ import java.io.Reader;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.rest.RestVerticle;
@@ -12,6 +11,7 @@ import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource;
 import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
+import org.folio.rest.tools.utils.OutStream;
 import org.folio.rest.tools.utils.TenantTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,12 +72,11 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
   @Override
   public void postGobiValidate(Reader entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) throws Exception {
-    
-    HttpClientInterface httpClient = getHttpClient(okapiHeaders);
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders,
-        vertxContext);
-    //Convert me.escoffier.vertx.completablefuture.VertxCompletableFuture to javax.ws.rs.core.StreamingOutput
-    asyncResultHandler.handle(Future.succeededFuture(PostGobiValidateResponse.withXmlOK((StreamingOutput) helper.parse(entity))));
-    
+
+    String data = "<test>POST - OK</test>";
+    OutStream outStream = new OutStream();
+    outStream.setData(data);
+    asyncResultHandler.handle(Future.succeededFuture(PostGobiValidateResponse.withXmlOK(outStream)));
+
   }
 }
