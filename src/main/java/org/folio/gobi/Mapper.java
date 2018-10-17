@@ -13,8 +13,10 @@ import org.folio.rest.acq.model.Cost;
 import org.folio.rest.acq.model.Details;
 import org.folio.rest.acq.model.Eresource;
 import org.folio.rest.acq.model.Location;
+import org.folio.rest.acq.model.ProductId;
+import org.folio.rest.acq.model.ProductId.ProductIdType;
 import org.folio.rest.acq.model.PurchaseOrder;
-import org.folio.rest.acq.model.Vendor;
+import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -46,7 +48,9 @@ public class Mapper {
       Cost cost = new Cost();
       Location location = new Location();
       Eresource eresource = new Eresource();
-      Vendor vendor = new Vendor();
+      VendorDetail vendorDetail =new VendorDetail();
+      ProductId productId=new ProductId();
+       productId.setProductIdType(ProductIdType.ISBN);
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
       if(mappings.containsKey(Mapping.Field.CREATED_BY)) {
@@ -58,13 +62,13 @@ public class Mapper {
       if(mappings.containsKey(Mapping.Field.ACCOUNT_NUMBER)) {
       futures.add(mappings.get(Mapping.Field.ACCOUNT_NUMBER)
         .resolve(doc)
-        .thenAccept(o -> pol.setAccountNumber((String) o))
+        .thenAccept(o -> vendorDetail.setVendorAccount((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.ACQUISITION_METHOD)) {
       futures.add(mappings.get(Mapping.Field.ACQUISITION_METHOD)
         .resolve(doc)
-        .thenAccept(o -> pol.setAcquisitionMethod((String) o))
+        .thenAccept(o -> pol.setAcquisitionMethod(CompositePoLine.AcquisitionMethod.valueOf(o.toString())))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.REQUESTER)) {
@@ -76,13 +80,13 @@ public class Mapper {
       if(mappings.containsKey(Mapping.Field.TITLE)) {
       futures.add(mappings.get(Mapping.Field.TITLE)
         .resolve(doc)
-        .thenAccept(o -> detail.setTitle((String) o))
+        .thenAccept(o -> pol.setTitle((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.MATERIAL_TYPE)) {
       futures.add(mappings.get(Mapping.Field.MATERIAL_TYPE)
         .resolve(doc)
-        .thenAccept(o -> detail.setMaterialType((String) o))
+        .thenAccept(o -> detail.setMaterialTypes((List<String>) o))// set this to a translator so that in future if we get multiple we can handle it
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.RECEIVING_NOTE)) {
@@ -94,7 +98,11 @@ public class Mapper {
       if(mappings.containsKey(Mapping.Field.PRODUCT_ID)) {
       futures.add(mappings.get(Mapping.Field.PRODUCT_ID)
         .resolve(doc)
-        .thenAccept(o -> detail.setProductId((String) o))
+        .thenAccept(o -> {
+          productId.setProductId(o.toString());
+          List<ProductId> ids=new ArrayList<ProductId>();
+          ids.add(productId);
+          detail.setProductIds(ids);})
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.LOCATION)) {
@@ -121,7 +129,7 @@ public class Mapper {
       if(mappings.containsKey(Mapping.Field.ESTIMATED_PRICE)) {
       futures.add(mappings.get(Mapping.Field.ESTIMATED_PRICE)
         .resolve(doc)
-        .thenAccept(o -> cost.setEstimatedPrice((Double) o))
+        .thenAccept(o -> cost.setPoLineEstimatedPrice((Double) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.CURRENCY)) {
@@ -145,13 +153,13 @@ public class Mapper {
       if(mappings.containsKey(Mapping.Field.VENDOR_ID)) {
       futures.add(mappings.get(Mapping.Field.VENDOR_ID)
         .resolve(doc)
-        .thenAccept(o -> vendor.setRefNumber((String) o))
+        .thenAccept(o -> vendorDetail.setRefNumber((String) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.INSTRUCTIONS)) {
       futures.add(mappings.get(Mapping.Field.INSTRUCTIONS)
         .resolve(doc)
-        .thenAccept(o -> vendor.setInstructions((String) o))
+        .thenAccept(o -> vendorDetail.setInstructions((String) o))
         .exceptionally(Mapper::logException));
       }
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()])).thenAccept(v -> {
@@ -159,7 +167,7 @@ public class Mapper {
         pol.setCost(cost);
         pol.setLocation(location);
         pol.setEresource(eresource);
-        pol.setVendor(vendor);
+        pol.setVendorDetail(vendorDetail);
 
         poLines.add(pol);
         CompositePurchaseOrder compPO = new CompositePurchaseOrder();
