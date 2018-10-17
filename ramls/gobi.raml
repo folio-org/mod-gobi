@@ -28,6 +28,9 @@ traits:
       responses:
         200:
           description: The user is valid
+          body:
+            application/xml:
+              example: "<test>GET - OK</test>"          
         401:
           description: Not authorized to perform requested action
           body:

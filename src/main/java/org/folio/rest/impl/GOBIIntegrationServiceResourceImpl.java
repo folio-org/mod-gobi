@@ -13,7 +13,6 @@ import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource;
 import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.rest.tools.utils.BinaryOutStream;
-import org.folio.rest.tools.utils.OutStream;
 import org.folio.rest.tools.utils.TenantTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +25,19 @@ import io.vertx.core.Handler;
 public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServiceResource {
 
   private static final Logger logger = LoggerFactory.getLogger(GOBIIntegrationServiceResourceImpl.class);
-
+  private static final String GET_DATA = "<test>GET - OK</test>";
+  private static final String POST_DATA = "<test>POST - OK</test>";
+  
   public static final String OKAPI_HEADER_URL = "X-Okapi-Url";
+  
 
   @Override
   public void getGobiValidate(Map<String, String> okapiHeaders,
-      Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext)
-      throws Exception {
-    asyncResultHandler.handle(Future.succeededFuture(GetGobiValidateResponse.withOK()));
+      Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext) throws Exception {
+    BinaryOutStream binaryOutStream = new BinaryOutStream();
+    binaryOutStream.setData(GET_DATA.getBytes(StandardCharsets.UTF_8));
+
+    asyncResultHandler.handle(Future.succeededFuture(GetGobiValidateResponse.withXmlOK(binaryOutStream)));
   }
 
   @Override
@@ -72,16 +76,11 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
   }
 
   @Override
-  public void postGobiValidate(Map<String, String> okapiHeaders,
-      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) throws Exception {
+  public void postGobiValidate(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
+      Context vertxContext) throws Exception {
+    BinaryOutStream binaryOutStream = new BinaryOutStream();
+    binaryOutStream.setData(POST_DATA.getBytes(StandardCharsets.UTF_8));
 
-    String data = "<test>POST - OK</test>";
-    OutStream outStream = new OutStream();
-    outStream.setData(data);
-    
-    BinaryOutStream outStream1 = new BinaryOutStream();
-    outStream.setData(data.getBytes(StandardCharsets.UTF_8));
-    
-    asyncResultHandler.handle(Future.succeededFuture(PostGobiValidateResponse.withXmlOK(outStream1)));
+    asyncResultHandler.handle(Future.succeededFuture(PostGobiValidateResponse.withXmlOK(binaryOutStream)));
   }
 }

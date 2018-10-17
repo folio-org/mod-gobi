@@ -54,8 +54,6 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final Header tokenHeader = new Header("X-Okapi-Token",
       "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
   private final Header urlHeader = new Header("X-Okapi-Url", "http://localhost:" + mockPort);
-
-  private final Header contentTypeHeaderJSON = new Header("Content-Type", "application/json");
   private final Header contentTypeHeaderXML = new Header("Content-Type", "application/xml");
 
   // API paths
@@ -119,13 +117,12 @@ public class GOBIIntegrationServiceResourceImplTest {
     RestAssured
       .given()
         .header(tenantHeader)
+        .header(tokenHeader)
         .header(urlHeader)
-        .header(contentTypeHeaderJSON)
       .when()
         .get(validatePath)
       .then()
-        .statusCode(200)
-        .content(Matchers.equalTo(""));
+        .statusCode(200).content(Matchers.equalTo("<test>GET - OK</test>"));
 
     asyncLocal.complete();
 
@@ -146,8 +143,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       .when()
         .post(validatePath)
       .then()
-        .contentType(ContentType.XML)
-        .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>")).log();
+        .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>"));
 
     asyncLocal.complete();
 
