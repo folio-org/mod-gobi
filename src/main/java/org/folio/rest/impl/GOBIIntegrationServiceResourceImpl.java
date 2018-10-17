@@ -1,6 +1,7 @@
 package org.folio.rest.impl;
 
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -11,6 +12,7 @@ import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource;
 import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
+import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.OutStream;
 import org.folio.rest.tools.utils.TenantTool;
 import org.slf4j.Logger;
@@ -70,12 +72,16 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
   }
 
   @Override
-  public void postGobiValidate(Reader entity, Map<String, String> okapiHeaders,
+  public void postGobiValidate(Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) throws Exception {
 
     String data = "<test>POST - OK</test>";
     OutStream outStream = new OutStream();
     outStream.setData(data);
-    asyncResultHandler.handle(Future.succeededFuture(PostGobiValidateResponse.withXmlOK(outStream)));
+    
+    BinaryOutStream outStream1 = new BinaryOutStream();
+    outStream.setData(data.getBytes(StandardCharsets.UTF_8));
+    
+    asyncResultHandler.handle(Future.succeededFuture(PostGobiValidateResponse.withXmlOK(outStream1)));
   }
 }

@@ -143,11 +143,11 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(tenantHeader)
         .header(tokenHeader)
         .header(urlHeader)
-        .header(contentTypeHeaderXML)
       .when()
         .post(validatePath)
       .then()
-        .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>"));
+        .contentType(ContentType.XML)
+        .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>")).log();
 
     asyncLocal.complete();
 
