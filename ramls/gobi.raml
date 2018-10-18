@@ -26,8 +26,34 @@ traits:
       description: Validates the user has proper access to the module
       is: [secured]
       responses:
-        204:
+        200:
           description: The user is valid
+          body:
+            application/xml:
+              example: "<test>GET - OK</test>"          
+        401:
+          description: Not authorized to perform requested action
+          body:
+            text/plain:
+              example: unable to get account -- unauthorized
+        403:
+          description: Access Denied
+          body:
+            text/plain:
+              example: Access Denied
+        500:
+          description: Internal server error, e.g. due to misconfiguration
+          body:
+            text/plain:
+              example: internal server error, contact administrator
+    post:
+      description: Validates the user has proper access to the module
+      responses:
+        200:
+          description: The user is valid
+          body:
+            application/xml:
+              example: "<test>POST - OK</test>"
         401:
           description: Not authorized to perform requested action
           body:

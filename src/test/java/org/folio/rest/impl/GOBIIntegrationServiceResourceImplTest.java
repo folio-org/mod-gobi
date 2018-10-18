@@ -54,8 +54,6 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final Header tokenHeader = new Header("X-Okapi-Token",
       "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
   private final Header urlHeader = new Header("X-Okapi-Url", "http://localhost:" + mockPort);
-
-  private final Header contentTypeHeaderJSON = new Header("Content-Type", "application/json");
   private final Header contentTypeHeaderXML = new Header("Content-Type", "application/xml");
 
   // API paths
@@ -112,26 +110,46 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   @Test
   public final void testGetGobiValidate(TestContext context) {
-    logger.info("Begin: Testing for 204 - valid call");
+    logger.info("Begin: Testing for Get Gobi Validate 200 - valid call");
 
     final Async asyncLocal = context.async();
 
     RestAssured
       .given()
         .header(tenantHeader)
+        .header(tokenHeader)
         .header(urlHeader)
-        .header(contentTypeHeaderJSON)
       .when()
         .get(validatePath)
       .then()
-        .statusCode(204)
-        .content(Matchers.equalTo(""));
+        .statusCode(200).content(Matchers.equalTo("<test>GET - OK</test>"));
 
     asyncLocal.complete();
 
-    logger.info("End: Testing for 204 - valid call");
+    logger.info("End: Testing for Get Gobi Validate 200 - valid call");
   }
 
+  @Test
+  public final void testPostGobiValidate(TestContext context) {
+    logger.info("Begin: Testing for Post Gobi Validate 200 - valid call");
+
+    final Async asyncLocal = context.async();
+
+    RestAssured
+      .given()
+        .header(tenantHeader)
+        .header(tokenHeader)
+        .header(urlHeader)
+      .when()
+        .post(validatePath)
+      .then()
+        .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>"));
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing for Post Gobi Validate 200 - valid call");
+  }
+  
   @Test
   public final void testPostGobiOrdersPOListedElectronicMonograph(TestContext context) throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed electronic monograph");
