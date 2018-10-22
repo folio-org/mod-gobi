@@ -28,7 +28,7 @@ public class DataSource {
 
   public static Builder builder() {
     return new Builder();
-  }
+  } 
 
   private <T> DataSource(String from, NodeCombinator combinator, Object defValue, Translation<T> translation,
       boolean translateDefValue) {

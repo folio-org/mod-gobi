@@ -68,7 +68,7 @@ public class Mapper {
       if(mappings.containsKey(Mapping.Field.ACQUISITION_METHOD)) {
       futures.add(mappings.get(Mapping.Field.ACQUISITION_METHOD)
         .resolve(doc)
-        .thenAccept(o -> pol.setAcquisitionMethod(CompositePoLine.AcquisitionMethod.valueOf(o.toString())))
+        .thenAccept(o -> pol.setAcquisitionMethod(CompositePoLine.AcquisitionMethod.fromValue(o.toString())))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.REQUESTER)) {
@@ -86,7 +86,7 @@ public class Mapper {
       if(mappings.containsKey(Mapping.Field.MATERIAL_TYPE)) {
       futures.add(mappings.get(Mapping.Field.MATERIAL_TYPE)
         .resolve(doc)
-        .thenAccept(o -> detail.setMaterialTypes((List<String>) o))// set this to a translator so that in future if we get multiple we can handle it
+        .thenAccept(o -> detail.setMaterialTypes((List<String>) o))
         .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.RECEIVING_NOTE)) {
@@ -111,14 +111,23 @@ public class Mapper {
         .thenAccept(o -> location.setLocationId((String) o))
         .exceptionally(Mapper::logException));
       }
-      if(mappings.containsKey(Mapping.Field.QUANTITY)) {
-      futures.add(mappings.get(Mapping.Field.QUANTITY)
+      if(mappings.containsKey(Mapping.Field.QUANTITY_ORDERED_ELECTRONIC)) {
+      futures.add(mappings.get(Mapping.Field.QUANTITY_ORDERED_ELECTRONIC)
         .resolve(doc)
         .thenAccept(o -> {
-          cost.setQuantity((Integer) o);
+         cost.setQuantityElectronic((Integer) o);
           location.setQuantity((Integer) o);
         })
         .exceptionally(Mapper::logException));
+      }
+      if(mappings.containsKey(Mapping.Field.QUANTITY_ORDERED_PHYSICAL)) {
+        futures.add(mappings.get(Mapping.Field.QUANTITY_ORDERED_PHYSICAL)
+          .resolve(doc)
+          .thenAccept(o -> {
+            cost.setQuantityPhysical((Integer) o);
+            location.setQuantity((Integer) o);
+          })
+          .exceptionally(Mapper::logException));
       }
       if(mappings.containsKey(Mapping.Field.LIST_PRICE)) {
       futures.add(mappings.get(Mapping.Field.LIST_PRICE)
@@ -201,7 +210,7 @@ public class Mapper {
     DateTime val = s != null ? DateTime.parse(s) : DateTime.now();
     return CompletableFuture.completedFuture(val.toDate());
   }
-
+  
   public static String concat(NodeList nodes) {
     if (nodes != null) {
       StringBuilder sb = new StringBuilder();
