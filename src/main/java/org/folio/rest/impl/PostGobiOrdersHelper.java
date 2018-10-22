@@ -69,11 +69,10 @@ public class PostGobiOrdersHelper {
   }
   
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
-   
+    final OrderMapping.OrderType orderType = getOrderType(doc);
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
     
     try {
-      final OrderMapping.OrderType orderType = getOrderType(doc);
       Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping(this);
       Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType); 
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
@@ -97,7 +96,7 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
-  public static OrderMapping.OrderType getOrderType(Document doc) throws HttpException {
+  public static OrderMapping.OrderType getOrderType(Document doc){
     final XPath xpath = XPathFactory.newInstance().newXPath();
     OrderMapping.OrderType orderType;
 
