@@ -53,7 +53,7 @@ public class HelperUtils {
 
   public static List<String> extractMaterialTypeId(JsonObject obj) {
     //for now GOBI has only a single material type, handle multiple types in future
-    List<String> materialTypeList=new ArrayList<String>();
+    List<String> materialTypeList=new ArrayList<>();
     materialTypeList.add(extractIdOfFirst(obj, "mtypes"));
     return materialTypeList;
   }
