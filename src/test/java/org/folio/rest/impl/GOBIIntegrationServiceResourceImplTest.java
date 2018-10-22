@@ -69,8 +69,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final String poListedPrintSerialPath = mockDataRootPath + "/po_listed_print_serial.xml";
   private final String poUnlistedPrintMonographPath = mockDataRootPath + "/po_unlisted_print_monograph.xml";
   private final String poUnlistedPrintSerialPath = mockDataRootPath + "/po_unlisted_print_serial.xml";
-  private final String poListedElectronicMonographBadDataPath = mockDataRootPath
-      + "/po_listed_electronic_monograph_bad_data.xml";
+  private final String poListedElectronicMonographBadDataPath = mockDataRootPath + "/po_listed_electronic_monograph_bad_data.xml";
 
   private static Vertx vertx;
   private static MockServer mockServer;

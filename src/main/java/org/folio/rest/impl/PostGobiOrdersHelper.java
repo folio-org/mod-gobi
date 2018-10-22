@@ -2,10 +2,12 @@ package org.folio.rest.impl;
 
 import java.io.Reader;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -31,6 +33,7 @@ import org.folio.rest.mappings.model.OrderMapping.OrderType;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -66,10 +69,11 @@ public class PostGobiOrdersHelper {
   }
   
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
-    final OrderMapping.OrderType orderType = getOrderType(doc);
+   
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
     
     try {
+      final OrderMapping.OrderType orderType = getOrderType(doc);
       Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping(this);
       Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType); 
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
@@ -93,7 +97,7 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
-  public static OrderMapping.OrderType getOrderType(Document doc) {
+  public static OrderMapping.OrderType getOrderType(Document doc) throws HttpException {
     final XPath xpath = XPathFactory.newInstance().newXPath();
     OrderMapping.OrderType orderType;
 
@@ -145,7 +149,7 @@ public class PostGobiOrdersHelper {
     }
   }
 
-  public CompletableFuture<String> lookupMaterialTypeId(String materialType) {
+  public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
     try {
       String query = HelperUtils.encodeValue(String.format("name==\"%s\"", materialType));
       return httpClient.request("/material-types?query=" + query, okapiHeaders)

@@ -344,7 +344,6 @@ public class PostGobiOrdersHelperTest {
     for (int i = 0; i < orderFiles.length; i++) {
       InputStream data = this.getClass().getClassLoader().getResourceAsStream(orderFiles[i]);
       Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
-
       OrderMapping.OrderType orderType = PostGobiOrdersHelper.getOrderType(doc);
       assertEquals(expected[i], orderType);
     }

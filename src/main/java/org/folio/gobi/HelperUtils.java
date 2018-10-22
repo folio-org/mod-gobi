@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +51,11 @@ public class HelperUtils {
     return extractIdOfFirst(obj, "locations");
   }
 
-  public static String extractMaterialTypeId(JsonObject obj) {
-    return extractIdOfFirst(obj, "mtypes");
+  public static List<String> extractMaterialTypeId(JsonObject obj) {
+    //for now GOBI has only a single material type, handle multiple types in future
+    List<String> materialTypeList=new ArrayList<String>();
+    materialTypeList.add(extractIdOfFirst(obj, "mtypes"));
+    return materialTypeList;
   }
 
   public static String extractVendorId(JsonObject obj) {
