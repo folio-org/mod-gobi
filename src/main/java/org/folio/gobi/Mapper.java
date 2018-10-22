@@ -100,7 +100,7 @@ public class Mapper {
         .resolve(doc)
         .thenAccept(o -> {
           productId.setProductId(o.toString());
-          List<ProductId> ids=new ArrayList<ProductId>();
+          List<ProductId> ids=new ArrayList<>();
           ids.add(productId);
           detail.setProductIds(ids);})
         .exceptionally(Mapper::logException));
