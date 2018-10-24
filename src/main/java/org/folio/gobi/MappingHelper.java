@@ -39,14 +39,14 @@ public class MappingHelper {
 
   public static Map<OrderType, Map<Field, DataSource>> defaultMapping(PostGobiOrdersHelper postGobiOrdersHelper) {
 
-    Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new LinkedHashMap<>();
+    Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new EnumMap<>(OrderType.class);
 
     // get orderMappings list
     final List<OrderMapping> orderMappingList = defaultMappings.getOrderMappings();
 
     // iterate through orderMappings list
     for (OrderMapping orderMapping : orderMappingList) {
-      Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new LinkedHashMap<>();
+      Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
 
       // get orderType from orderMapping
       OrderType orderType = orderMapping.getOrderType();
