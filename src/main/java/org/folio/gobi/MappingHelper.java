@@ -3,23 +3,27 @@ package org.folio.gobi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.folio.rest.mappings.model.Mapping.Field;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.folio.rest.impl.PostGobiOrdersHelper;
 import org.folio.rest.mappings.model.Mapping;
+import org.folio.rest.mappings.model.Mapping.Field;
 import org.folio.rest.mappings.model.Mappings;
 import org.folio.rest.mappings.model.OrderMapping;
 import org.folio.rest.mappings.model.OrderMapping.OrderType;
 import org.w3c.dom.NodeList;
+
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class MappingHelper {
   private static final Logger logger = Logger.getLogger(MappingHelper.class);
@@ -31,16 +35,24 @@ public class MappingHelper {
   }
 
   private static final Mappings defaultMappings = Json.decodeValue(readMappingsFile(PATH), Mappings.class);
-  
+
   public static Map<OrderType, Map<Field, DataSource>> defaultMapping(PostGobiOrdersHelper postGobiOrdersHelper) {
 
-    Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new LinkedHashMap<>();
+    Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new EnumMap<>(OrderType.class);
 
-    final List<OrderMapping> orderMappingList = defaultMappings.getOrderMappings(); // get orderMappings list
-    for (OrderMapping orderMapping : orderMappingList) { // iterate through orderMappings list
-      Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new LinkedHashMap<>();
-      OrderType orderType = orderMapping.getOrderType(); // get orderType from orderMapping
-      List<Mapping> mappingsList = orderMapping.getMappings(); // get mappings list
+    // get orderMappings list
+    final List<OrderMapping> orderMappingList = defaultMappings.getOrderMappings();
+
+    // iterate through orderMappings list
+    for (OrderMapping orderMapping : orderMappingList) {
+      Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
+
+      // get orderType from orderMapping
+      OrderType orderType = orderMapping.getOrderType();
+
+      // get mappings list
+      List<Mapping> mappingsList = orderMapping.getMappings();
+
       for (int i = 0; i < mappingsList.size(); i++) { // iterate
         Mapping mapping = mappingsList.get(i); // get mapping
         Mapping.Field field = mapping.getField(); // get field
@@ -54,22 +66,26 @@ public class MappingHelper {
     return defaultMapping;
   }
 
+  public static Object getDefaultValue(org.folio.rest.mappings.model.DataSource dataSource,
+      Map<Field, org.folio.gobi.DataSource> fieldDataSourceMapping, PostGobiOrdersHelper postGobiOrdersHelper) {
+    Object ret = null;
+    if (dataSource.getDefault() != null) {
+      ret = dataSource.getDefault();
+    } else if (dataSource.getFromOtherField() != null) {
+      String otherField = dataSource.getFromOtherField().value();
+      ret = fieldDataSourceMapping.get(Field.valueOf(otherField));
+    } else if (dataSource.getDefaultMapping() != null) {
+      ret = getDS(dataSource.getDefaultMapping(), fieldDataSourceMapping, postGobiOrdersHelper);
+    }
+    return ret;
+  }
+
   @SuppressWarnings("unchecked")
   public static org.folio.gobi.DataSource getDS(Mapping mapping,
       Map<Field, org.folio.gobi.DataSource> fieldDataSourceMapping, PostGobiOrdersHelper postGobiOrdersHelper) {
 
-    Object defaultValue = null;
-    if (mapping.getDataSource().getDefault() != null) {
-      defaultValue = mapping.getDataSource().getDefault();
-    } else if (mapping.getDataSource().getFromOtherField() != null) {
-      String otherField = mapping.getDataSource().getFromOtherField().value();
-      defaultValue = fieldDataSourceMapping.get(Field.valueOf(otherField));
-    } else if (mapping.getDataSource().getDefaultMapping() != null) {
-      defaultValue = getDS(mapping.getDataSource().getDefaultMapping(), fieldDataSourceMapping, postGobiOrdersHelper);
-    }
-
+    Object defaultValue = getDefaultValue(mapping.getDataSource(), fieldDataSourceMapping, postGobiOrdersHelper);
     Boolean translateDefault = mapping.getDataSource().getTranslateDefault();
-    
     String dataSourceFrom = mapping.getDataSource().getFrom();
 
     org.folio.rest.mappings.model.DataSource.Combinator combinator = mapping.getDataSource().getCombinator();
@@ -97,7 +113,6 @@ public class MappingHelper {
       t = data -> {
         Object translatedValue;
         try {
-
           switch (translation) {
           case GET_PURCHASE_OPTION_CODE:
             translatedValue = postGobiOrdersHelper.getPurchaseOptionCode(data);
@@ -146,9 +161,46 @@ public class MappingHelper {
       };
     }
 
-    return org.folio.gobi.DataSource.builder().withFrom(dataSourceFrom).withDefault(defaultValue).withTranslation(t)
-        .withTranslateDefault(translateDefault != null && translateDefault.booleanValue()).withCombinator(nc).build();
+    return org.folio.gobi.DataSource.builder()
+      .withFrom(dataSourceFrom)
+      .withDefault(defaultValue)
+      .withTranslation(t)
+      .withTranslateDefault(translateDefault != null && translateDefault.booleanValue())
+      .withCombinator(nc)
+      .build();
 
+  }
+
+  public static Map<Mapping.Field, DataSource> extractOrderMappings(OrderMapping.OrderType orderType, JsonObject jo,
+      PostGobiOrdersHelper postGobiOrdersHelper) {
+    final Map<Mapping.Field, DataSource> map = new EnumMap<>(Mapping.Field.class);
+
+    final JsonArray configs = jo.getJsonArray("configs");
+
+    if (!configs.isEmpty()) {
+      final String mappingsString = configs.getJsonObject(0).getString("value");
+      final Mappings mappings = Json.decodeValue(mappingsString, Mappings.class);
+
+      final List<OrderMapping> orderMappingList = mappings.getOrderMappings();
+
+      if (orderMappingList != null) {
+        for (Mapping mapping : getMappingsByType(orderMappingList, orderType)) {
+          logger.info("Mapping exists for type: " + orderType.value() + ", field: " + mapping.getField());
+          map.put(mapping.getField(), getDS(mapping, map, postGobiOrdersHelper));
+        }
+      }
+    }
+    return map;
+  }
+
+  public static List<Mapping> getMappingsByType(List<OrderMapping> mappings, OrderType type) {
+    List<Mapping> ret = new ArrayList<>();
+    for (OrderMapping orderMapping : mappings) {
+      if (orderMapping.getOrderType() == type) {
+        ret.addAll(orderMapping.getMappings());
+      }
+    }
+    return ret;
   }
 
   public static String readMappingsFile(final String path) {
