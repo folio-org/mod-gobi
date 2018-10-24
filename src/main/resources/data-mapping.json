@@ -85,7 +85,8 @@
         {
           "field": "LOCATION",
           "dataSource": {
-            "from": "//Location"
+            "from": "//Location",
+            "translation": "lookupLocationId"
           }
         },
         {
@@ -318,7 +319,8 @@
         {
           "field": "LOCATION",
           "dataSource": {
-            "from": "//Location"
+            "from": "//Location",
+            "translation": "lookupLocationId"
           }
         },
         {
@@ -534,7 +536,8 @@
         {
           "field":"LOCATION",
           "dataSource": {
-            "from": "//Location"
+            "from": "//Location",
+            "translation": "lookupLocationId"
           }
         },
         {
