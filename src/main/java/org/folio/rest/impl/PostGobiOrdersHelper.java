@@ -54,6 +54,8 @@ public class PostGobiOrdersHelper {
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
 
+  public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
+
   private final HttpClientInterface httpClient;
   private final Context ctx;
   private final Map<String, String> okapiHeaders;
@@ -67,14 +69,14 @@ public class PostGobiOrdersHelper {
     this.okapiHeaders = okapiHeaders;
     this.asyncResultHandler = asyncResultHandler;
   }
-  
+
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
     final OrderMapping.OrderType orderType = getOrderType(doc);
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
-    
+
     try {
       Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping(this);
-      Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType); 
+      Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType);
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
         .withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
         .build());
@@ -92,26 +94,30 @@ public class PostGobiOrdersHelper {
       logger.error("Exception mapping request", e);
       future.completeExceptionally(e);
     }
-    
+
     return future;
   }
 
-  public static OrderMapping.OrderType getOrderType(Document doc){
+  public static OrderMapping.OrderType getOrderType(Document doc) throws IllegalArgumentException {
     final XPath xpath = XPathFactory.newInstance().newXPath();
     OrderMapping.OrderType orderType;
 
+    String provided = null;
     try {
-      Node node = (Node) xpath.evaluate("//ListedElectronicMonograph|//ListedElectronicSerial|//ListedPrintMonograph|//ListedPrintSerial|//UnlistedPrintMonograph|//UnlistedPrintSerial", doc, XPathConstants.NODE);
-      orderType = OrderMapping.OrderType.fromValue(node.getNodeName());
+      Node node = (Node) xpath.evaluate(
+          "//ListedElectronicMonograph|//ListedElectronicSerial|//ListedPrintMonograph|//ListedPrintSerial|//UnlistedPrintMonograph|//UnlistedPrintSerial",
+          doc, XPathConstants.NODE);
+      provided = node.getNodeName();
+      orderType = OrderMapping.OrderType.fromValue(provided);
     } catch (Exception e) {
       logger.error("Cannot determine order type", e);
-      orderType = null;
+      throw new IllegalArgumentException("Invalid order type: " + provided);
     }
 
     return orderType;
   }
 
-  public CompletableFuture<Integer> getPurchaseOptionCode(Object s){
+  public CompletableFuture<Integer> getPurchaseOptionCode(Object s) {
     if (s != null) {
       return CompletableFuture.completedFuture(3);
     } else {
@@ -134,7 +140,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupLocationId(String location) {
     try {
-      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", location));
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
       return httpClient.request("/locations?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractLocationId)
@@ -167,7 +173,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupVendorId(String vendorCode) {
     try {
-      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", vendorCode));
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, vendorCode));
       return httpClient.request(HttpMethod.GET, "/vendor?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractVendorId)
@@ -183,7 +189,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupWorkflowStatusId(String workflowStatusCode) {
     try {
-      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", workflowStatusCode));
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, workflowStatusCode));
       return httpClient.request(HttpMethod.GET, "/workflow_status?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractWorkflowStatusId)
@@ -199,7 +205,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupReceiptStatusId(String receiptStatusCode) {
     try {
-      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", receiptStatusCode));
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, receiptStatusCode));
       return httpClient.request(HttpMethod.GET, "/receipt_status?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractReceiptStatusId)
@@ -215,7 +221,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupPaymentStatusId(String paymentStatusCode) {
     try {
-      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", paymentStatusCode));
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, paymentStatusCode));
       return httpClient.request(HttpMethod.GET, "/payment_status?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractPaymentStatusId)
@@ -229,14 +235,15 @@ public class PostGobiOrdersHelper {
     }
   }
 
-  // TO DO - Needs implementation
+  // TODO - Needs implementation
   public CompletableFuture<String> lookupFundId(String fundCode) {
+    logger.info("Mocking the fund code lookup for: " + fundCode);
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());
   }
-  
+
   public CompletableFuture<String> lookupActivationStatusId(String activationStatusCode) {
     try {
-      String query = HelperUtils.encodeValue(String.format("code==\"%s\"", activationStatusCode));
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, activationStatusCode));
       return httpClient.request(HttpMethod.GET, "/activation_status?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractActivationStatusId)
@@ -260,7 +267,7 @@ public class PostGobiOrdersHelper {
       return httpClient.request(HttpMethod.GET,
           "/configurations/entries?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
-        .thenApply(jo -> HelperUtils.extractOrderMappings(orderType, jo))
+        .thenApply(jo -> MappingHelper.extractOrderMappings(orderType, jo, this))
         .exceptionally(t -> {
           logger.error("Exception looking up order mappings", t);
           return null;

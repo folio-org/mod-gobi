@@ -1,31 +1,18 @@
 package org.folio.gobi;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import org.apache.log4j.Logger;
-import org.folio.gobi.Mapper.NodeCombinator;
-import org.folio.gobi.Mapper.Translation;
 import org.folio.gobi.exceptions.HttpException;
-import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.Mappings;
-import org.folio.rest.mappings.model.OrderMapping;
-import org.w3c.dom.NodeList;
 
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class HelperUtils {
-  private static final Logger logger = Logger.getLogger(HelperUtils.class);
 
   private HelperUtils() {
 
@@ -52,8 +39,9 @@ public class HelperUtils {
   }
 
   public static List<String> extractMaterialTypeId(JsonObject obj) {
-    //for now GOBI has only a single material type, handle multiple types in future
-    List<String> materialTypeList=new ArrayList<>();
+    // for now GOBI has only a single material type, handle multiple types in
+    // future
+    List<String> materialTypeList = new ArrayList<>();
     materialTypeList.add(extractIdOfFirst(obj, "mtypes"));
     return materialTypeList;
   }
@@ -97,91 +85,4 @@ public class HelperUtils {
     return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
   }
 
-  public static Map<Mapping.Field, DataSource> extractOrderMappings(OrderMapping.OrderType orderType, JsonObject jo) {
-    final Map<Mapping.Field, DataSource> map = new EnumMap<>(Mapping.Field.class);
-
-    final JsonArray configs = jo.getJsonArray("configs");
-
-    if (!configs.isEmpty()) {
-      final String mappingsString = configs.getJsonObject(0).getString("value");
-      final Mappings mappings = Json.decodeValue(mappingsString, Mappings.class);
-
-      final List<OrderMapping> orderMappingList = mappings.getOrderMappings();
-
-      if (orderMappingList != null) {
-        for (OrderMapping orderMapping : orderMappingList) {
-          if (orderMapping.getOrderType() == orderType) {
-            final List<Mapping> mappingList = orderMapping.getMappings();
-            if (mappingList != null) {
-              for (Mapping mapping : mappingList) {
-                logger.info("Mapping exists for type: " + orderType.value() + ", field: " + mapping.getField());
-                org.folio.rest.mappings.model.DataSource ds = mapping.getDataSource();
-                DataSource dataSource = extractOrderMapping(ds, map);
-                map.put(mapping.getField(), dataSource);
-              }
-            }
-            break;
-          }
-        }
-      }
-    }
-    return map;
-  }
-
-  @SuppressWarnings("unchecked")
-  public static DataSource extractOrderMapping(org.folio.rest.mappings.model.DataSource dataSource, Map<Mapping.Field, DataSource> map){
-    org.folio.rest.mappings.model.DataSource.Combinator combinator = dataSource.getCombinator();
-    NodeCombinator nc = null;
-    if (combinator != null) {
-      try {
-        Method combinatorMethod = Mapper.class.getMethod(combinator.toString(), NodeList.class);
-        nc = data -> {
-          try {
-            return (String) combinatorMethod.invoke(null, data);
-          } catch (Exception e) {
-            logger.error("Unable to invoke combinator method: " + combinator, e);
-          }
-          return null;
-        };
-      } catch (NoSuchMethodException e) {
-        logger.error("Combinator method not found: " + combinator, e);
-      }
-    }
-    org.folio.rest.mappings.model.DataSource.Translation translation = dataSource.getTranslation();
-    Translation<?> t = null;
-    if (translation != null) {
-      try {
-        Method translationMethod = Mapper.class.getMethod(translation.toString(), String.class);
-        t = data -> {
-          try {
-            return (CompletableFuture<Object>) translationMethod.invoke(null, data);
-          } catch (Exception e) {
-            logger.error("Unable to invoke translation method: " + translation, e);
-          }
-          return null;
-        };
-      } catch (NoSuchMethodException e) {
-        logger.error("Translation method not found: " + translation, e);
-      }
-    }
-
-    Object defaultValue = new Object();
-
-    if (dataSource.getDefault() != null) {
-      defaultValue = dataSource.getDefault();
-    } else if (dataSource.getFromOtherField() != null){
-      String otherField = dataSource.getFromOtherField().value();
-      defaultValue = map.get(Mapping.Field.valueOf(otherField));
-    } else if(dataSource.getDefaultMapping() != null) {
-      defaultValue = extractOrderMapping(dataSource.getDefaultMapping().getDataSource(), map);
-    }
-
-    return DataSource.builder()
-      .withFrom(dataSource.getFrom())
-      .withTranslation(t)
-      .withTranslateDefault(true)
-      .withCombinator(nc)
-      .withDefault(defaultValue)
-      .build();
-  }
 }

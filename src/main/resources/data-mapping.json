@@ -67,6 +67,14 @@
           }
         },
         {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },        
+        {
           "field": "LIST_PRICE",
           "dataSource": {
             "from": "//ListPrice/Amount",
@@ -292,6 +300,14 @@
           }
         },
         {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        }, 
+        {
           "field": "LIST_PRICE",
           "dataSource": {
             "from": "//ListPrice/Amount",
@@ -492,12 +508,21 @@
           }
         },
         {
-          "field":"FUND_CODE",
+          "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",
+            "default": "0",
             "translation": "lookupFundId"
           }
         },
+        {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        }, 
         {
           "field":"LIST_PRICE",
           "dataSource":{
@@ -710,12 +735,6 @@
           "dataSource": {
             "default": "OT"
           }
-        },
-        {
-          "field": "FUND_PERCENTAGE",
-          "dataSource": {
-            "default": "100"
-          }
         }
       ]
     },
@@ -791,11 +810,21 @@
           }
         },
         {
-          "field": "FUND_PERCENTAGE",
+          "field": "FUND_CODE",
           "dataSource": {
-            "default": "100"
+            "from": "//FundCode",
+            "default": "0",
+            "translation": "lookupFundId"
           }
         },
+        {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        }, 
         {
           "field": "PRODUCT_ID_TYPE",
           "dataSource": {
@@ -866,9 +895,18 @@
           "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",
+            "default": "0",
             "translation": "lookupFundId"
           }
         },
+        {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        }, 
         {
           "field": "INSTRUCTIONS",
           "dataSource": {
@@ -973,11 +1011,21 @@
           }
         },
         {
-          "field": "FUND_PERCENTAGE",
+          "field": "FUND_CODE",
           "dataSource": {
-            "default": "100"
+            "from": "//FundCode",
+            "default": "0",
+            "translation": "lookupFundId"
           }
         },
+        {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        }, 
         {
           "field": "PRODUCT_ID_TYPE",
           "dataSource": {
@@ -1036,9 +1084,18 @@
           "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",
+            "default": "0",
             "translation": "lookupFundId"
           }
         },
+        {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        }, 
         {
           "field": "INSTRUCTIONS",
           "dataSource": {
@@ -1085,12 +1142,6 @@
           "field": "VENDOR",
           "dataSource": {
             "default": "GOBI Library Solutions"
-          }
-        },
-        {
-          "field": "FUND_PERCENTAGE",
-          "dataSource": {
-            "default": "100"
           }
         },
         {
