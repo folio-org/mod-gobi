@@ -98,7 +98,7 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
-  public static OrderMapping.OrderType getOrderType(Document doc) throws IllegalArgumentException {
+  public static OrderMapping.OrderType getOrderType(Document doc) {
     final XPath xpath = XPathFactory.newInstance().newXPath();
     OrderMapping.OrderType orderType;
 
