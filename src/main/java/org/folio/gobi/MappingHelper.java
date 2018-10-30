@@ -138,6 +138,9 @@ public class MappingHelper {
           case TO_INTEGER:
             translatedValue = Mapper.toInteger(data);
             break;
+          case TO_BOOLEAN:
+            translatedValue = Mapper.toBoolean(data);
+            break;
           default:
             throw new IllegalArgumentException("No such Translation available: " + translation);
           }

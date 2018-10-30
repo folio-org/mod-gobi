@@ -489,16 +489,15 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got: " + ctx.getBodyAsString());
 
       JsonObject compPO = ctx.getBodyAsJson();
-      JsonObject po = compPO.getJsonObject("purchase_order");
 
-      po.put("id", UUID.randomUUID().toString());
+      compPO.put("id", UUID.randomUUID().toString());
       String poNumber = "PO_" + randomDigits(10);
-      po.put("po_number", poNumber);
+      compPO.put("po_number", poNumber);
       compPO.getJsonArray("po_lines").forEach(line -> {
         JsonObject poLine = (JsonObject) line;
         poLine.put("id", UUID.randomUUID().toString());
         poLine.put("po_line_number", poNumber + "-1");
-        poLine.put("purchase_order_id", po.getString("id"));
+        poLine.put("purchase_order_id", compPO.getString("id"));
         poLine.put("barcode", randomDigits(10));
       });
 

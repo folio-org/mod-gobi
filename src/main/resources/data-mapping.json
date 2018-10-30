@@ -20,19 +20,25 @@
         {
           "field": "APPROVED",
           "dataSource": {
-            "default": true
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "CLAIMED",
           "dataSource": {
-            "default": true
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "COLLECTION",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -57,7 +63,7 @@
           }
         },
         {
-          "field": "ESTIMATED_PRICE",
+          "field": "PO_LINE_ESTIMATED_PRICE",
           "dataSource": {
             "from": "//ListPrice/Amount",
             "defaultMapping": {
@@ -167,12 +173,6 @@
           }
         },
         {
-          "field": "RECEIPT_DUE",
-          "dataSource": {
-            "default": true
-          }
-        },
-        {
           "field": "RECEIVING_NOTE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData2']/Value"
@@ -182,12 +182,6 @@
           "field": "REQUESTER",
           "dataSource": {
             "from": "//LocalData[Description='LocalData3']/Value"
-          }
-        },
-        {
-          "field": "SOURCE_ID",
-          "dataSource": {
-            "default": "Loaded from Vendor (API)"
           }
         },
         {
@@ -238,7 +232,9 @@
         {
         "field": "MANUAL_PO",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -268,19 +264,25 @@
         {
           "field": "APPROVED",
           "dataSource": {
-            "default": true
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "CLAIMED",
           "dataSource": {
-            "default": true
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "COLLECTION",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -388,12 +390,6 @@
           }
         },
         {
-          "field": "RECEIPT_DUE",
-          "dataSource": {
-            "default": true
-          }
-        },
-        {
           "field": "RECEIVING_NOTE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData2']/Value"
@@ -403,12 +399,6 @@
           "field": "REQUESTER",
           "dataSource": {
             "from": "//LocalData[Description='LocalData3']/Value"
-          }
-        },
-        {
-          "field": "SOURCE_ID",
-          "dataSource": {
-            "default": "Loaded from Vendor (API)"
           }
         },
         {
@@ -445,7 +435,7 @@
           }
         },
         {
-          "field": "ESTIMATED_PRICE",
+          "field": "PO_LINE_ESTIMATED_PRICE",
           "dataSource": {
             "from": "//ListPrice/Amount|//Quantity",
             "combinator": "multiply",
@@ -456,7 +446,9 @@
         {
         "field": "MANUAL_PO",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -493,13 +485,17 @@
         {
           "field":"CLAIMED",
           "dataSource": {
-            "default": "true"
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field":"COLLECTION",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -625,12 +621,6 @@
           }
         },
         {
-          "field":"SOURCE_ID",
-          "dataSource": {
-            "default": "Loaded from Vendor (API)"
-          }
-        },
-        {
           "field":"TITLE",
           "dataSource": {
             "from": "//datafield[@tag='245']/*",
@@ -658,7 +648,7 @@
           }
         },
         {
-          "field":"ESTIMATED_PRICE",
+          "field":"PO_LINE_ESTIMATED_PRICE",
           "dataSource":{
             "from":"//ListPrice/Amount",
             "defaultMapping": {
@@ -675,19 +665,25 @@
         {
           "field": "CREATE_INVENTORY",
           "dataSource": {
-            "default": true
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "TRIAL",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "ACTIVATED",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -730,7 +726,9 @@
         {
         "field": "MANUAL_PO",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         }
       ]
@@ -795,7 +793,9 @@
         {
           "field": "APPROVED",
           "dataSource": {
-            "default": true
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -827,12 +827,6 @@
           }
         },
         {
-          "field": "RECEIPT_DUE",
-          "dataSource": {
-            "default": true
-          }
-        },
-        {
           "field": "ACQUISITION_METHOD",
           "dataSource": {
             "default": "Purchase At Vendor System"
@@ -841,13 +835,17 @@
         {
           "field": "CLAIMED",
           "dataSource": {
-            "default": "true"
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "COLLECTION",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -883,7 +881,9 @@
         {
         "field": "MANUAL_PO",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -900,7 +900,9 @@
         {
           "field": "ACTIVATED",
           "dataSource": {
-              "default": false
+               "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -968,7 +970,7 @@
           }
         },
         {
-          "field": "ESTIMATED_PRICE",
+          "field": "PO_LINE_ESTIMATED_PRICE",
           "dataSource": {
             "from": "//ListPrice/Amount",
             "defaultMapping": {
@@ -1012,7 +1014,9 @@
         {
           "field": "APPROVED",
           "dataSource": {
-            "default": true
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -1024,13 +1028,17 @@
         {
           "field": "CREATE_INVENTORY",
           "dataSource": {
-            "default": true
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "TRIAL",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -1076,13 +1084,17 @@
         {
           "field": "CLAIMED",
           "dataSource": {
-            "default": "true"
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "COLLECTION",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -1106,7 +1118,9 @@
         {
         "field": "MANUAL_PO",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -1180,7 +1194,9 @@
         {
           "field": "APPROVED",
           "dataSource": {
-            "default": true
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -1208,12 +1224,6 @@
           }
         },
         {
-          "field": "RECEIPT_DUE",
-          "dataSource": {
-            "default": true
-          }
-        },
-        {
           "field": "ACQUISITION_METHOD",
           "dataSource": {
             "default": "Purchase At Vendor System"
@@ -1222,13 +1232,17 @@
         {
           "field": "CLAIMED",
           "dataSource": {
-            "default": "true"
+             "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
           "field": "COLLECTION",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -1252,7 +1266,9 @@
         {
         "field": "MANUAL_PO",
           "dataSource": {
-            "default": false
+             "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
