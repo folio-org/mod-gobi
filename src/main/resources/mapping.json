@@ -1,111 +1,153 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "field": {
-      "type": "string",
-      "description": "Field name of the mapping",
-      "enum": [
-        "ACCESS_PROVIDER",
-        "ACCOUNT_NUMBER",
-        "ACQUISITION_METHOD",
-        "ACTIVATION_STATUS",
-        "APPROVAL_STATUS",
-        "CLAIM",
-        "COLLECTION",
-        "CONTRIBUTOR",
-        "CREATE_INVENTORY",
-        "CREATED_BY",
-        "CREATED_DATE",
-        "CURRENCY",
-        "ESTIMATED_PRICE",
-        "EXPECTED_RECEIPT_DATE",
-        "FUND_CODE",
-        "FUND_PERCENTAGE",
-        "INSTRUCTIONS",
-        "LIST_PRICE",
-        "LOCATION",
-        "MATERIAL_TYPE",
-        "NET_PRICE",
-        "NOTE_FROM_VENDOR",
-        "ORDER_FORMAT",
-        "ORDER_TYPE",
-        "OWNER",
-        "PO_LINE_PAYMENT_STATUS",
-        "PO_LINE_RECEIPT_STATUS",
-        "PO_LINE_WORKFLOW_STATUS",
-        "PO_PAYMENT_STATUS",
-        "PO_RECEIPT_STATUS",
-        "PRODUCT_ID",
-        "PRODUCT_ID_TYPE",
-        "PUBLICATION_DATE",
-        "PUBLISHER",
-        "QUANTITY_ORDERED_PHYSICAL",
-        "QUANTITY_ORDERED_ELECTRONIC",
-        "RECEIPT_DUE",
-        "RECEIVING_NOTE",
-        "REQUESTER",
-        "SOURCE_ID",
-        "TITLE",
-        "TRIAL",
-        "USER_LIMIT",
-        "VENDOR",
-        "VENDOR_ID",
-        "VENDOR_REF_NO",
-        "VENDOR_REF_NO_TYPE"
-      ]
-    },
-    "dataSource": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "from": {
-          "type": "string",
-          "description": "XPath to the data for the field to map"
-        },
-        "translation": {
-          "enum" : [
-            "toDouble",
-            "toInteger",
-            "lookupMaterialTypeId",
-            "lookupLocationId",
-            "lookupVendorId",
-            "getPurchaseOptionCode",
-            "lookupWorkflowStatusId",
-            "lookupFundId",
-            "toDate",
-            "lookupReceiptStatusId",
-            "lookupPaymentStatusId",
-            "lookupActivationStatusId"
-          ],
-          "description": "Method to translate the specified type"
-        },
-        "translateDefault": {
-          "type": "boolean",
-          "description": "Whether or not to translate the default value"
-        },
-        "combinator": {
-          "enum": ["concat", "multiply"],
-          "description": "Method to combine the specified type with other values"
-        },
-        "default" : {
-          "type" : "string",
-          "description" : "default value"
-        },
-        "defaultMapping" : {
-          "$ref" : "#",
-          "description" : "default value found from the mapping of another node"
-        },
-        "fromOtherField" : {
-          "$ref" : "#properties/field",
-          "description" : "default value found from another field",
-          "$comment": "in the config json, the order of dataSource is important as this field refers to previous dataSource objects."
-        }
-      }
-    }
-  },
-  "additionalProperties": false,
-  "required": [
-    "field"
-  ]
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"field": {
+			"type": "string",
+			"description": "Field name of the mapping",
+			"enum": [
+				"ACCESS_PROVIDER",
+				"ACCOUNT_NUMBER",
+				"ACQUISITION_METHOD",
+				"ACTIVATED",
+				"ACTIVATION_DUE",
+				"APPROVED",
+				"ASSIGNED_TO",
+				"CANCELLATION_RESTRICTION",
+				"CANCELLATION_RESTRICTION_NOTE",
+				"CLAIMED",
+				"CREDIT",
+				"DISCOUNT",
+				"INSURANCE",
+				"OVERHEAD",
+				"SHIPMENT",
+				"USE_PRORATE",
+				"CLAIM_GRACE",
+				"CLAIM_SENT",
+				"COLLECTION",
+				"CONTRIBUTOR",
+				"CREATED_BY",
+				"CREATED_DATE",
+				"CREATE_INVENTORY",
+				"CURRENCY",
+				"DESCRIPTION",
+				"DONOR",
+				"EXPECTED_ACTIVATION",
+				"EXPECTED_RECEIPT_DATE",
+				"ENCUMBERANCE",
+				"FUND_CODE",
+				"FUND_PERCENTAGE",
+				"INSTRUCTIONS",
+				"LICENSE",
+				"LIST_PRICE",
+				"LOCATION",
+				"MANUAL_PO",
+				"MATERIAL_TYPE",
+				"MATERIAL_SUPPLIER",
+				"NOTES",
+				"NOTE_FROM_VENDOR",
+				"ORDER_TYPE",
+				"OWNER",
+				"PO_LINE_DESCRIPTION",
+				"PO_LINE_ESTIMATED_PRICE",
+				"PO_LINE_ORDER_FORMAT",
+				"PO_LINE_PAYMENT_STATUS",
+				"PO_LINE_RECEIPT_STATUS",
+				"PO_LINE_WORKFLOW_STATUS",
+				"PRODUCT_ID",
+				"PRODUCT_ID_TYPE",
+				"PUBLICATION_DATE",
+				"PUBLISHER",
+				"PURCHASE_ORDER_ID",
+				"QUANTITY_ORDERED_ELECTRONIC",
+				"QUANTITY_ORDERED_PHYSICAL",
+				"REPORTING_CODES",
+				"RECEIPT_DUE",
+				"RECEIVING_NOTE",
+				"RENEWAL_CYCLE",
+				"RENEWAL_DATE",
+				"RENEWAL_INTERVAL",
+				"RENEWAL_MANUAL",
+				"RENEWAL_REVIEW_PERIOD",
+				"REQUESTER",
+				"RE_ENCUMBER",
+				"RUSH",
+				"RECEIPT_DATE",
+				"SELECTOR",
+				"SOURCE_CODE",
+				"SOURCE_DESCRIPTION",
+				"SUBSCRIPTION_FROM",
+				"SUBSCRIPTION_INTERVAL",
+				"SUBSCRIPTION_TO",
+				"TAGS",
+				"TAX1",
+				"TAX2",
+				"TITLE",
+				"TOTAL_ESTIMATED_PRICE",
+				"TOTAL_ITEMS",
+				"TRIAL",
+				"USER_LIMIT",
+				"VENDOR",
+				"VENDOR_ACCOUNT",
+				"VENDOR_ID",
+				"VENDOR_REF_NO",
+				"VENDOR_REF_NO_TYPE",
+				"VOLUMES",
+				"WORKFLOW_STATUS"
+			]
+		},
+		"dataSource": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"from": {
+					"type": "string",
+					"description": "XPath to the data for the field to map"
+				},
+				"translation": {
+					"enum": [
+						"toDouble",
+						"toInteger",
+						"lookupMaterialTypeId",
+						"lookupLocationId",
+						"lookupVendorId",
+						"getPurchaseOptionCode",
+						"toDate",
+						"lookupReceiptStatusId",
+						"lookupPaymentStatusId",
+						"lookupMock"
+					],
+					"description": "Method to translate the specified type"
+				},
+				"translateDefault": {
+					"type": "boolean",
+					"description": "Whether or not to translate the default value"
+				},
+				"combinator": {
+					"enum": [
+						"concat",
+						"multiply"
+					],
+					"description": "Method to combine the specified type with other values"
+				},
+				"default": {
+					"type": "string",
+					"description": "default value"
+				},
+				"defaultMapping": {
+					"$ref": "#",
+					"description": "default value found from the mapping of another node"
+				},
+				"fromOtherField": {
+					"$ref": "#properties/field",
+					"description": "default value found from another field",
+					"$comment": "in the config json, the order of dataSource is important as this field refers to previous dataSource objects."
+				}
+			}
+		}
+	},
+	"additionalProperties": false,
+	"required": [
+		"field"
+	]
 }

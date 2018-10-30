@@ -117,11 +117,8 @@ public class MappingHelper {
           case GET_PURCHASE_OPTION_CODE:
             translatedValue = postGobiOrdersHelper.getPurchaseOptionCode(data);
             break;
-          case LOOKUP_ACTIVATION_STATUS_ID:
-            translatedValue = postGobiOrdersHelper.lookupActivationStatusId(data);
-            break;
-          case LOOKUP_FUND_ID:
-            translatedValue = postGobiOrdersHelper.lookupFundId(data);
+          case LOOKUP_MOCK:
+            translatedValue = postGobiOrdersHelper.lookupMock(data);
             break;
           case LOOKUP_LOCATION_ID:
             translatedValue = postGobiOrdersHelper.lookupLocationId(data);
@@ -129,17 +126,8 @@ public class MappingHelper {
           case LOOKUP_MATERIAL_TYPE_ID:
             translatedValue = postGobiOrdersHelper.lookupMaterialTypeId(data);
             break;
-          case LOOKUP_PAYMENT_STATUS_ID:
-            translatedValue = postGobiOrdersHelper.lookupPaymentStatusId(data);
-            break;
-          case LOOKUP_RECEIPT_STATUS_ID:
-            translatedValue = postGobiOrdersHelper.lookupReceiptStatusId(data);
-            break;
           case LOOKUP_VENDOR_ID:
             translatedValue = postGobiOrdersHelper.lookupVendorId(data);
-            break;
-          case LOOKUP_WORKFLOW_STATUS_ID:
-            translatedValue = postGobiOrdersHelper.lookupWorkflowStatusId(data);
             break;
           case TO_DATE:
             translatedValue = Mapper.toDate(data);

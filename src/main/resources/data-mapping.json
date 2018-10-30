@@ -5,7 +5,7 @@
       "orderType": "ListedPrintMonograph",
       "mappings": [
         {
-          "field": "ACCOUNT_NUMBER",
+          "field": "VENDOR_ACCOUNT",
           "dataSource": {
             "from": "//SubAccount",
             "default": "0"
@@ -18,15 +18,13 @@
           }
         },
         {
-          "field": "APPROVAL_STATUS",
+          "field": "APPROVED",
           "dataSource": {
-            "default": "APPROVED",
-            "translation": "lookupWorkflowStatusId",
-            "translateDefault": true
+            "default": true
           }
         },
         {
-          "field": "CLAIM",
+          "field": "CLAIMED",
           "dataSource": {
             "default": true
           }
@@ -59,11 +57,26 @@
           }
         },
         {
+          "field": "ESTIMATED_PRICE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "defaultMapping": {
+              "dataSource": {
+                "from": "//NetPrice/Amount|//Quantity",
+                "combinator": "multiply",
+                "fromOtherField": "LIST_PRICE",
+                "translation": "toDouble"
+              }
+            },
+            "translation": "toDouble"
+          }
+        },
+        {
           "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",
             "default": "0",
-            "translation": "lookupFundId"
+            "translation": "lookupMock"
           }
         },
         {
@@ -97,14 +110,6 @@
           }
         },
         {
-          "field": "NET_PRICE",
-          "dataSource": {
-            "from": "//NetPrice/Amount",
-            "default": "0",
-            "translation": "toDouble"
-          }
-        },
-        {
           "field": "OWNER",
           "dataSource": {
             "from": "//BaseAccount",
@@ -114,7 +119,7 @@
         {
           "field": "PO_LINE_WORKFLOW_STATUS",
           "dataSource": {
-            "default": "Order Sent"
+            "default": "Open"
           }
         },
         {
@@ -219,18 +224,27 @@
           }
         },
         {
-          "field": "ESTIMATED_PRICE",
+          "field": "PO_LINE_ORDER_FORMAT",
           "dataSource": {
-            "from": "//ListPrice/Amount",
-            "defaultMapping": {
-              "dataSource": {
-                "from": "//NetPrice/Amount|//Quantity",
-                "combinator": "multiply",
-                "fromOtherField": "LIST_PRICE",
-                "translation": "toDouble"
-              }
-            },
-            "translation": "toDouble"
+            "default": "Physical Resource"
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "One-Time"
+          }
+        },
+        {
+        "field": "MANUAL_PO",
+          "dataSource": {
+            "default": false
+          }
+        },
+        {
+          "field": "WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
           }
         }
       ]
@@ -239,7 +253,7 @@
       "orderType": "UnlistedPrintMonograph",
       "mappings": [
         {
-          "field": "ACCOUNT_NUMBER",
+          "field": "VENDOR_ACCOUNT",
           "dataSource": {
             "from": "//SubAccount",
             "default": "0"
@@ -252,15 +266,13 @@
           }
         },
         {
-          "field": "APPROVAL_STATUS",
+          "field": "APPROVED",
           "dataSource": {
-            "default": "APPROVED",
-            "translation": "lookupWorkflowStatusId",
-            "translateDefault": true
+            "default": true
           }
         },
         {
-          "field": "CLAIM",
+          "field": "CLAIMED",
           "dataSource": {
             "default": true
           }
@@ -297,7 +309,7 @@
           "dataSource": {
             "from": "//FundCode",
             "default": "0",
-            "translation": "lookupFundId"
+            "translation": "lookupMock"
           }
         },
         {
@@ -331,14 +343,6 @@
           }
         },
         {
-          "field": "NET_PRICE",
-          "dataSource": {
-            "from": "//NetPrice/Amount",
-            "default": "0",
-            "translation": "toDouble"
-          }
-        },
-        {
           "field": "OWNER",
           "dataSource": {
             "from": "//BaseAccount",
@@ -348,7 +352,7 @@
         {
           "field": "PO_LINE_WORKFLOW_STATUS",
           "dataSource": {
-            "default": "Order Sent"
+            "default": "Open"
           }
         },
         {
@@ -448,6 +452,18 @@
             "fromOtherField": "LIST_PRICE",
             "translation": "toDouble"
            }
+        },
+        {
+        "field": "MANUAL_PO",
+          "dataSource": {
+            "default": false
+          }
+        },
+        {
+          "field": "WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
         }
       ]
     },
@@ -456,7 +472,7 @@
       "mappings":
       [
         {
-          "field":"ACCOUNT_NUMBER",
+          "field":"VENDOR_ACCOUNT",
           "dataSource":{
             "from":"//SubAccount",
             "default":"0"
@@ -469,15 +485,13 @@
           }
         },
         {
-          "field":"APPROVAL_STATUS",
+          "field":"APPROVED",
           "dataSource":{
-            "default":"A",
-            "translation": "lookupWorkflowStatusId",
-            "translateDefault": true
+            "default":true
           }
         },
         {
-          "field":"CLAIM",
+          "field":"CLAIMED",
           "dataSource": {
             "default": "true"
           }
@@ -514,7 +528,7 @@
           "dataSource": {
             "from": "//FundCode",
             "default": "0",
-            "translation": "lookupFundId"
+            "translation": "lookupMock"
           }
         },
         {
@@ -548,14 +562,6 @@
           }
         },
         {
-          "field":"NET_PRICE",
-          "dataSource": {
-            "from": "//NetPrice/Amount",
-            "default": "0",
-            "translation": "toDouble"
-          }
-        },
-        {
           "field":"OWNER",
           "dataSource": {
             "from": "//BaseAccount",
@@ -565,35 +571,19 @@
         {
           "field":"PO_LINE_WORKFLOW_STATUS",
           "dataSource": {
-            "default":"P"
-          }
-        },
-        {
-          "field":"PO_RECEIPT_STATUS",
-          "dataSource": {
-            "default":"RNR",
-            "translation": "lookupReceiptStatusId",
-            "translateDefault": true
+            "default":"Open"
           }
         },
         {
           "field":"PO_LINE_RECEIPT_STATUS",
           "dataSource": {
-            "default":"RNR"
-          }
-        },
-        {
-          "field":"PO_PAYMENT_STATUS",
-          "dataSource": {
-            "default":"AP",
-            "translation": "lookupPaymentStatusId",
-            "translateDefault": true
+            "default":"Receipt Not Required"
           }
         },
         {
           "field":"PO_LINE_PAYMENT_STATUS",
           "dataSource": {
-            "default":"AP"
+            "default":"Awaiting Payment"
           }
         },
         {
@@ -695,11 +685,9 @@
           }
         },
         {
-          "field": "ACTIVATION_STATUS",
+          "field": "ACTIVATED",
           "dataSource": {
-            "default": "NA",
-            "translation": "lookupActivationStatusId",
-            "translateDefault": true
+            "default": false
           }
         },
         {
@@ -728,15 +716,21 @@
           }
         },
         {
-          "field": "ORDER_FORMAT",
+          "field": "PO_LINE_ORDER_FORMAT",
           "dataSource": {
-            "default": "ER"
+            "default": "Electronic Resource"
           }
         },
         {
           "field": "ORDER_TYPE",
           "dataSource": {
-            "default": "OT"
+            "default": "One-Time"
+          }
+        },
+        {
+        "field": "MANUAL_PO",
+          "dataSource": {
+            "default": false
           }
         }
       ]
@@ -761,7 +755,7 @@
           "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",
-            "translation": "lookupFundId"
+            "translation": "lookupMock"
           }
         },
         {
@@ -799,11 +793,9 @@
           }
         },
         {
-          "field": "APPROVAL_STATUS",
+          "field": "APPROVED",
           "dataSource": {
-            "default": "APPROVED",
-            "translation": "lookupWorkflowStatusId",
-            "translateDefault": true
+            "default": true
           }
         },
         {
@@ -817,7 +809,7 @@
           "dataSource": {
             "from": "//FundCode",
             "default": "0",
-            "translation": "lookupFundId"
+            "translation": "lookupMock"
           }
         },
         {
@@ -847,7 +839,7 @@
           }
         },
         {
-          "field": "CLAIM",
+          "field": "CLAIMED",
           "dataSource": {
             "default": "true"
           }
@@ -859,9 +851,21 @@
           }
         },
         {
+          "field": "PO_LINE_ORDER_FORMAT",
+          "dataSource": {
+            "default": "Physical Resource"
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "Ongoing"
+          }
+        },
+        {
           "field": "PO_LINE_WORKFLOW_STATUS",
           "dataSource": {
-            "default": "Order Sent"
+            "default": "Open"
           }
         },
         {
@@ -875,12 +879,30 @@
           "dataSource": {
             "default": "Awaiting Payment"
           }
+        },
+        {
+        "field": "MANUAL_PO",
+          "dataSource": {
+            "default": false
+          }
+        },
+        {
+          "field": "WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
         }
       ]
     },
     {
       "orderType": "ListedElectronicSerial",
       "mappings": [
+        {
+          "field": "ACTIVATED",
+          "dataSource": {
+              "default": false
+          }
+        },
         {
           "field": "TITLE",
           "dataSource": {
@@ -899,7 +921,7 @@
           "dataSource": {
             "from": "//FundCode",
             "default": "0",
-            "translation": "lookupFundId"
+            "translation": "lookupMock"
           }
         },
         {
@@ -988,11 +1010,9 @@
           }
         },
         {
-          "field": "APPROVAL_STATUS",
+          "field": "APPROVED",
           "dataSource": {
-            "default": "APPROVED",
-            "translation": "lookupWorkflowStatusId",
-            "translateDefault": true
+            "default": true
           }
         },
         {
@@ -1018,7 +1038,7 @@
           "dataSource": {
             "from": "//FundCode",
             "default": "0",
-            "translation": "lookupFundId"
+            "translation": "lookupMock"
           }
         },
         {
@@ -1029,6 +1049,18 @@
             "translateDefault": true
           }
         }, 
+        {
+          "field": "PO_LINE_ORDER_FORMAT",
+          "dataSource": {
+            "default": "Electronic Resource"
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "Ongoing"
+          }
+        },
         {
           "field": "PRODUCT_ID_TYPE",
           "dataSource": {
@@ -1042,7 +1074,7 @@
           }
         },
         {
-          "field": "CLAIM",
+          "field": "CLAIMED",
           "dataSource": {
             "default": "true"
           }
@@ -1056,7 +1088,7 @@
         {
           "field": "PO_LINE_WORKFLOW_STATUS",
           "dataSource": {
-            "default": "Order Sent"
+            "default": "Open"
           }
         },
         {
@@ -1069,6 +1101,18 @@
           "field": "PO_LINE_PAYMENT_STATUS",
           "dataSource": {
             "default": "Awaiting Payment"
+          }
+        },
+        {
+        "field": "MANUAL_PO",
+          "dataSource": {
+            "default": false
+          }
+        },
+        {
+          "field": "WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
           }
         }
       ]
@@ -1088,7 +1132,7 @@
           "dataSource": {
             "from": "//FundCode",
             "default": "0",
-            "translation": "lookupFundId"
+            "translation": "lookupMock"
           }
         },
         {
@@ -1134,17 +1178,27 @@
           }
         },
         {
-          "field": "APPROVAL_STATUS",
+          "field": "APPROVED",
           "dataSource": {
-            "default": "APPROVED",
-            "translation": "lookupWorkflowStatusId",
-            "translateDefault": true
+            "default": true
           }
         },
         {
           "field": "VENDOR",
           "dataSource": {
             "default": "GOBI Library Solutions"
+          }
+        },
+        {
+          "field": "PO_LINE_ORDER_FORMAT",
+          "dataSource": {
+            "default": "Physical Resource"
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "Ongoing"
           }
         },
         {
@@ -1166,7 +1220,7 @@
           }
         },
         {
-          "field": "CLAIM",
+          "field": "CLAIMED",
           "dataSource": {
             "default": "true"
           }
@@ -1180,7 +1234,7 @@
         {
           "field": "PO_LINE_WORKFLOW_STATUS",
           "dataSource": {
-            "default": "Order Sent"
+            "default": "Open"
           }
         },
         {
@@ -1193,6 +1247,18 @@
           "field": "PO_LINE_PAYMENT_STATUS",
           "dataSource": {
             "default": "Awaiting Payment"
+          }
+        },
+        {
+        "field": "MANUAL_PO",
+          "dataSource": {
+            "default": false
+          }
+        },
+        {
+          "field": "WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
           }
         }
       ]
