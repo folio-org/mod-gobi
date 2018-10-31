@@ -1,12 +1,12 @@
 {
-	"$schema": "http://json-schema.org/draft-04/schema#",
-	"type": "object",
-	"properties": {
-		"field": {
-			"type": "string",
-			"description": "Field name of the mapping",
-			"enum": [
-			  "ACCESS_PROVIDER",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "field": {
+      "type": "string",
+      "description": "Field name of the mapping",
+      "enum": [
+        "ACCESS_PROVIDER",
         "ACCOUNT_NUMBER",
         "ACQUISITION_METHOD",
         "ACTIVATED",
@@ -96,62 +96,62 @@
         "VENDOR_REF_NO",
         "VENDOR_REF_NO_TYPE",
         "VOLUMES",
-        "WORKFLOW_STATUS"   
-			]
-		},
-		"dataSource": {
-			"type": "object",
-			"additionalProperties": false,
-			"properties": {
-				"from": {
-					"type": "string",
-					"description": "XPath to the data for the field to map"
-				},
-				"translation": {
-					"enum": [
-						"toDouble",
-						"toInteger",
-						"lookupMaterialTypeId",
-						"lookupLocationId",
-						"lookupVendorId",
-						"getPurchaseOptionCode",
-						"toDate",
-						"lookupReceiptStatusId",
-						"lookupPaymentStatusId",
-						"lookupMock",
-						"toBoolean"
-					],
-					"description": "Method to translate the specified type"
-				},
-				"translateDefault": {
-					"type": "boolean",
-					"description": "Whether or not to translate the default value"
-				},
-				"combinator": {
-					"enum": [
-						"concat",
-						"multiply"
-					],
-					"description": "Method to combine the specified type with other values"
-				},
-				"default": {
-					"type": "string",
-					"description": "default value"
-				},
-				"defaultMapping": {
-					"$ref": "#",
-					"description": "default value found from the mapping of another node"
-				},
-				"fromOtherField": {
-					"$ref": "#properties/field",
-					"description": "default value found from another field",
-					"$comment": "in the config json, the order of dataSource is important as this field refers to previous dataSource objects."
-				}
-			}
-		}
-	},
-	"additionalProperties": false,
-	"required": [
-		"field"
-	]
+        "WORKFLOW_STATUS"
+      ]
+    },
+    "dataSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "XPath to the data for the field to map"
+        },
+        "translation": {
+          "enum": [
+            "toDouble",
+            "toInteger",
+            "lookupMaterialTypeId",
+            "lookupLocationId",
+            "lookupVendorId",
+            "getPurchaseOptionCode",
+            "toDate",
+            "lookupReceiptStatusId",
+            "lookupPaymentStatusId",
+            "lookupMock",
+            "toBoolean"
+          ],
+          "description": "Method to translate the specified type"
+        },
+        "translateDefault": {
+          "type": "boolean",
+          "description": "Whether or not to translate the default value"
+        },
+        "combinator": {
+          "enum": [
+            "concat",
+            "multiply"
+          ],
+          "description": "Method to combine the specified type with other values"
+        },
+        "default": {
+          "type": "string",
+          "description": "default value"
+        },
+        "defaultMapping": {
+          "$ref": "#",
+          "description": "default value found from the mapping of another node"
+        },
+        "fromOtherField": {
+          "$ref": "#properties/field",
+          "description": "default value found from another field",
+          "$comment": "in the config json, the order of dataSource is important as this field refers to previous dataSource objects."
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "field"
+  ]
 }

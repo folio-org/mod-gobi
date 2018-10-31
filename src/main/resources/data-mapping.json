@@ -1,16 +1,8 @@
 {
-  "orderMappings":
-  [
+  "orderMappings": [
     {
       "orderType": "ListedPrintMonograph",
       "mappings": [
-        {
-          "field": "VENDOR_ACCOUNT",
-          "dataSource": {
-            "from": "//SubAccount",
-            "default": "0"
-          }
-        },
         {
           "field": "ACQUISITION_METHOD",
           "dataSource": {
@@ -20,7 +12,7 @@
         {
           "field": "APPROVED",
           "dataSource": {
-             "default": "true",
+            "default": "true",
             "translation": "toBoolean",
             "translateDefault": true
           }
@@ -28,7 +20,7 @@
         {
           "field": "CLAIMED",
           "dataSource": {
-             "default": "true",
+            "default": "true",
             "translation": "toBoolean",
             "translateDefault": true
           }
@@ -36,7 +28,7 @@
         {
           "field": "COLLECTION",
           "dataSource": {
-             "default": "false",
+            "default": "false",
             "translation": "toBoolean",
             "translateDefault": true
           }
@@ -63,21 +55,6 @@
           }
         },
         {
-          "field": "PO_LINE_ESTIMATED_PRICE",
-          "dataSource": {
-            "from": "//ListPrice/Amount",
-            "defaultMapping": {
-              "dataSource": {
-                "from": "//NetPrice/Amount|//Quantity",
-                "combinator": "multiply",
-                "fromOtherField": "LIST_PRICE",
-                "translation": "toDouble"
-              }
-            },
-            "translation": "toDouble"
-          }
-        },
-        {
           "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",
@@ -92,7 +69,7 @@
             "translation": "toDouble",
             "translateDefault": true
           }
-        },        
+        },
         {
           "field": "LIST_PRICE",
           "dataSource": {
@@ -109,10 +86,24 @@
           }
         },
         {
+          "field": "MANUAL_PO",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "MATERIAL_TYPE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData1']/Value",
             "translation": "lookupMaterialTypeId"
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "One-Time"
           }
         },
         {
@@ -123,9 +114,30 @@
           }
         },
         {
-          "field": "PO_LINE_WORKFLOW_STATUS",
+          "field": "PO_LINE_ESTIMATED_PRICE",
           "dataSource": {
-            "default": "Open"
+            "from": "//ListPrice/Amount",
+            "defaultMapping": {
+              "dataSource": {
+                "from": "//NetPrice/Amount|//Quantity",
+                "combinator": "multiply",
+                "fromOtherField": "LIST_PRICE",
+                "translation": "toDouble"
+              }
+            },
+            "translation": "toDouble"
+          }
+        },
+        {
+          "field": "PO_LINE_ORDER_FORMAT",
+          "dataSource": {
+            "default": "Physical Resource"
+          }
+        },
+        {
+          "field": "PO_LINE_PAYMENT_STATUS",
+          "dataSource": {
+            "default": "Awaiting Payment"
           }
         },
         {
@@ -135,9 +147,9 @@
           }
         },
         {
-          "field": "PO_LINE_PAYMENT_STATUS",
+          "field": "PO_LINE_WORKFLOW_STATUS",
           "dataSource": {
-            "default": "Awaiting Payment"
+            "default": "Open"
           }
         },
         {
@@ -153,9 +165,9 @@
           }
         },
         {
-          "field" : "PUBLICATION_DATE",
-          "dataSource" : {
-            "from" : "//datafield[@tag='260']/subfield[@code='c']"
+          "field": "PUBLICATION_DATE",
+          "dataSource": {
+            "from": "//datafield[@tag='260']/subfield[@code='c']"
           }
         },
         {
@@ -198,11 +210,18 @@
           }
         },
         {
+          "field": "VENDOR_ACCOUNT",
+          "dataSource": {
+            "from": "//SubAccount",
+            "default": "0"
+          }
+        },
+        {
           "field": "VENDOR_ID",
           "dataSource": {
             "default": "GOBI",
-            "translation" : "lookupVendorId",
-            "translateDefault" : true
+            "translation": "lookupVendorId",
+            "translateDefault": true
           }
         },
         {
@@ -218,26 +237,6 @@
           }
         },
         {
-          "field": "PO_LINE_ORDER_FORMAT",
-          "dataSource": {
-            "default": "Physical Resource"
-          }
-        },
-        {
-          "field": "ORDER_TYPE",
-          "dataSource": {
-            "default": "One-Time"
-          }
-        },
-        {
-        "field": "MANUAL_PO",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "WORKFLOW_STATUS",
           "dataSource": {
             "default": "Open"
@@ -249,13 +248,6 @@
       "orderType": "UnlistedPrintMonograph",
       "mappings": [
         {
-          "field": "VENDOR_ACCOUNT",
-          "dataSource": {
-            "from": "//SubAccount",
-            "default": "0"
-          }
-        },
-        {
           "field": "ACQUISITION_METHOD",
           "dataSource": {
             "default": "Purchase At Vendor System"
@@ -264,7 +256,7 @@
         {
           "field": "APPROVED",
           "dataSource": {
-             "default": "true",
+            "default": "true",
             "translation": "toBoolean",
             "translateDefault": true
           }
@@ -272,7 +264,7 @@
         {
           "field": "CLAIMED",
           "dataSource": {
-             "default": "true",
+            "default": "true",
             "translation": "toBoolean",
             "translateDefault": true
           }
@@ -280,7 +272,7 @@
         {
           "field": "COLLECTION",
           "dataSource": {
-             "default": "false",
+            "default": "false",
             "translation": "toBoolean",
             "translateDefault": true
           }
@@ -321,7 +313,7 @@
             "translation": "toDouble",
             "translateDefault": true
           }
-        }, 
+        },
         {
           "field": "LIST_PRICE",
           "dataSource": {
@@ -335,6 +327,14 @@
           "dataSource": {
             "from": "//Location",
             "translation": "lookupLocationId"
+          }
+        },
+        {
+          "field": "MANUAL_PO",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -352,15 +352,12 @@
           }
         },
         {
-          "field": "PO_LINE_WORKFLOW_STATUS",
+          "field": "PO_LINE_ESTIMATED_PRICE",
           "dataSource": {
-            "default": "Open"
-          }
-        },
-        {
-          "field": "PO_LINE_RECEIPT_STATUS",
-          "dataSource": {
-            "default": "Awaiting Receipt"
+            "from": "//ListPrice/Amount|//Quantity",
+            "combinator": "multiply",
+            "fromOtherField": "LIST_PRICE",
+            "translation": "toDouble"
           }
         },
         {
@@ -370,9 +367,21 @@
           }
         },
         {
-          "field" : "PUBLICATION_DATE",
-          "dataSource" : {
-            "from" : "//datafield[@tag='260']/subfield[@code='c']"
+          "field": "PO_LINE_RECEIPT_STATUS",
+          "dataSource": {
+            "default": "Awaiting Receipt"
+          }
+        },
+        {
+          "field": "PO_LINE_WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
+        },
+        {
+          "field": "PUBLICATION_DATE",
+          "dataSource": {
+            "from": "//datafield[@tag='260']/subfield[@code='c']"
           }
         },
         {
@@ -415,11 +424,18 @@
           }
         },
         {
+          "field": "VENDOR_ACCOUNT",
+          "dataSource": {
+            "from": "//SubAccount",
+            "default": "0"
+          }
+        },
+        {
           "field": "VENDOR_ID",
           "dataSource": {
             "default": "GOBI",
-            "translation" : "lookupVendorId",
-            "translateDefault" : true
+            "translation": "lookupVendorId",
+            "translateDefault": true
           }
         },
         {
@@ -435,23 +451,6 @@
           }
         },
         {
-          "field": "PO_LINE_ESTIMATED_PRICE",
-          "dataSource": {
-            "from": "//ListPrice/Amount|//Quantity",
-            "combinator": "multiply",
-            "fromOtherField": "LIST_PRICE",
-            "translation": "toDouble"
-           }
-        },
-        {
-        "field": "MANUAL_PO",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "WORKFLOW_STATUS",
           "dataSource": {
             "default": "Open"
@@ -461,370 +460,12 @@
     },
     {
       "orderType": "ListedElectronicMonograph",
-      "mappings":
-      [
-        {
-          "field":"VENDOR_ACCOUNT",
-          "dataSource":{
-            "from":"//SubAccount",
-            "default":"0"
-          }
-        },
-        {
-          "field":"ACQUISITION_METHOD",
-          "dataSource":{
-            "default":"Purchase At Vendor System"
-          }
-        },
-        {
-          "field":"APPROVED",
-          "dataSource":{
-            "default":true
-          }
-        },
-        {
-          "field":"CLAIMED",
-          "dataSource": {
-             "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field":"COLLECTION",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field":"CONTRIBUTOR",
-          "dataSource": {
-            "from": "//datafield[@tag='100']/*",
-            "combinator":"concat"
-          }
-        },
-        {
-          "field":"CREATED_DATE",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
-          }
-        },
-        {
-          "field":"CURRENCY",
-          "dataSource":{
-            "from":"//ListPrice/Currency",
-            "default":"USD"
-          }
-        },
-        {
-          "field": "FUND_CODE",
-          "dataSource": {
-            "from": "//FundCode",
-            "default": "0",
-            "translation": "lookupMock"
-          }
-        },
-        {
-          "field": "FUND_PERCENTAGE",
-          "dataSource": {
-            "default": "100",
-            "translation": "toDouble",
-            "translateDefault": true
-          }
-        }, 
-        {
-          "field":"LIST_PRICE",
-          "dataSource":{
-            "from":"//ListPrice/Amount",
-            "default":"0",
-            "translation": "toDouble"
-          }
-        },
-        {
-          "field":"LOCATION",
-          "dataSource": {
-            "from": "//Location",
-            "translation": "lookupLocationId"
-          }
-        },
-        {
-          "field":"MATERIAL_TYPE",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData1']/Value",
-            "translation": "lookupMaterialTypeId"
-          }
-        },
-        {
-          "field":"OWNER",
-          "dataSource": {
-            "from": "//BaseAccount",
-            "default":"Main"
-          }
-        },
-        {
-          "field":"PO_LINE_WORKFLOW_STATUS",
-          "dataSource": {
-            "default":"Open"
-          }
-        },
-        {
-          "field":"PO_LINE_RECEIPT_STATUS",
-          "dataSource": {
-            "default":"Receipt Not Required"
-          }
-        },
-        {
-          "field":"PO_LINE_PAYMENT_STATUS",
-          "dataSource": {
-            "default":"Awaiting Payment"
-          }
-        },
-        {
-          "field":"PRODUCT_ID",
-          "dataSource": {
-            "from": "//datafield[@tag='020']/subfield[@code='a']"
-          }
-        },
-        {
-          "field":"PRODUCT_ID_TYPE",
-          "dataSource": {
-            "default": "ISBN"
-          }
-        },
-        {
-          "field": "PUBLISHER",
-          "dataSource": {
-            "from": "//datafield[@tag='260']/subfield[@code='b']"
-          }
-        },
-        {
-          "field":"QUANTITY_ORDERED_ELECTRONIC",
-          "dataSource":{
-            "from":"//Quantity",
-            "default":"1",
-            "translation": "toInteger"
-          }
-        },
-        {
-          "field":"RECEIVING_NOTE",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData2']/Value"
-          }
-        },
-        {
-          "field":"REQUESTER",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData3']/Value"
-          }
-        },
-        {
-          "field":"TITLE",
-          "dataSource": {
-            "from": "//datafield[@tag='245']/*",
-            "combinator":"concat"
-          }
-        },
-        {
-          "field":"VENDOR_ID",
-          "dataSource": {
-            "default": "GOBI",
-            "translation": "lookupVendorId",
-            "translateDefault": true
-          }
-        },
-        {
-          "field":"VENDOR_REF_NO",
-          "dataSource": {
-            "from": "//YBPOrderKey"
-          }
-        },
-        {
-          "field":"VENDOR_REF_NO_TYPE",
-          "dataSource": {
-            "default": "Supplier's unique order line reference number"
-          }
-        },
-        {
-          "field":"PO_LINE_ESTIMATED_PRICE",
-          "dataSource":{
-            "from":"//ListPrice/Amount",
-            "defaultMapping": {
-              "dataSource": {
-                "from" : "//NetPrice/Amount|//Quantity",
-                "combinator":"multiply",
-                "fromOtherField" : "LIST_PRICE",
-                "translation" : "toDouble"
-              }
-            },
-            "translation": "toDouble"
-          }
-        },
-        {
-          "field": "CREATE_INVENTORY",
-          "dataSource": {
-             "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "TRIAL",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "ACTIVATED",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
+      "mappings": [
         {
           "field": "ACCESS_PROVIDER",
           "dataSource": {
             "from": "//PurchaseOption/VendorPOCode",
             "translation": "lookupVendorId"
-          }
-        },
-        {
-          "field": "NOTE_FROM_VENDOR",
-          "dataSource": {
-            "from": "//PurchaseOption/VendorCode"
-          }
-        },
-        {
-          "field": "INSTRUCTIONS",
-          "dataSource": {
-            "from": "//OrderNotes"
-          }
-        },
-        {
-          "field": "PUBLICATION_DATE",
-          "dataSource": {
-            "from": "//datafield[@tag='260']/subfield[@code='c']"
-          }
-        },
-        {
-          "field": "PO_LINE_ORDER_FORMAT",
-          "dataSource": {
-            "default": "Electronic Resource"
-          }
-        },
-        {
-          "field": "ORDER_TYPE",
-          "dataSource": {
-            "default": "One-Time"
-          }
-        },
-        {
-        "field": "MANUAL_PO",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        }
-      ]
-    },
-   {
-      "orderType": "ListedPrintSerial",
-      "mappings": [
-        {
-          "field": "TITLE",
-          "dataSource": {
-            "from": "//datafield[@tag='245']/*",
-            "combinator": "concat"
-          }
-        },
-        {
-          "field": "PUBLISHER",
-          "dataSource": {
-            "from": "//datafield[@tag='260']/subfield[@code='b']"
-          }
-        },
-        {
-          "field": "FUND_CODE",
-          "dataSource": {
-            "from": "//FundCode",
-            "default": "0",
-            "translation": "lookupMock"
-          }
-        },
-        {
-          "field": "INSTRUCTIONS",
-          "dataSource": {
-            "from": "//OrderNotes"
-          }
-        },
-        {
-          "field": "QUANTITY_ORDERED_PHYSICAL",
-          "dataSource": {
-            "from": "//Quantity",
-            "default": "1",
-            "translation": "toInteger"
-          }
-        },
-        {
-          "field": "VENDOR_REF_NO",
-          "dataSource": {
-            "from": "//YBPOrderKey"
-          }
-        },
-        {
-          "field": "CREATED_DATE",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
-          }
-        },
-        {
-          "field": "OWNER",
-          "dataSource": {
-            "from": "//BaseAccount",
-            "default": "Main"
-          }
-        },
-        {
-          "field": "APPROVED",
-          "dataSource": {
-             "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "VENDOR",
-          "dataSource": {
-            "default": "GOBI Library Solutions"
-          }
-        },
-        {
-          "field": "FUND_CODE",
-          "dataSource": {
-            "from": "//FundCode",
-            "default": "0",
-            "translation": "lookupMock"
-          }
-        },
-        {
-          "field": "FUND_PERCENTAGE",
-          "dataSource": {
-            "default": "100",
-            "translation": "toDouble",
-            "translateDefault": true
-          }
-        }, 
-        {
-          "field": "PRODUCT_ID_TYPE",
-          "dataSource": {
-            "default": "ISBN"
           }
         },
         {
@@ -834,9 +475,23 @@
           }
         },
         {
+          "field": "ACTIVATED",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "APPROVED",
+          "dataSource": {
+            "default": true
+          }
+        },
+        {
           "field": "CLAIMED",
           "dataSource": {
-             "default": "true",
+            "default": "true",
             "translation": "toBoolean",
             "translateDefault": true
           }
@@ -844,79 +499,38 @@
         {
           "field": "COLLECTION",
           "dataSource": {
-             "default": "false",
+            "default": "false",
             "translation": "toBoolean",
             "translateDefault": true
           }
         },
         {
-          "field": "PO_LINE_ORDER_FORMAT",
+          "field": "CONTRIBUTOR",
           "dataSource": {
-            "default": "Physical Resource"
-          }
-        },
-        {
-          "field": "ORDER_TYPE",
-          "dataSource": {
-            "default": "Ongoing"
-          }
-        },
-        {
-          "field": "PO_LINE_WORKFLOW_STATUS",
-          "dataSource": {
-            "default": "Open"
-          }
-        },
-        {
-          "field": "PO_LINE_RECEIPT_STATUS",
-          "dataSource": {
-            "default": "Awaiting Receipt"
-          }
-        },
-        {
-          "field": "PO_LINE_PAYMENT_STATUS",
-          "dataSource": {
-            "default": "Awaiting Payment"
-          }
-        },
-        {
-        "field": "MANUAL_PO",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "WORKFLOW_STATUS",
-          "dataSource": {
-            "default": "Open"
-          }
-        }
-      ]
-    },
-    {
-      "orderType": "ListedElectronicSerial",
-      "mappings": [
-        {
-          "field": "ACTIVATED",
-          "dataSource": {
-               "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "TITLE",
-          "dataSource": {
-            "from": "//datafield[@tag='245']/*",
+            "from": "//datafield[@tag='100']/*",
             "combinator": "concat"
           }
         },
         {
-          "field": "PUBLISHER",
+          "field": "CREATED_DATE",
           "dataSource": {
-            "from": "//datafield[@tag='260']/subfield[@code='b']"
+            "from": "//OrderPlaced",
+            "translation": "toDate"
+          }
+        },
+        {
+          "field": "CREATE_INVENTORY",
+          "dataSource": {
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "CURRENCY",
+          "dataSource": {
+            "from": "//ListPrice/Currency",
+            "default": "USD"
           }
         },
         {
@@ -934,32 +548,11 @@
             "translation": "toDouble",
             "translateDefault": true
           }
-        }, 
+        },
         {
           "field": "INSTRUCTIONS",
           "dataSource": {
             "from": "//OrderNotes"
-          }
-        },
-        {
-          "field": "QUANTITY_ORDERED_ELECTRONIC",
-          "dataSource": {
-            "from": "//Quantity",
-            "default": "1",
-            "translation": "toInteger"
-          }
-        },
-        {
-          "field": "VENDOR_REF_NO",
-          "dataSource": {
-            "from": "//YBPOrderKey"
-          }
-        },
-        {
-          "field": "CREATED_DATE",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
           }
         },
         {
@@ -968,6 +561,47 @@
             "from": "//ListPrice/Amount",
             "default": "0",
             "translation": "toDouble"
+          }
+        },
+        {
+          "field": "LOCATION",
+          "dataSource": {
+            "from": "//Location",
+            "translation": "lookupLocationId"
+          }
+        },
+        {
+          "field": "MANUAL_PO",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "MATERIAL_TYPE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData1']/Value",
+            "translation": "lookupMaterialTypeId"
+          }
+        },
+        {
+          "field": "NOTE_FROM_VENDOR",
+          "dataSource": {
+            "from": "//PurchaseOption/VendorCode"
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "One-Time"
+          }
+        },
+        {
+          "field": "OWNER",
+          "dataSource": {
+            "from": "//BaseAccount",
+            "default": "Main"
           }
         },
         {
@@ -986,30 +620,124 @@
           }
         },
         {
-          "field": "CURRENCY",
+          "field": "PO_LINE_ORDER_FORMAT",
           "dataSource": {
-            "from": "//ListPrice/Currency",
-            "default": "USD"
+            "default": "Electronic Resource"
           }
         },
         {
-          "field": "ACCESS_PROVIDER",
+          "field": "PO_LINE_PAYMENT_STATUS",
           "dataSource": {
-            "from": "//PurchaseOption/VendorPOCode",
-            "translation": "lookupVendorId"
+            "default": "Awaiting Payment"
           }
         },
         {
-          "field": "NOTE_FROM_VENDOR",
+          "field": "PO_LINE_RECEIPT_STATUS",
           "dataSource": {
-            "from": "//PurchaseOption/VendorCode"
+            "default": "Receipt Not Required"
           }
         },
         {
-          "field": "OWNER",
+          "field": "PO_LINE_WORKFLOW_STATUS",
           "dataSource": {
-            "from": "//BaseAccount",
-            "default": "Main"
+            "default": "Open"
+          }
+        },
+        {
+          "field": "PRODUCT_ID",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='a']"
+          }
+        },
+        {
+          "field": "PRODUCT_ID_TYPE",
+          "dataSource": {
+            "default": "ISBN"
+          }
+        },
+        {
+          "field": "PUBLICATION_DATE",
+          "dataSource": {
+            "from": "//datafield[@tag='260']/subfield[@code='c']"
+          }
+        },
+        {
+          "field": "PUBLISHER",
+          "dataSource": {
+            "from": "//datafield[@tag='260']/subfield[@code='b']"
+          }
+        },
+        {
+          "field": "QUANTITY_ORDERED_ELECTRONIC",
+          "dataSource": {
+            "from": "//Quantity",
+            "default": "1",
+            "translation": "toInteger"
+          }
+        },
+        {
+          "field": "RECEIVING_NOTE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData2']/Value"
+          }
+        },
+        {
+          "field": "REQUESTER",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData3']/Value"
+          }
+        },
+        {
+          "field": "TITLE",
+          "dataSource": {
+            "from": "//datafield[@tag='245']/*",
+            "combinator": "concat"
+          }
+        },
+        {
+          "field": "TRIAL",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "VENDOR_ACCOUNT",
+          "dataSource": {
+            "from": "//SubAccount",
+            "default": "0"
+          }
+        },
+        {
+          "field": "VENDOR_ID",
+          "dataSource": {
+            "default": "GOBI",
+            "translation": "lookupVendorId",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "VENDOR_REF_NO",
+          "dataSource": {
+            "from": "//YBPOrderKey"
+          }
+        },
+        {
+          "field": "VENDOR_REF_NO_TYPE",
+          "dataSource": {
+            "default": "Supplier's unique order line reference number"
+          }
+        }
+      ]
+    },
+    {
+      "orderType": "ListedPrintSerial",
+      "mappings": [
+        {
+          "field": "ACQUISITION_METHOD",
+          "dataSource": {
+            "default": "Purchase At Vendor System"
           }
         },
         {
@@ -1021,25 +749,34 @@
           }
         },
         {
-          "field": "VENDOR",
+          "field": "CLAIMED",
           "dataSource": {
-            "default": "GOBI Library Solutions"
-          }
-        },
-        {
-          "field": "CREATE_INVENTORY",
-          "dataSource": {
-             "default": "true",
+            "default": "true",
             "translation": "toBoolean",
             "translateDefault": true
           }
         },
         {
-          "field": "TRIAL",
+          "field": "COLLECTION",
           "dataSource": {
-             "default": "false",
+            "default": "false",
             "translation": "toBoolean",
             "translateDefault": true
+          }
+        },
+        {
+          "field": "CREATED_DATE",
+          "dataSource": {
+            "from": "//OrderPlaced",
+            "translation": "toDate"
+          }
+        },
+        {
+          "field": "FUND_CODE",
+          "dataSource": {
+            "from": "//FundCode",
+            "default": "0",
+            "translation": "lookupMock"
           }
         },
         {
@@ -1057,11 +794,19 @@
             "translation": "toDouble",
             "translateDefault": true
           }
-        }, 
+        },
         {
-          "field": "PO_LINE_ORDER_FORMAT",
+          "field": "INSTRUCTIONS",
           "dataSource": {
-            "default": "Electronic Resource"
+            "from": "//OrderNotes"
+          }
+        },
+        {
+          "field": "MANUAL_PO",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -1071,43 +816,16 @@
           }
         },
         {
-          "field": "PRODUCT_ID_TYPE",
+          "field": "OWNER",
           "dataSource": {
-            "default": "ISBN"
+            "from": "//BaseAccount",
+            "default": "Main"
           }
         },
         {
-          "field": "ACQUISITION_METHOD",
+          "field": "PO_LINE_ORDER_FORMAT",
           "dataSource": {
-            "default": "Purchase At Vendor System"
-          }
-        },
-        {
-          "field": "CLAIMED",
-          "dataSource": {
-             "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "COLLECTION",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "PO_LINE_WORKFLOW_STATUS",
-          "dataSource": {
-            "default": "Open"
-          }
-        },
-        {
-          "field": "PO_LINE_RECEIPT_STATUS",
-          "dataSource": {
-            "default": "Receipt Not Required"
+            "default": "Physical Resource"
           }
         },
         {
@@ -1117,11 +835,291 @@
           }
         },
         {
-        "field": "MANUAL_PO",
+          "field": "PO_LINE_RECEIPT_STATUS",
           "dataSource": {
-             "default": "false",
+            "default": "Awaiting Receipt"
+          }
+        },
+        {
+          "field": "PO_LINE_WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
+        },
+        {
+          "field": "PRODUCT_ID_TYPE",
+          "dataSource": {
+            "default": "ISBN"
+          }
+        },
+        {
+          "field": "PUBLISHER",
+          "dataSource": {
+            "from": "//datafield[@tag='260']/subfield[@code='b']"
+          }
+        },
+        {
+          "field": "QUANTITY_ORDERED_PHYSICAL",
+          "dataSource": {
+            "from": "//Quantity",
+            "default": "1",
+            "translation": "toInteger"
+          }
+        },
+        {
+          "field": "TITLE",
+          "dataSource": {
+            "from": "//datafield[@tag='245']/*",
+            "combinator": "concat"
+          }
+        },
+        {
+          "field": "VENDOR",
+          "dataSource": {
+            "default": "GOBI Library Solutions"
+          }
+        },
+        {
+          "field": "VENDOR_REF_NO",
+          "dataSource": {
+            "from": "//YBPOrderKey"
+          }
+        },
+        {
+          "field": "WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
+        }
+      ]
+    },
+    {
+      "orderType": "ListedElectronicSerial",
+      "mappings": [
+        {
+          "field": "ACCESS_PROVIDER",
+          "dataSource": {
+            "from": "//PurchaseOption/VendorPOCode",
+            "translation": "lookupVendorId"
+          }
+        },
+        {
+          "field": "ACQUISITION_METHOD",
+          "dataSource": {
+            "default": "Purchase At Vendor System"
+          }
+        },
+        {
+          "field": "ACTIVATED",
+          "dataSource": {
+            "default": "false",
             "translation": "toBoolean",
             "translateDefault": true
+          }
+        },
+        {
+          "field": "APPROVED",
+          "dataSource": {
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "CLAIMED",
+          "dataSource": {
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "COLLECTION",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "CREATED_DATE",
+          "dataSource": {
+            "from": "//OrderPlaced",
+            "translation": "toDate"
+          }
+        },
+        {
+          "field": "CREATE_INVENTORY",
+          "dataSource": {
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "CURRENCY",
+          "dataSource": {
+            "from": "//ListPrice/Currency",
+            "default": "USD"
+          }
+        },
+        {
+          "field": "FUND_CODE",
+          "dataSource": {
+            "from": "//FundCode",
+            "default": "0",
+            "translation": "lookupMock"
+          }
+        },
+        {
+          "field": "FUND_CODE",
+          "dataSource": {
+            "from": "//FundCode",
+            "default": "0",
+            "translation": "lookupMock"
+          }
+        },
+        {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "FUND_PERCENTAGE",
+          "dataSource": {
+            "default": "100",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "INSTRUCTIONS",
+          "dataSource": {
+            "from": "//OrderNotes"
+          }
+        },
+        {
+          "field": "LIST_PRICE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "default": "0",
+            "translation": "toDouble"
+          }
+        },
+        {
+          "field": "MANUAL_PO",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "NOTE_FROM_VENDOR",
+          "dataSource": {
+            "from": "//PurchaseOption/VendorCode"
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "Ongoing"
+          }
+        },
+        {
+          "field": "OWNER",
+          "dataSource": {
+            "from": "//BaseAccount",
+            "default": "Main"
+          }
+        },
+        {
+          "field": "PO_LINE_ESTIMATED_PRICE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "defaultMapping": {
+              "dataSource": {
+                "from": "//NetPrice/Amount|//Quantity",
+                "combinator": "multiply",
+                "fromOtherField": "LIST_PRICE",
+                "translation": "toDouble"
+              }
+            },
+            "translation": "toDouble"
+          }
+        },
+        {
+          "field": "PO_LINE_ORDER_FORMAT",
+          "dataSource": {
+            "default": "Electronic Resource"
+          }
+        },
+        {
+          "field": "PO_LINE_PAYMENT_STATUS",
+          "dataSource": {
+            "default": "Awaiting Payment"
+          }
+        },
+        {
+          "field": "PO_LINE_RECEIPT_STATUS",
+          "dataSource": {
+            "default": "Receipt Not Required"
+          }
+        },
+        {
+          "field": "PO_LINE_WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
+        },
+        {
+          "field": "PRODUCT_ID_TYPE",
+          "dataSource": {
+            "default": "ISBN"
+          }
+        },
+        {
+          "field": "PUBLISHER",
+          "dataSource": {
+            "from": "//datafield[@tag='260']/subfield[@code='b']"
+          }
+        },
+        {
+          "field": "QUANTITY_ORDERED_ELECTRONIC",
+          "dataSource": {
+            "from": "//Quantity",
+            "default": "1",
+            "translation": "toInteger"
+          }
+        },
+        {
+          "field": "TITLE",
+          "dataSource": {
+            "from": "//datafield[@tag='245']/*",
+            "combinator": "concat"
+          }
+        },
+        {
+          "field": "TRIAL",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "VENDOR",
+          "dataSource": {
+            "default": "GOBI Library Solutions"
+          }
+        },
+        {
+          "field": "VENDOR_REF_NO",
+          "dataSource": {
+            "from": "//YBPOrderKey"
           }
         },
         {
@@ -1136,10 +1134,40 @@
       "orderType": "UnlistedPrintSerial",
       "mappings": [
         {
-          "field": "TITLE",
+          "field": "ACQUISITION_METHOD",
           "dataSource": {
-            "from": "//datafield[@tag='245']/*",
-            "combinator": "concat"
+            "default": "Purchase At Vendor System"
+          }
+        },
+        {
+          "field": "APPROVED",
+          "dataSource": {
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "CLAIMED",
+          "dataSource": {
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "COLLECTION",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "CREATED_DATE",
+          "dataSource": {
+            "from": "//OrderPlaced",
+            "translation": "toDate"
           }
         },
         {
@@ -1157,11 +1185,62 @@
             "translation": "toDouble",
             "translateDefault": true
           }
-        }, 
+        },
         {
           "field": "INSTRUCTIONS",
           "dataSource": {
             "from": "//OrderNotes"
+          }
+        },
+        {
+          "field": "MANUAL_PO",
+          "dataSource": {
+            "default": "false",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "Ongoing"
+          }
+        },
+        {
+          "field": "OWNER",
+          "dataSource": {
+            "from": "//BaseAccount",
+            "default": "Main"
+          }
+        },
+        {
+          "field": "PO_LINE_ORDER_FORMAT",
+          "dataSource": {
+            "default": "Physical Resource"
+          }
+        },
+        {
+          "field": "PO_LINE_PAYMENT_STATUS",
+          "dataSource": {
+            "default": "Awaiting Payment"
+          }
+        },
+        {
+          "field": "PO_LINE_RECEIPT_STATUS",
+          "dataSource": {
+            "default": "Awaiting Receipt"
+          }
+        },
+        {
+          "field": "PO_LINE_WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
+        },
+        {
+          "field": "PRODUCT_ID_TYPE",
+          "dataSource": {
+            "default": "ISBN"
           }
         },
         {
@@ -1173,31 +1252,10 @@
           }
         },
         {
-          "field": "VENDOR_REF_NO",
+          "field": "TITLE",
           "dataSource": {
-            "from": "//YBPOrderKey"
-          }
-        },
-        {
-          "field": "CREATED_DATE",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
-          }
-        },
-        {
-          "field": "OWNER",
-          "dataSource": {
-            "from": "//BaseAccount",
-            "default": "Main"
-          }
-        },
-        {
-          "field": "APPROVED",
-          "dataSource": {
-            "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
+            "from": "//datafield[@tag='245']/*",
+            "combinator": "concat"
           }
         },
         {
@@ -1207,69 +1265,9 @@
           }
         },
         {
-          "field": "PO_LINE_ORDER_FORMAT",
+          "field": "VENDOR_REF_NO",
           "dataSource": {
-            "default": "Physical Resource"
-          }
-        },
-        {
-          "field": "ORDER_TYPE",
-          "dataSource": {
-            "default": "Ongoing"
-          }
-        },
-        {
-          "field": "PRODUCT_ID_TYPE",
-          "dataSource": {
-            "default": "ISBN"
-          }
-        },
-        {
-          "field": "ACQUISITION_METHOD",
-          "dataSource": {
-            "default": "Purchase At Vendor System"
-          }
-        },
-        {
-          "field": "CLAIMED",
-          "dataSource": {
-             "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "COLLECTION",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "PO_LINE_WORKFLOW_STATUS",
-          "dataSource": {
-            "default": "Open"
-          }
-        },
-        {
-          "field": "PO_LINE_RECEIPT_STATUS",
-          "dataSource": {
-            "default": "Awaiting Receipt"
-          }
-        },
-        {
-          "field": "PO_LINE_PAYMENT_STATUS",
-          "dataSource": {
-            "default": "Awaiting Payment"
-          }
-        },
-        {
-        "field": "MANUAL_PO",
-          "dataSource": {
-             "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
+            "from": "//YBPOrderKey"
           }
         },
         {
