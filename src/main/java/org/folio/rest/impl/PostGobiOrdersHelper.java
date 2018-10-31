@@ -107,8 +107,12 @@ public class PostGobiOrdersHelper {
       Node node = (Node) xpath.evaluate(
           "//ListedElectronicMonograph|//ListedElectronicSerial|//ListedPrintMonograph|//ListedPrintSerial|//UnlistedPrintMonograph|//UnlistedPrintSerial",
           doc, XPathConstants.NODE);
-      provided = node.getNodeName();
-      orderType = OrderMapping.OrderType.fromValue(provided);
+      if(node!=null){
+        provided = node.getNodeName();
+        orderType = OrderMapping.OrderType.fromValue(provided);
+      }else {
+        throw new IllegalArgumentException();
+      }
     } catch (Exception e) {
       logger.error("Cannot determine order type", e);
       throw new IllegalArgumentException("Invalid order type: " + provided);
@@ -187,37 +191,6 @@ public class PostGobiOrdersHelper {
     }
   }
 
-  public CompletableFuture<String> lookupWorkflowStatusId(String workflowStatusCode) {
-    try {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, workflowStatusCode));
-      return httpClient.request(HttpMethod.GET, "/workflow_status?query=" + query, okapiHeaders)
-        .thenApply(HelperUtils::verifyAndExtractBody)
-        .thenApply(HelperUtils::extractWorkflowStatusId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up workflow status id", t);
-          return null;
-        });
-    } catch (Exception e) {
-      logger.error("Exception calling lookupWorkflowStatusId", e);
-      throw new CompletionException(e);
-    }
-  }
-
-  public CompletableFuture<String> lookupReceiptStatusId(String receiptStatusCode) {
-    try {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, receiptStatusCode));
-      return httpClient.request(HttpMethod.GET, "/receipt_status?query=" + query, okapiHeaders)
-        .thenApply(HelperUtils::verifyAndExtractBody)
-        .thenApply(HelperUtils::extractReceiptStatusId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up receipt status id", t);
-          return null;
-        });
-    } catch (Exception e) {
-      logger.error("Exception calling lookupReceiptStatusId", e);
-      throw new CompletionException(e);
-    }
-  }
 
   public CompletableFuture<String> lookupPaymentStatusId(String paymentStatusCode) {
     try {
@@ -236,25 +209,9 @@ public class PostGobiOrdersHelper {
   }
 
   // TODO - Needs implementation
-  public CompletableFuture<String> lookupFundId(String fundCode) {
-    logger.info("Mocking the fund code lookup for: " + fundCode);
+  public CompletableFuture<String> lookupMock(String data) {
+    logger.info("Mocking the data lookup for: " + data);
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());
-  }
-
-  public CompletableFuture<String> lookupActivationStatusId(String activationStatusCode) {
-    try {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, activationStatusCode));
-      return httpClient.request(HttpMethod.GET, "/activation_status?query=" + query, okapiHeaders)
-        .thenApply(HelperUtils::verifyAndExtractBody)
-        .thenApply(HelperUtils::extractActivationStatusId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up activation status id", t);
-          return null;
-        });
-    } catch (Exception e) {
-      logger.error("Exception calling lookupActivationStatusId", e);
-      throw new CompletionException(e);
-    }
   }
 
   public CompletableFuture<Map<Mapping.Field, DataSource>> lookupOrderMappings(OrderMapping.OrderType orderType) {
@@ -386,5 +343,6 @@ public class PostGobiOrdersHelper {
 
     return null;
   }
+
 
 }
