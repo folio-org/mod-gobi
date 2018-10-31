@@ -209,8 +209,8 @@ public class PostGobiOrdersHelper {
   }
 
   // TODO - Needs implementation
-  public Object lookupMock(String data) {
-    logger.info("Mocking lookups for time being: " + data);
+  public CompletableFuture<String> lookupMock(String data) {
+    logger.info("Mocking the data lookup for: " + data);
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());
   }
 

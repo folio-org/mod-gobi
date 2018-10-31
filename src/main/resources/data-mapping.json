@@ -753,6 +753,7 @@
           "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",
+            "default": "0",
             "translation": "lookupMock"
           }
         },

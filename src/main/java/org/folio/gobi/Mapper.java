@@ -91,8 +91,7 @@ public class Mapper {
             ids.add(productId);
             detail.setProductIds(ids);
             
-            location.setQuantity(location.getQuantityElectronic()+location.getQuantityPhysical());
-
+            
             compPO.setAdjustment(adjustment);
 
             pol.setDetails(detail);
@@ -103,6 +102,13 @@ public class Mapper {
             pol.setRenewal(renewal);
             pol.setPhysical(physical);
             pol.setSource(source);
+            List<Contributor> contributors = new ArrayList<>();
+            contributors.add(contributor);
+            pol.setContributors(contributors);
+            
+            List<ReportingCode> reportingCodes = new ArrayList<>();
+            reportingCodes.add(reportingCode);
+            pol.setReportingCodes(reportingCodes);
 
             List<Claim> claims = new ArrayList<>();
             claims.add(claim);
@@ -246,8 +252,7 @@ public class Mapper {
     if (mappings.containsKey(Mapping.Field.RENEWAL_CYCLE)) {
       futures.add(mappings.get(Mapping.Field.RENEWAL_CYCLE)
           .resolve(doc)
-          .thenAccept(
-              o -> renewal.setCycle(Renewal.Cycle.fromValue((String) o)))
+          .thenAccept(o -> renewal.setCycle(Renewal.Cycle.fromValue((String) o)))
           .exceptionally(Mapper::logException));
     }
     if (mappings.containsKey(Mapping.Field.RENEWAL_INTERVAL)) {
@@ -457,7 +462,8 @@ public class Mapper {
     }
 
     if (mappings.containsKey(Mapping.Field.PO_LINE_ORDER_FORMAT)) {
-      futures.add(mappings.get(Mapping.Field.PO_LINE_ORDER_FORMAT).resolve(doc)
+      futures.add(mappings.get(Mapping.Field.PO_LINE_ORDER_FORMAT)
+          .resolve(doc)
           .thenAccept(o -> pol.setOrderFormat(
               CompositePoLine.OrderFormat.fromValue((String) o)))
           .exceptionally(Mapper::logException));
@@ -470,7 +476,8 @@ public class Mapper {
     }
 
     if (mappings.containsKey(Mapping.Field.PO_LINE_DESCRIPTION)) {
-      futures.add(mappings.get(Mapping.Field.PO_LINE_DESCRIPTION).resolve(doc)
+      futures.add(mappings.get(Mapping.Field.PO_LINE_DESCRIPTION)
+          .resolve(doc)
           .thenAccept(o -> pol.setPoLineDescription((String) o))
           .exceptionally(Mapper::logException));
     }
@@ -724,6 +731,7 @@ public class Mapper {
               .thenAccept(o -> location.setQuantityPhysical((Integer) o))
               .exceptionally(Mapper::logException));
     }
+    //TODO calculate total quantity
   }
 
   private void mapVendorDetail(List<CompletableFuture<?>> futures, VendorDetail vendorDetail, Document doc) {
@@ -744,7 +752,6 @@ public class Mapper {
           .resolve(doc)
           .thenAccept(o -> vendorDetail.setRefNumber((String) o))
           .exceptionally(Mapper::logException));
-
       if (mappings.containsKey(Mapping.Field.VENDOR_REF_NO_TYPE)) {
         futures.add(mappings.get(Mapping.Field.VENDOR_REF_NO_TYPE)
             .resolve(doc)
@@ -752,9 +759,11 @@ public class Mapper {
                 VendorDetail.RefNumberType.fromValue((String) o)))
             .exceptionally(Mapper::logException));
       }
-    }
+      }
+   
     if (mappings.containsKey(Mapping.Field.VENDOR_ACCOUNT)) {
       futures.add(mappings.get(Mapping.Field.VENDOR_ACCOUNT)
+  
           .resolve(doc)
           .thenAccept(o -> vendorDetail.setVendorAccount((String) o))
           .exceptionally(Mapper::logException));
