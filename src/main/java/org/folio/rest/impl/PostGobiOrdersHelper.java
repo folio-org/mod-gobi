@@ -28,8 +28,8 @@ import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource.PostGobiOrdersResponse;
 import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.OrderMapping;
-import org.folio.rest.mappings.model.OrderMapping.OrderType;
+import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.mappings.model.OrderMappings.OrderType;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -71,12 +71,11 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
-    final OrderMapping.OrderType orderType = getOrderType(doc);
+    final OrderMappings.OrderType orderType = getOrderType(doc);
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
 
     try {
-      Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping(this);
-      Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType);
+      Map<Mapping.Field, org.folio.gobi.DataSource> mappings = MappingHelper.defaultMappingForOrderType(this,orderType);
       mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
         .withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
         .build());
@@ -98,9 +97,9 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
-  public static OrderMapping.OrderType getOrderType(Document doc) {
+  public static OrderMappings.OrderType getOrderType(Document doc) {
     final XPath xpath = XPathFactory.newInstance().newXPath();
-    OrderMapping.OrderType orderType;
+    OrderMappings.OrderType orderType;
 
     String provided = null;
     try {
@@ -109,7 +108,7 @@ public class PostGobiOrdersHelper {
           doc, XPathConstants.NODE);
       if(node!=null){
         provided = node.getNodeName();
-        orderType = OrderMapping.OrderType.fromValue(provided);
+        orderType = OrderMappings.OrderType.fromValue(provided);
       }else {
         throw new IllegalArgumentException();
       }
@@ -145,7 +144,7 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> lookupLocationId(String location) {
     try {
       String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
-      return httpClient.request("/locations?query=" + query, okapiHeaders)
+      return httpClient.request("/location?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractLocationId)
         .exceptionally(t -> {
@@ -161,7 +160,7 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
     try {
       String query = HelperUtils.encodeValue(String.format("name==\"%s\"", materialType));
-      return httpClient.request("/material-types?query=" + query, okapiHeaders)
+      return httpClient.request("/location?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractMaterialTypeId)
         .exceptionally(t -> {
@@ -214,13 +213,13 @@ public class PostGobiOrdersHelper {
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());
   }
 
-  public CompletableFuture<Map<Mapping.Field, DataSource>> lookupOrderMappings(OrderMapping.OrderType orderType) {
+  public CompletableFuture<Map<Mapping.Field, DataSource>> lookupOrderMappings(OrderMappings.OrderType orderType) {
     try {
       final String query = HelperUtils.encodeValue(
           String.format("(module==%s AND configName==%s AND code==%s)",
               CONFIGURATION_MODULE,
               CONFIGURATION_CONFIG_NAME,
-              CONFIGURATION_CODE));
+              orderType));
       return httpClient.request(HttpMethod.GET,
           "/configurations/entries?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
@@ -238,6 +237,7 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
     VertxCompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
     try {
+      logger.info("calling mod-orders");
       httpClient.request(HttpMethod.POST, compPO, "/orders", okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenAccept(body -> {

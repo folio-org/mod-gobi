@@ -71,7 +71,7 @@ public class HelperUtils {
       return null;
     }
     JsonArray jsonArray = obj.getJsonArray(arrField);
-    if (jsonArray == null) {
+    if (jsonArray == null || jsonArray.size() == 0 ) {
       return null;
     }
     JsonObject item = jsonArray.getJsonObject(0);

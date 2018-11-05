@@ -4,31 +4,33 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import org.folio.gobi.MappingHelper;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.Mappings;
+import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.mappings.model.OrderMappings.OrderType;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import org.folio.rest.mappings.model.OrderMapping;
-import org.folio.rest.mappings.model.OrderMapping.OrderType;
 
 import io.vertx.core.json.Json;
 
 public class MappingHelperTest {
 
   private static final Logger logger = LoggerFactory.getLogger(MappingHelper.class);
-  private static final String PATH = "MappingHelper/default-mappings.json";
+  private static final String LISTED_PRINT_PATH = "MappingHelper/ListedPrintMonograph.json";
+  private static final String UNLISTED_PRINT_PATH = "MappingHelper/UnlistedPrintMonograph.json";
+  
   private static final String EXPECTEDORDERTYPE1 = "ListedPrintMonograph";
   private static final String EXPECTEDORDERTYPE2 = "UnlistedPrintMonograph";
   
-  private static String actualDefaultMappingJson = null;
-  private static Mappings actualMappings = null;
+  private static String actualListedPrintJson = null;
+  private static String actualUnlistedPrintJson = null;
+  private static OrderMappings actualUnlistedPrintMappings = null;
+  private static OrderMappings actuallistedPrintMappings = null;
   private static Mapping mapping1 = null;
   private static Mapping mapping2 = null;
   
@@ -36,10 +38,8 @@ public class MappingHelperTest {
   public void setUp() throws Exception {
     logger.info("Begin: SetUp by initializing a default mapping");
     
-    String expectedDefaultMappingJson = "{\n" + 
-        "  \"orderMappings\":\n" + 
-        "  [\n" + 
-        "    {\n" + 
+    String expectedListedPrintMonographJson = 
+        "{\n" + 
         "      \"orderType\": \"ListedPrintMonograph\",\n" + 
         "      \"mappings\": [\n" + 
         "        {\n" + 
@@ -57,8 +57,10 @@ public class MappingHelperTest {
         "          }\n" + 
         "        }\n" + 
         "      ]\n" + 
-        "    },\n" + 
-        "    {\n" + 
+        "}" ;
+        
+     String expectedUnListedPrintMonographJson =
+        "{\n" + 
         "      \"orderType\": \"UnlistedPrintMonograph\",\n" + 
         "      \"mappings\": [\n" + 
         "        {\n" + 
@@ -82,20 +84,26 @@ public class MappingHelperTest {
         "          }\n" + 
         "        } \n" + 
         "      ]\n" + 
-        "    } \n" + 
-        "  ]\n" + 
-        "} \n";
+        "}" ; 
+     
+    actualListedPrintJson = MappingHelper.readMappingsFile(LISTED_PRINT_PATH);
+    assertEquals(expectedListedPrintMonographJson, actualListedPrintJson);
     
-    actualDefaultMappingJson = MappingHelper.readMappingsFile(PATH);
-    assertEquals(expectedDefaultMappingJson, actualDefaultMappingJson);
-    actualMappings = Json.decodeValue(actualDefaultMappingJson, Mappings.class);
-    final List<OrderMapping> orderMappingList = actualMappings.getOrderMappings(); // get orderMappings list
-    OrderType orderType1 = orderMappingList.get(0).getOrderType();
-    OrderType orderType2 = orderMappingList.get(1).getOrderType();
+    actuallistedPrintMappings = Json.decodeValue(actualListedPrintJson, OrderMappings.class);
+    
+    actualUnlistedPrintJson = MappingHelper.readMappingsFile(UNLISTED_PRINT_PATH);
+    assertEquals(expectedUnListedPrintMonographJson, actualUnlistedPrintJson);
+    
+    actualUnlistedPrintMappings = Json.decodeValue(actualUnlistedPrintJson, OrderMappings.class);
+    
+    
+    OrderType orderType1 = actuallistedPrintMappings.getOrderType();
+    OrderType orderType2 = actualUnlistedPrintMappings.getOrderType();
     assertEquals(EXPECTEDORDERTYPE1, orderType1.toString());
     assertEquals(EXPECTEDORDERTYPE2, orderType2.toString());
-    List<Mapping> mappingsList1 = orderMappingList.get(0).getMappings();
-    List<Mapping> mappingsList2 = orderMappingList.get(1).getMappings();
+  
+    List<Mapping> mappingsList1 = actuallistedPrintMappings.getMappings();
+    List<Mapping> mappingsList2 = actualUnlistedPrintMappings.getMappings();
     mapping1 = mappingsList1.get(0);
     mapping2 = mappingsList2.get(0);
     assertEquals(2, mappingsList1.size());

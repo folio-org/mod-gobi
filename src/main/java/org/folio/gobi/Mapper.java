@@ -1,5 +1,6 @@
 package org.folio.gobi;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -91,32 +92,49 @@ public class Mapper {
             ids.add(productId);
             detail.setProductIds(ids);
             
+            if(!isObjectEmpty(adjustment)) 
+              compPO.setAdjustment(adjustment);
             
-            compPO.setAdjustment(adjustment);
-
-            pol.setDetails(detail);
-            pol.setCost(cost);
-            pol.setLocation(location);
-            pol.setEresource(eresource);
-            pol.setVendorDetail(vendorDetail);
-            pol.setRenewal(renewal);
-            pol.setPhysical(physical);
-            pol.setSource(source);
-            List<Contributor> contributors = new ArrayList<>();
-            contributors.add(contributor);
-            pol.setContributors(contributors);
+            if(!isObjectEmpty(detail)) 
+              pol.setDetails(detail);         
+            if(!isObjectEmpty(cost)) 
+              pol.setCost(cost);
+            if(!isObjectEmpty(location))
+              pol.setLocation(location);
+            if(!isObjectEmpty(eresource))
+              pol.setEresource(eresource);
+            if(!isObjectEmpty(vendorDetail))
+              pol.setVendorDetail(vendorDetail);
+            if(!isObjectEmpty(renewal))
+              pol.setRenewal(renewal);
+            if(!isObjectEmpty(physical))
+              pol.setPhysical(physical);
+            if(!isObjectEmpty(source))
+              pol.setSource(source);
             
-            List<ReportingCode> reportingCodes = new ArrayList<>();
-            reportingCodes.add(reportingCode);
-            pol.setReportingCodes(reportingCodes);
+            if(!isObjectEmpty(contributor)) {
+               List<Contributor> contributors = new ArrayList<>();
+               contributors.add(contributor);
+               pol.setContributors(contributors);
+            }
+            
+            if(!isObjectEmpty(reportingCode)) {
+               List<ReportingCode> reportingCodes = new ArrayList<>();
+               reportingCodes.add(reportingCode);
+               pol.setReportingCodes(reportingCodes);
+            }
 
-            List<Claim> claims = new ArrayList<>();
-            claims.add(claim);
-            pol.setClaims(claims);
+            if(!isObjectEmpty(reportingCode)) {
+               List<Claim> claims = new ArrayList<>();
+               claims.add(claim);
+               pol.setClaims(claims);
+            }
 
-            List<FundDistribution> fundDistributions = new ArrayList<>();
-            fundDistributions.add(fundDistribution);
-            pol.setFundDistribution(fundDistributions);
+            if(!isObjectEmpty(fundDistribution)) {
+               List<FundDistribution> fundDistributions = new ArrayList<>();
+               fundDistributions.add(fundDistribution);
+               pol.setFundDistribution(fundDistributions);
+            }
 
             poLines.add(pol);
 
@@ -762,12 +780,29 @@ public class Mapper {
       }
    
     if (mappings.containsKey(Mapping.Field.VENDOR_ACCOUNT)) {
-      futures.add(mappings.get(Mapping.Field.VENDOR_ACCOUNT)
-  
+      futures.add(mappings.get(Mapping.Field.VENDOR_ACCOUNT) 
           .resolve(doc)
           .thenAccept(o -> vendorDetail.setVendorAccount((String) o))
           .exceptionally(Mapper::logException));
     }
+  }
+  
+  public boolean isObjectEmpty(Object instance) { 
+    for (Field f : instance.getClass().getDeclaredFields())
+    {
+      f.setAccessible(true);
+      try {
+        if (f.get(instance) != null)
+            return false;
+      } catch (IllegalArgumentException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+      return true;               
   }
 
   public static Void logException(Throwable t) {

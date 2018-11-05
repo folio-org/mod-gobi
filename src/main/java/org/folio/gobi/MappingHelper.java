@@ -3,7 +3,6 @@ package org.folio.gobi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +15,8 @@ import org.folio.gobi.Mapper.Translation;
 import org.folio.rest.impl.PostGobiOrdersHelper;
 import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.Mapping.Field;
-import org.folio.rest.mappings.model.Mappings;
-import org.folio.rest.mappings.model.OrderMapping;
-import org.folio.rest.mappings.model.OrderMapping.OrderType;
+import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.mappings.model.OrderMappings.OrderType;
 import org.w3c.dom.NodeList;
 
 import io.vertx.core.json.Json;
@@ -28,42 +26,30 @@ import io.vertx.core.json.JsonObject;
 public class MappingHelper {
   private static final Logger logger = Logger.getLogger(MappingHelper.class);
 
-  public static final String PATH = "data-mapping.json";
+  
 
   private MappingHelper() {
     throw new IllegalStateException("MappingHelper class cannot be instantiated");
   }
 
-  private static final Mappings defaultMappings = Json.decodeValue(readMappingsFile(PATH), Mappings.class);
+  
+  public static Map<Mapping.Field, org.folio.gobi.DataSource> defaultMappingForOrderType(PostGobiOrdersHelper postGobiOrdersHelper, OrderType orderType) {
+    final String PATH = orderType+".json";
+    final OrderMappings defaultMappings = Json.decodeValue(readMappingsFile(PATH), OrderMappings.class);
+    Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
 
-  public static Map<OrderType, Map<Field, DataSource>> defaultMapping(PostGobiOrdersHelper postGobiOrdersHelper) {
+      List<Mapping> mappingsList = defaultMappings.getMappings();
 
-    Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = new EnumMap<>(OrderType.class);
-
-    // get orderMappings list
-    final List<OrderMapping> orderMappingList = defaultMappings.getOrderMappings();
-
-    // iterate through orderMappings list
-    for (OrderMapping orderMapping : orderMappingList) {
-      Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
-
-      // get orderType from orderMapping
-      OrderType orderType = orderMapping.getOrderType();
-
-      // get mappings list
-      List<Mapping> mappingsList = orderMapping.getMappings();
-
-      for (int i = 0; i < mappingsList.size(); i++) { // iterate
-        Mapping mapping = mappingsList.get(i); // get mapping
+      for(Mapping mapping: mappingsList)
+      {
         Mapping.Field field = mapping.getField(); // get field
         org.folio.gobi.DataSource dataSource = getDS(mapping, fieldDataSourceMapping, postGobiOrdersHelper);
         fieldDataSourceMapping.put(field, dataSource);
       }
-      defaultMapping.put(orderType, fieldDataSourceMapping);
-    }
+    
 
     logger.info(defaultMappings.toString());
-    return defaultMapping;
+    return fieldDataSourceMapping;
   }
 
   public static Object getDefaultValue(org.folio.rest.mappings.model.DataSource dataSource,
@@ -162,7 +148,7 @@ public class MappingHelper {
 
   }
 
-  public static Map<Mapping.Field, DataSource> extractOrderMappings(OrderMapping.OrderType orderType, JsonObject jo,
+  public static Map<Mapping.Field, DataSource> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo,
       PostGobiOrdersHelper postGobiOrdersHelper) {
     final Map<Mapping.Field, DataSource> map = new EnumMap<>(Mapping.Field.class);
 
@@ -170,12 +156,12 @@ public class MappingHelper {
 
     if (!configs.isEmpty()) {
       final String mappingsString = configs.getJsonObject(0).getString("value");
-      final Mappings mappings = Json.decodeValue(mappingsString, Mappings.class);
+      final OrderMappings orderMapping= Json.decodeValue(mappingsString, OrderMappings.class);
 
-      final List<OrderMapping> orderMappingList = mappings.getOrderMappings();
+      final List<Mapping> orderMappingList = orderMapping.getMappings();
 
       if (orderMappingList != null) {
-        for (Mapping mapping : getMappingsByType(orderMappingList, orderType)) {
+        for (Mapping mapping : orderMappingList) {
           logger.info("Mapping exists for type: " + orderType.value() + ", field: " + mapping.getField());
           map.put(mapping.getField(), getDS(mapping, map, postGobiOrdersHelper));
         }
@@ -184,15 +170,6 @@ public class MappingHelper {
     return map;
   }
 
-  public static List<Mapping> getMappingsByType(List<OrderMapping> mappings, OrderType type) {
-    List<Mapping> ret = new ArrayList<>();
-    for (OrderMapping orderMapping : mappings) {
-      if (orderMapping.getOrderType() == type) {
-        ret.addAll(orderMapping.getMappings());
-      }
-    }
-    return ret;
-  }
 
   public static String readMappingsFile(final String path) {
     try {

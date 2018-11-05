@@ -1,26 +1,4 @@
 {
-  "orderMappings":
-  [
-    {
-      "orderType": "ListedPrintMonograph",
-      "mappings": [
-        {
-          "field": "ACCESS_PROVIDER",
-          "dataSource": {
-            "from": "//PurchaseOption/VendorPOCode",
-            "translation": "lookupVendorId"
-          }
-        },  
-        {
-          "field": "USER_LIMIT",
-          "dataSource": {
-            "from": "//PurchaseOption/Code",
-            "translation": "getPurchaseOptionCode"
-          }
-        }
-      ]
-    },
-    {
       "orderType": "UnlistedPrintMonograph",
       "mappings": [
         {
@@ -44,6 +22,4 @@
           }
         } 
       ]
-    } 
-  ]
-} 
+}
