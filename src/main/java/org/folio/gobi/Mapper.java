@@ -38,9 +38,9 @@ public class Mapper {
 
   private static final Logger logger = LoggerFactory.getLogger(Mapper.class);
 
-  private final Map<Mapping.Field, DataSource> mappings;
+  private final Map<Mapping.Field, DataSourceResolver> mappings;
 
-  public Mapper(Map<Mapping.Field, DataSource> mappings) {
+  public Mapper(Map<Mapping.Field, DataSourceResolver> mappings) {
     this.mappings = mappings;
   }
 

@@ -42,35 +42,35 @@ public class MappingTest {
   @Test
   public void testBasicXPath() throws Exception {
     logger.info("begin: Test Mapping - xpath evalutation");
-    assertEquals("Hello World", DataSource.builder().withFrom("//Doo/Dah").build().resolve(doc).get());
-    assertEquals("DIT", DataSource.builder().withFrom("//Bar[@attr='dit']").build().resolve(doc).get());
+    assertEquals("Hello World", DataSourceResolver.builder().withFrom("//Doo/Dah").build().resolve(doc).get());
+    assertEquals("DIT", DataSourceResolver.builder().withFrom("//Bar[@attr='dit']").build().resolve(doc).get());
   }
 
   @Test
   public void testDefaults() throws Exception {
     logger.info("begin: Test Mapping - defaults");
     // default to a string literal
-    assertEquals("PKD", DataSource.builder().withFrom("//Doo/Dud").withDefault("PKD").build().resolve(doc).get());
+    assertEquals("PKD", DataSourceResolver.builder().withFrom("//Doo/Dud").withDefault("PKD").build().resolve(doc).get());
 
     // default to an integer literal
-    assertEquals(1, DataSource.builder().withFrom("//Bar[@attr='one']").withDefault(1).build().resolve(doc).get());
+    assertEquals(1, DataSourceResolver.builder().withFrom("//Bar[@attr='one']").withDefault(1).build().resolve(doc).get());
 
     // default to another mapping
-    DataSource defMapping = DataSource.builder().withFrom("//Bar[@attr='dat']").build();
-    assertEquals("DAT", DataSource.builder().withFrom("//DAT").withDefault(defMapping).build().resolve(doc).get());
+    DataSourceResolver defMapping = DataSourceResolver.builder().withFrom("//Bar[@attr='dat']").build();
+    assertEquals("DAT", DataSourceResolver.builder().withFrom("//DAT").withDefault(defMapping).build().resolve(doc).get());
 
     // default to another mapping (multiple levels)
-    DataSource defMapping1 = DataSource.builder().withFrom("//Bar[@attr='dot']").build();
-    DataSource defMapping2 = DataSource.builder().withFrom("//DAT").withDefault(defMapping1).build();
-    assertEquals("DOT", DataSource.builder().withFrom("//DIT").withDefault(defMapping2).build().resolve(doc).get());
+    DataSourceResolver defMapping1 = DataSourceResolver.builder().withFrom("//Bar[@attr='dot']").build();
+    DataSourceResolver defMapping2 = DataSourceResolver.builder().withFrom("//DAT").withDefault(defMapping1).build();
+    assertEquals("DOT", DataSourceResolver.builder().withFrom("//DIT").withDefault(defMapping2).build().resolve(doc).get());
   }
 
   @Test
   public void testCombinators() throws Exception {
     logger.info("begin: Test Mapping - combinators");
 
-    assertEquals("DITDATDOT", DataSource.builder().withFrom("//Bar").build().resolve(doc).get());
-    assertEquals(4.5d, DataSource.builder()
+    assertEquals("DITDATDOT", DataSourceResolver.builder().withFrom("//Bar").build().resolve(doc).get());
+    assertEquals(4.5d, DataSourceResolver.builder()
       .withFrom("//Zap | //Zop")
       .withCombinator(Mapper::multiply)
       .withTranslation(Mapper::toDouble)
@@ -84,24 +84,24 @@ public class MappingTest {
     logger.info("begin: Test Mapping - translations");
 
     assertEquals("HELLO WORLD",
-        DataSource.builder().withFrom("//Doo/Dah").withTranslation(this::toUpper).build().resolve(doc).get());
+        DataSourceResolver.builder().withFrom("//Doo/Dah").withTranslation(this::toUpper).build().resolve(doc).get());
     assertEquals(1.5d,
-        DataSource.builder().withFrom("//Zap").withTranslation(Mapper::toDouble).build().resolve(doc).get());
+        DataSourceResolver.builder().withFrom("//Zap").withTranslation(Mapper::toDouble).build().resolve(doc).get());
     assertEquals(90210,
-        DataSource.builder().withFrom("//Zip").withTranslation(Mapper::toInteger).build().resolve(doc).get());
+        DataSourceResolver.builder().withFrom("//Zip").withTranslation(Mapper::toInteger).build().resolve(doc).get());
   }
 
   @Test(expected = ExecutionException.class)
   public void testExceptionInTranslator() throws Exception {
-    DataSource.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get();
+    DataSourceResolver.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get();
   }
 
   @Test(expected = ExecutionException.class)
   public void testExceptionInApplyDefault() throws Exception {
     logger.info("begin: Test Exception in applyDefault()");
 
-    DataSource defMapping = DataSource.builder().withFrom("//Bar[@attr='dat']").build();
-    DataSource.builder().withDefault(defMapping).build().resolve(null).get();
+    DataSourceResolver defMapping = DataSourceResolver.builder().withFrom("//Bar[@attr='dat']").build();
+    DataSourceResolver.builder().withDefault(defMapping).build().resolve(null).get();
   }
 
   private CompletableFuture<String> toUpper(String s) {

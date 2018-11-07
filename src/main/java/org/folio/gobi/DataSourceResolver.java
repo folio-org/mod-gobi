@@ -15,7 +15,7 @@ import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class DataSource {
+public class DataSourceResolver {
 
   public static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -30,7 +30,7 @@ public class DataSource {
     return new Builder();
   }
 
-  private <T> DataSource(String from, NodeCombinator combinator, Object defValue, Translation<T> translation,
+  private <T> DataSourceResolver(String from, NodeCombinator combinator, Object defValue, Translation<T> translation,
       boolean translateDefValue) {
     this.from = from;
     this.combinator = combinator == null ? Mapper::concat : combinator;
@@ -92,11 +92,11 @@ public class DataSource {
 
   private CompletableFuture<?> applyDefault(Object o, Document doc) {
     if (o == null) {
-      if (defValue instanceof DataSource) {
+      if (defValue instanceof DataSourceResolver) {
         if (translateDefValue) {
-          return ((DataSource) defValue).resolve(doc).thenApply(v -> applyTranslation(v.toString()));
+          return ((DataSourceResolver) defValue).resolve(doc).thenApply(v -> applyTranslation(v.toString()));
         } else {
-          return ((DataSource) defValue).resolve(doc);
+          return ((DataSourceResolver) defValue).resolve(doc);
         }
       } else {
         if (translateDefValue) {
@@ -141,8 +141,8 @@ public class DataSource {
       return this;
     }
 
-    public DataSource build() {
-      return new DataSource(from, combinator, defValue, translation, translateDefValue);
+    public DataSourceResolver build() {
+      return new DataSourceResolver(from, combinator, defValue, translation, translateDefValue);
     }
   }
 }

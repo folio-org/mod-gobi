@@ -122,8 +122,8 @@ public class MappingHelperTest {
   public void testMappingHelperDefaultMappingGetDSMapping1() {
     logger.info(
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType ListedPrintMonograph");
-    Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping1 = new LinkedHashMap<>();
-    org.folio.gobi.DataSource dataSource = MappingHelper.getDS(mapping1, fieldDataSourceMapping1, null);
+    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping1 = new LinkedHashMap<>();
+    org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mapping1, fieldDataSourceMapping1, null);
     assertEquals("//PurchaseOption/VendorPOCode", dataSource.from);
     assertEquals(false, dataSource.translateDefValue);
   }
@@ -132,8 +132,8 @@ public class MappingHelperTest {
   public void testMappingHelperDefaultMappingGetDSMapping2() {
     logger.info(
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType UnlistedPrintMonograph");
-    Map<Mapping.Field, org.folio.gobi.DataSource> fieldDataSourceMapping2 = new LinkedHashMap<>();
-    org.folio.gobi.DataSource dataSource = MappingHelper.getDS(mapping2, fieldDataSourceMapping2, null);
+    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping2 = new LinkedHashMap<>();
+    org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mapping2, fieldDataSourceMapping2, null);
     assertEquals("//datafield[@tag='020']/subfield[@code='a']", dataSource.from);
     assertEquals(false, dataSource.translateDefValue);
     assertNotNull(dataSource.combinator);

@@ -17,7 +17,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.folio.gobi.DataSource;
+import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
@@ -387,7 +387,7 @@ public class PostGobiOrdersHelperTest {
         .thenAccept(map -> {
           context.assertNotNull(map);
           context.assertNotNull(map.get(Mapping.Field.CURRENCY));
-          DataSource ds = map.get(Mapping.Field.CURRENCY);
+          DataSourceResolver ds = map.get(Mapping.Field.CURRENCY);
           context.assertEquals("//ListPrice/Currency", ds.from);
           context.assertEquals("USD", ds.defValue);
 
@@ -406,7 +406,7 @@ public class PostGobiOrdersHelperTest {
           ds = map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE);
           context.assertEquals("//NetPrice/Amount", ds.from);
           context.assertNotNull(ds.defValue);
-          DataSource defVal = (DataSource) ds.defValue;
+          DataSourceResolver defVal = (DataSourceResolver) ds.defValue;
           context.assertEquals("//ListPrice/Amount//EstPrice", defVal.from);
           context.assertEquals("15.0", defVal.defValue);
           try {
