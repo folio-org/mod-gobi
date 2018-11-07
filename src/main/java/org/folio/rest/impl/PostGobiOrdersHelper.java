@@ -244,7 +244,6 @@ public class PostGobiOrdersHelper {
   
   
   public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
-    logger.info("return from config"+jo.encodePrettily());
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings;
     String tenantConfigKey=OrderMappingCache.computeKey(this.okapiHeaders.get(TENANT_HEADER), orderType, jo);
     if(OrderMappingCache.getInstance().containsKey(tenantConfigKey)){
@@ -254,7 +253,6 @@ public class PostGobiOrdersHelper {
       if(!mappings.isEmpty())
           OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);
     }
-    logger.info("cached"+mappings.toString());
     return mappings;
     
   }

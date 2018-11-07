@@ -15,7 +15,6 @@ public class InitConfigService implements PostDeployVerticle {
   @Override
   public void init(Vertx vertx, Context context, Handler<AsyncResult<Boolean>> handler) {
     logger.info("Init Config Service");
-    //logger.info("Loading default mappings from: " + MappingHelper.PATH);
     handler.handle(io.vertx.core.Future.succeededFuture(true));
   }
 

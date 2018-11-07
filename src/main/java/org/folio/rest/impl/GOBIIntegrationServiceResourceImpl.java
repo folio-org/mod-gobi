@@ -53,7 +53,6 @@ public class GOBIIntegrationServiceResourceImpl implements GOBIIntegrationServic
     helper.parse(entity).thenAccept(gobiPO -> {
       logger.info("Mapping Request...");
       helper.map(gobiPO).thenAccept(compPO -> {
-        logger.info("debugggg"+compPO.toString());
         logger.info("Calling mod-orders...");
         helper.placeOrder(compPO).thenAccept(poLineNumber -> {
           GobiResponse gobiResponse = new GobiResponse();
