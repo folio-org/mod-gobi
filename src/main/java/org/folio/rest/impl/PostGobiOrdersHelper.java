@@ -260,7 +260,6 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
     VertxCompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
     try {
-      logger.info("calling mod-orders");
       httpClient.request(HttpMethod.POST, compPO, "/orders", okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenAccept(body -> {
