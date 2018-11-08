@@ -795,11 +795,9 @@ public class Mapper {
         if (f.get(instance) != null)
             return false;
       } catch (IllegalArgumentException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        logger.error("Unable to determine Object", e);
       } catch (IllegalAccessException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        logger.error("Unable to access Object", e);
       }
     }
       return true;               
