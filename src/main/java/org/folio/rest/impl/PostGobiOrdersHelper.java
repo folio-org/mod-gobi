@@ -76,11 +76,12 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
     final OrderMappings.OrderType orderType = getOrderType(doc);
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
-
+    String tenant = okapiHeaders.get(TENANT_HEADER);
     try {      
       String userId=getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN));
-      boolean cacheFound=OrderMappingCache.getInstance().containsKey(orderType.toString());
-       Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?OrderMappingCache.getInstance().getValue(orderType.toString()) : MappingHelper.defaultMappingForOrderType(this, orderType);
+      boolean cacheFound=OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
+       Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ? 
+           OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : MappingHelper.defaultMappingForOrderType(this, orderType);
             
       if(!cacheFound)
         OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
@@ -152,7 +153,7 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> lookupLocationId(String location) {
     try {
       String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
-      return httpClient.request("/location?query=" + query, okapiHeaders)
+      return httpClient.request("/locations?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractLocationId)
         .exceptionally(t -> {
@@ -164,11 +165,10 @@ public class PostGobiOrdersHelper {
       throw new CompletionException(e);
     }
   }
-//TODO debug material-types api
   public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
     try {
       String query = HelperUtils.encodeValue(String.format("name==\"%s\"", materialType));
-      return httpClient.request("/locations?query=" + query, okapiHeaders)
+      return httpClient.request("/material-types?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractMaterialTypeId)
         .exceptionally(t -> {
@@ -234,6 +234,11 @@ public class PostGobiOrdersHelper {
         .thenApply(jo ->  extractOrderMappings(orderType, jo))
         .exceptionally(t -> {
           logger.error("Exception looking up order mappings", t);
+          String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(okapiHeaders.get(TENANT_HEADER), orderType);
+          if(tenantKey!=null) {
+            logger.info("falling back on a cached value");
+            return OrderMappingCache.getInstance().getValue(tenantKey);
+          }
           return null;
         });
     } catch (Exception e) {
@@ -245,10 +250,17 @@ public class PostGobiOrdersHelper {
   
   public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings;
-    String tenantConfigKey=OrderMappingCache.computeKey(this.okapiHeaders.get(TENANT_HEADER), orderType, jo);
+    String tenant = okapiHeaders.get(TENANT_HEADER);
+    String tenantConfigKey=OrderMappingCache.computeKey(tenant, orderType, jo);
     if(OrderMappingCache.getInstance().containsKey(tenantConfigKey)){
       mappings = OrderMappingCache.getInstance().getValue(tenantConfigKey);
     } else {
+      //check if there is a key with an old mapping for this order type and tenant, if so delete it
+      String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(tenant, orderType);
+      if(tenantKey!=null) {
+        OrderMappingCache.getInstance().removeKey(tenantKey);
+      }
+      //extract the mappings and add it to cache
       mappings= MappingHelper.extractOrderMappings(orderType, jo, this);
       if(!mappings.isEmpty())
           OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);

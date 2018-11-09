@@ -26,25 +26,28 @@ import io.vertx.core.json.JsonObject;
 public class MappingHelper {
   private static final Logger logger = Logger.getLogger(MappingHelper.class);
 
-  
-
   private MappingHelper() {
     throw new IllegalStateException("MappingHelper class cannot be instantiated");
   }
   
+  private static Map<OrderMappings.OrderType,OrderMappings> defaultMappings=new EnumMap<>(OrderMappings.OrderType.class);
+  
+  static {
+    for(OrderMappings.OrderType orderType: OrderMappings.OrderType.values()){
+      defaultMappings.put(orderType, Json.decodeValue(readMappingsFile(orderType.toString()+".json"), OrderMappings.class));
+    }
+  }
+  
   public static Map<Mapping.Field, DataSourceResolver> defaultMappingForOrderType(PostGobiOrdersHelper postGobiOrdersHelper, OrderType orderType) {
-    final String PATH = orderType+".json";
-    final OrderMappings defaultMappings = Json.decodeValue(readMappingsFile(PATH), OrderMappings.class);
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
-      List<Mapping> mappingsList = defaultMappings.getMappings();
+      List<Mapping> mappingsList = defaultMappings.get(orderType).getMappings();
 
       for(Mapping mapping: mappingsList)
       {
-        Mapping.Field field = mapping.getField(); // get field
+        Mapping.Field field = mapping.getField();
         org.folio.gobi.DataSourceResolver dataSource = getDS(mapping, fieldDataSourceMapping, postGobiOrdersHelper);
         fieldDataSourceMapping.put(field, dataSource);
       }
-    
 
     logger.info(defaultMappings.toString());
     return fieldDataSourceMapping;
@@ -178,7 +181,7 @@ public class MappingHelper {
         return "";
       }
     } catch (IOException e) {
-      logger.error(String.format("Unable to read mock configuration in %s file", path), e);
+      logger.error(String.format("Unable to read configuration in %s file", path), e);
     }
     return "";
   }

@@ -65,7 +65,8 @@
           "field": "LIST_PRICE",
           "dataSource": {
             "default" : "0",
-            "translation": "toDouble"
+            "translation": "toDouble",
+            "translateDefault": true
           }
         },
         {

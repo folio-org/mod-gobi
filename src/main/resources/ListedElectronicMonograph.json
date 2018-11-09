@@ -25,7 +25,9 @@
         {
           "field": "APPROVED",
           "dataSource": {
-            "default": true
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
           }
         },
         {
@@ -101,7 +103,8 @@
           "dataSource": {
             "from": "//ListPrice/Amount",
             "default": "0",
-            "translation": "toDouble"
+            "translation": "toDouble",
+            "translateDefault": true
           }
         },
         {

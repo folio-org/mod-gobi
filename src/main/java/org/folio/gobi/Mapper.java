@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 
 import org.folio.rest.acq.model.Adjustment;
 import org.folio.rest.acq.model.Alert;
@@ -92,50 +93,37 @@ public class Mapper {
             ids.add(productId);
             detail.setProductIds(ids);
             
-            if(!isObjectEmpty(adjustment)) 
-              compPO.setAdjustment(adjustment);
-            
-            if(!isObjectEmpty(detail)) 
-              pol.setDetails(detail);         
-            if(!isObjectEmpty(cost)) 
-              pol.setCost(cost);
-            if(!isObjectEmpty(location))
-              pol.setLocation(location);
-            if(!isObjectEmpty(eresource))
-              pol.setEresource(eresource);
-            if(!isObjectEmpty(vendorDetail))
-              pol.setVendorDetail(vendorDetail);
-            if(!isObjectEmpty(renewal))
-              pol.setRenewal(renewal);
-            if(!isObjectEmpty(physical))
-              pol.setPhysical(physical);
-            if(!isObjectEmpty(source))
-              pol.setSource(source);
-            
-            if(!isObjectEmpty(contributor)) {
+            setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
+            setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
+            setObjectIfPresent(detail, o -> pol.setDetails((Details) o));       
+            setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
+            setObjectIfPresent(location, o -> pol.setLocation((Location) o));
+            setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
+            setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
+            setObjectIfPresent(renewal, o -> pol.setRenewal((Renewal) o));
+            setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
+            setObjectIfPresent(source, o -> pol.setSource((Source) o));
+              
+            setObjectIfPresent(contributor,o-> {
                List<Contributor> contributors = new ArrayList<>();
                contributors.add(contributor);
                pol.setContributors(contributors);
-            }
-            
-            if(!isObjectEmpty(reportingCode)) {
+            });
+            setObjectIfPresent(reportingCode,o-> {
                List<ReportingCode> reportingCodes = new ArrayList<>();
                reportingCodes.add(reportingCode);
                pol.setReportingCodes(reportingCodes);
-            }
-
-            if(!isObjectEmpty(reportingCode)) {
+            });
+            setObjectIfPresent(claim,o-> {
                List<Claim> claims = new ArrayList<>();
                claims.add(claim);
                pol.setClaims(claims);
-            }
-
-            if(!isObjectEmpty(fundDistribution)) {
+            });
+            setObjectIfPresent(fundDistribution,o-> {
                List<FundDistribution> fundDistributions = new ArrayList<>();
                fundDistributions.add(fundDistribution);
                pol.setFundDistribution(fundDistributions);
-            }
-
+            });
             poLines.add(pol);
 
             compPO.setPoLines(poLines);
@@ -146,6 +134,12 @@ public class Mapper {
     }
 
     return future;
+  }
+  
+  private void setObjectIfPresent(Object obj, Consumer<Object> setter) {
+    if(!isObjectEmpty(obj)) {
+      setter.accept(obj);
+    }    
   }
 
   private void mapReportingCodes(List<CompletableFuture<?>> futures,ReportingCode reportingCode, Document doc) {
@@ -623,9 +617,8 @@ public class Mapper {
       futures.add(
           mappings.get(Mapping.Field.PRODUCT_ID)
           .resolve(doc)
-          .thenAccept(o -> {
-            productId.setProductId(o.toString());
-          }).exceptionally(Mapper::logException));
+          .thenAccept(o -> productId.setProductId(o.toString()))
+          .exceptionally(Mapper::logException));
     }
     if (mappings.containsKey(Mapping.Field.RECEIVING_NOTE)) {
       futures.add(mappings.get(Mapping.Field.RECEIVING_NOTE)

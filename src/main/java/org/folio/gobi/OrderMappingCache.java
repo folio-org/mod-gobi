@@ -1,7 +1,9 @@
 package org.folio.gobi;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.OrderMappings;
@@ -25,7 +27,17 @@ public class OrderMappingCache {
   }
   
   public boolean containsKey(String key)  {    
-    return cache.containsKey(key);
+    return cache.containsKey(key);  
+  }
+  
+  //This method returns the key which matches the format "tenant:ordertype:config"
+  public String getifContainsTenantconfigKey(String tenant, OrderMappings.OrderType orderType) {
+    List<String> keys=cache.keySet().stream()
+        .filter(entry -> entry.startsWith(String.format("%s:%s", tenant, orderType.toString())) && entry.split(":").length==3)
+        .collect(Collectors.toList());
+    if(!keys.isEmpty()) return keys.get(0);
+    
+    return null;
   }
 
 
@@ -33,9 +45,18 @@ public class OrderMappingCache {
     cache.put(key, mapping);
   }
   
-  public static String computeKey(String tenant,OrderMappings.OrderType orderType,JsonObject jo){
+  public static String computeKey(String tenant, OrderMappings.OrderType orderType, JsonObject jo){
     return String.format("%s:%s:%s", tenant, orderType.toString(), jo.toString());
     
   }
+  public static String computeKey(String tenant, OrderMappings.OrderType orderType){
+    return String.format("%s-%s", tenant, orderType.toString());
+    
+  }
+
+  public void removeKey(String key) {
+    cache.remove(key);   
+  }
+ 
 
 }
