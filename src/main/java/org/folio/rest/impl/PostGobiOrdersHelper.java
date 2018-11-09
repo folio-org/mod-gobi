@@ -13,12 +13,13 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.log4j.Logger;
-import org.folio.gobi.DataSource;
+import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.gobi.HelperUtils;
 import org.folio.gobi.Mapper;
 import org.folio.gobi.MappingHelper;
+import org.folio.gobi.OrderMappingCache;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
@@ -28,8 +29,7 @@ import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource.PostGobiOrdersResponse;
 import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.OrderMapping;
-import org.folio.rest.mappings.model.OrderMapping.OrderType;
+import org.folio.rest.mappings.model.OrderMappings;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -48,13 +48,15 @@ public class PostGobiOrdersHelper {
 
   private static final String CONFIGURATION_MODULE = "GOBI";
   private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
-  private static final String CONFIGURATION_CODE = "gobi.order.mappings";
+  private static final String CONFIGURATION_CODE = "gobi.order.";
 
   public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
 
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
+  
+  public static final String TENANT_HEADER = "X-Okapi-Tenant";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -70,15 +72,21 @@ public class PostGobiOrdersHelper {
     this.asyncResultHandler = asyncResultHandler;
   }
 
+  
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
-    final OrderMapping.OrderType orderType = getOrderType(doc);
+    final OrderMappings.OrderType orderType = getOrderType(doc);
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
-
-    try {
-      Map<OrderType, Map<Mapping.Field, org.folio.gobi.DataSource>> defaultMapping = MappingHelper.defaultMapping(this);
-      Map<Mapping.Field, org.folio.gobi.DataSource> mappings = defaultMapping.get(orderType);
-      mappings.put(Mapping.Field.CREATED_BY, DataSource.builder()
-        .withDefault(getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN)))
+    String tenant = okapiHeaders.get(TENANT_HEADER);
+    try {      
+      String userId=getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN));
+      boolean cacheFound=OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
+       Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ? 
+           OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : MappingHelper.defaultMappingForOrderType(this, orderType);
+            
+      if(!cacheFound)
+        OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
+      mappings.put(Mapping.Field.CREATED_BY, DataSourceResolver.builder()
+        .withDefault(userId)
         .build());
       lookupOrderMappings(orderType).thenAccept(m -> {
         // Override the default mappings with the configured mappings
@@ -98,9 +106,9 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
-  public static OrderMapping.OrderType getOrderType(Document doc) {
+  public static OrderMappings.OrderType getOrderType(Document doc) {
     final XPath xpath = XPathFactory.newInstance().newXPath();
-    OrderMapping.OrderType orderType;
+    OrderMappings.OrderType orderType;
 
     String provided = null;
     try {
@@ -109,7 +117,7 @@ public class PostGobiOrdersHelper {
           doc, XPathConstants.NODE);
       if(node!=null){
         provided = node.getNodeName();
-        orderType = OrderMapping.OrderType.fromValue(provided);
+        orderType = OrderMappings.OrderType.fromValue(provided);
       }else {
         throw new IllegalArgumentException();
       }
@@ -157,7 +165,6 @@ public class PostGobiOrdersHelper {
       throw new CompletionException(e);
     }
   }
-
   public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
     try {
       String query = HelperUtils.encodeValue(String.format("name==\"%s\"", materialType));
@@ -214,25 +221,52 @@ public class PostGobiOrdersHelper {
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());
   }
 
-  public CompletableFuture<Map<Mapping.Field, DataSource>> lookupOrderMappings(OrderMapping.OrderType orderType) {
+  public CompletableFuture<Map<Mapping.Field, DataSourceResolver>> lookupOrderMappings(OrderMappings.OrderType orderType) {
     try {
       final String query = HelperUtils.encodeValue(
           String.format("(module==%s AND configName==%s AND code==%s)",
               CONFIGURATION_MODULE,
               CONFIGURATION_CONFIG_NAME,
-              CONFIGURATION_CODE));
+              CONFIGURATION_CODE+orderType));
       return httpClient.request(HttpMethod.GET,
           "/configurations/entries?query=" + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
-        .thenApply(jo -> MappingHelper.extractOrderMappings(orderType, jo, this))
+        .thenApply(jo ->  extractOrderMappings(orderType, jo))
         .exceptionally(t -> {
           logger.error("Exception looking up order mappings", t);
+          String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(okapiHeaders.get(TENANT_HEADER), orderType);
+          if(tenantKey!=null) {
+            logger.info("falling back on a cached value");
+            return OrderMappingCache.getInstance().getValue(tenantKey);
+          }
           return null;
         });
     } catch (Exception e) {
       logger.error("Exception calling lookupOrderMappings", e);
       throw new CompletionException(e);
     }
+  }
+  
+  
+  public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
+    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings;
+    String tenant = okapiHeaders.get(TENANT_HEADER);
+    String tenantConfigKey=OrderMappingCache.computeKey(tenant, orderType, jo);
+    if(OrderMappingCache.getInstance().containsKey(tenantConfigKey)){
+      mappings = OrderMappingCache.getInstance().getValue(tenantConfigKey);
+    } else {
+      //check if there is a key with an old mapping for this order type and tenant, if so delete it
+      String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(tenant, orderType);
+      if(tenantKey!=null) {
+        OrderMappingCache.getInstance().removeKey(tenantKey);
+      }
+      //extract the mappings and add it to cache
+      mappings= MappingHelper.extractOrderMappings(orderType, jo, this);
+      if(!mappings.isEmpty())
+          OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);
+    }
+    return mappings;
+    
   }
 
   public CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {

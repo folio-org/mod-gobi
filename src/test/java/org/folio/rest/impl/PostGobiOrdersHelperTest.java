@@ -17,13 +17,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.folio.gobi.DataSource;
+import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.gobi.exceptions.InvalidTokenException;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.OrderMapping;
+import org.folio.rest.mappings.model.OrderMappings;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.After;
@@ -330,19 +330,19 @@ public class PostGobiOrdersHelperTest {
         "GOBIIntegrationServiceResourceImpl/po_unlisted_print_monograph.xml",
         "GOBIIntegrationServiceResourceImpl/po_unlisted_print_serial.xml"
     };
-    OrderMapping.OrderType[] expected = {
-        OrderMapping.OrderType.LISTED_ELECTRONIC_MONOGRAPH,
-        OrderMapping.OrderType.LISTED_ELECTRONIC_SERIAL,
-        OrderMapping.OrderType.LISTED_PRINT_MONOGRAPH,
-        OrderMapping.OrderType.LISTED_PRINT_SERIAL,
-        OrderMapping.OrderType.UNLISTED_PRINT_MONOGRAPH,
-        OrderMapping.OrderType.UNLISTED_PRINT_SERIAL
+    OrderMappings.OrderType[] expected = {
+        OrderMappings.OrderType.LISTED_ELECTRONIC_MONOGRAPH,
+        OrderMappings.OrderType.LISTED_ELECTRONIC_SERIAL,
+        OrderMappings.OrderType.LISTED_PRINT_MONOGRAPH,
+        OrderMappings.OrderType.LISTED_PRINT_SERIAL,
+        OrderMappings.OrderType.UNLISTED_PRINT_MONOGRAPH,
+        OrderMappings.OrderType.UNLISTED_PRINT_SERIAL
     };
 
     for (int i = 0; i < orderFiles.length; i++) {
       InputStream data = this.getClass().getClassLoader().getResourceAsStream(orderFiles[i]);
       Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
-      OrderMapping.OrderType orderType = PostGobiOrdersHelper.getOrderType(doc);
+      OrderMappings.OrderType orderType = PostGobiOrdersHelper.getOrderType(doc);
       assertEquals(expected[i], orderType);
     }
 
@@ -383,11 +383,11 @@ public class PostGobiOrdersHelperTest {
       PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
           GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
           vertx.getOrCreateContext());
-      pgoh.lookupOrderMappings(OrderMapping.OrderType.fromValue("ListedElectronicMonograph"))
+      pgoh.lookupOrderMappings(OrderMappings.OrderType.fromValue("ListedElectronicMonograph"))
         .thenAccept(map -> {
           context.assertNotNull(map);
           context.assertNotNull(map.get(Mapping.Field.CURRENCY));
-          DataSource ds = map.get(Mapping.Field.CURRENCY);
+          DataSourceResolver ds = map.get(Mapping.Field.CURRENCY);
           context.assertEquals("//ListPrice/Currency", ds.from);
           context.assertEquals("USD", ds.defValue);
 
@@ -406,7 +406,7 @@ public class PostGobiOrdersHelperTest {
           ds = map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE);
           context.assertEquals("//NetPrice/Amount", ds.from);
           context.assertNotNull(ds.defValue);
-          DataSource defVal = (DataSource) ds.defValue;
+          DataSourceResolver defVal = (DataSourceResolver) ds.defValue;
           context.assertEquals("//ListPrice/Amount//EstPrice", defVal.from);
           context.assertEquals("15.0", defVal.defValue);
           try {

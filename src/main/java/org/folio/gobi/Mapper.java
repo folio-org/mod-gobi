@@ -1,11 +1,13 @@
 package org.folio.gobi;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 
 import org.folio.rest.acq.model.Adjustment;
 import org.folio.rest.acq.model.Alert;
@@ -37,9 +39,9 @@ public class Mapper {
 
   private static final Logger logger = LoggerFactory.getLogger(Mapper.class);
 
-  private final Map<Mapping.Field, DataSource> mappings;
+  private final Map<Mapping.Field, DataSourceResolver> mappings;
 
-  public Mapper(Map<Mapping.Field, DataSource> mappings) {
+  public Mapper(Map<Mapping.Field, DataSourceResolver> mappings) {
     this.mappings = mappings;
   }
 
@@ -91,33 +93,37 @@ public class Mapper {
             ids.add(productId);
             detail.setProductIds(ids);
             
-            
-            compPO.setAdjustment(adjustment);
-
-            pol.setDetails(detail);
-            pol.setCost(cost);
-            pol.setLocation(location);
-            pol.setEresource(eresource);
-            pol.setVendorDetail(vendorDetail);
-            pol.setRenewal(renewal);
-            pol.setPhysical(physical);
-            pol.setSource(source);
-            List<Contributor> contributors = new ArrayList<>();
-            contributors.add(contributor);
-            pol.setContributors(contributors);
-            
-            List<ReportingCode> reportingCodes = new ArrayList<>();
-            reportingCodes.add(reportingCode);
-            pol.setReportingCodes(reportingCodes);
-
-            List<Claim> claims = new ArrayList<>();
-            claims.add(claim);
-            pol.setClaims(claims);
-
-            List<FundDistribution> fundDistributions = new ArrayList<>();
-            fundDistributions.add(fundDistribution);
-            pol.setFundDistribution(fundDistributions);
-
+            setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
+            setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
+            setObjectIfPresent(detail, o -> pol.setDetails((Details) o));       
+            setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
+            setObjectIfPresent(location, o -> pol.setLocation((Location) o));
+            setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
+            setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
+            setObjectIfPresent(renewal, o -> pol.setRenewal((Renewal) o));
+            setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
+            setObjectIfPresent(source, o -> pol.setSource((Source) o));
+              
+            setObjectIfPresent(contributor,o-> {
+               List<Contributor> contributors = new ArrayList<>();
+               contributors.add(contributor);
+               pol.setContributors(contributors);
+            });
+            setObjectIfPresent(reportingCode,o-> {
+               List<ReportingCode> reportingCodes = new ArrayList<>();
+               reportingCodes.add(reportingCode);
+               pol.setReportingCodes(reportingCodes);
+            });
+            setObjectIfPresent(claim,o-> {
+               List<Claim> claims = new ArrayList<>();
+               claims.add(claim);
+               pol.setClaims(claims);
+            });
+            setObjectIfPresent(fundDistribution,o-> {
+               List<FundDistribution> fundDistributions = new ArrayList<>();
+               fundDistributions.add(fundDistribution);
+               pol.setFundDistribution(fundDistributions);
+            });
             poLines.add(pol);
 
             compPO.setPoLines(poLines);
@@ -128,6 +134,12 @@ public class Mapper {
     }
 
     return future;
+  }
+  
+  private void setObjectIfPresent(Object obj, Consumer<Object> setter) {
+    if(!isObjectEmpty(obj)) {
+      setter.accept(obj);
+    }    
   }
 
   private void mapReportingCodes(List<CompletableFuture<?>> futures,ReportingCode reportingCode, Document doc) {
@@ -605,9 +617,8 @@ public class Mapper {
       futures.add(
           mappings.get(Mapping.Field.PRODUCT_ID)
           .resolve(doc)
-          .thenAccept(o -> {
-            productId.setProductId(o.toString());
-          }).exceptionally(Mapper::logException));
+          .thenAccept(o -> productId.setProductId(o.toString()))
+          .exceptionally(Mapper::logException));
     }
     if (mappings.containsKey(Mapping.Field.RECEIVING_NOTE)) {
       futures.add(mappings.get(Mapping.Field.RECEIVING_NOTE)
@@ -762,12 +773,27 @@ public class Mapper {
       }
    
     if (mappings.containsKey(Mapping.Field.VENDOR_ACCOUNT)) {
-      futures.add(mappings.get(Mapping.Field.VENDOR_ACCOUNT)
-  
+      futures.add(mappings.get(Mapping.Field.VENDOR_ACCOUNT) 
           .resolve(doc)
           .thenAccept(o -> vendorDetail.setVendorAccount((String) o))
           .exceptionally(Mapper::logException));
     }
+  }
+  
+  public boolean isObjectEmpty(Object instance) { 
+    for (Field f : instance.getClass().getDeclaredFields())
+    {
+      f.setAccessible(true);
+      try {
+        if (f.get(instance) != null)
+            return false;
+      } catch (IllegalArgumentException e) {
+        logger.error("Unable to determine Object", e);
+      } catch (IllegalAccessException e) {
+        logger.error("Unable to access Object", e);
+      }
+    }
+      return true;               
   }
 
   public static Void logException(Throwable t) {

@@ -2,11 +2,6 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "orderMappings": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties":  {
           "orderType": {
             "type": "string",
             "description": "The type of the GOBI order",
@@ -25,15 +20,11 @@
               "type": "object",
               "$ref": "mapping.json"
             }
-          }
-        },
-        "additionalProperties": false,
-        "required": [
+          }        
+  },
+  "additionalProperties": false,
+  "required": [
           "orderType",
           "mappings"
         ]
-      }
-    }
-  },
-  "additionalProperties": false
 }
