@@ -1,4 +1,9 @@
-## 1.0.1 Unreleased
+## 1.0.1 (Released 12/03/2018)
+ * Use the latest GOBI schema MODGOBI-39(https://issues.folio.org/browse/MODGOBI-39)
+ * cache/reuse Mapping POJO MODGOBI-36(https://issues.folio.org/browse/MODGOBI-36)
+ * Integrate with Latest acquisition schemas MODGOBI-33(https://issues.folio.org/browse/MODGOBI-33)
+ * Ability to have default/fallback configurations MODGOBI-30(https://issues.folio.org/browse/MODGOBI-30)
+ * Retrieve Mapping Configurations from Mod-configuration MODGOBI-8(https://issues.folio.org/browse/MODGOBI-8)
  * Requires `locations` interface 2.1 or 3.0
  * [MODGOBI-28](https://issues.folio.org/browse/MODGOBI-28)
  * [MODGOBI-27](https://issues.folio.org/browse/MODGOBI-27)
