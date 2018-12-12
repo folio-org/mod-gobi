@@ -12,7 +12,9 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.log4j.Logger;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
@@ -27,7 +29,6 @@ import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
-import org.folio.rest.jaxrs.resource.GOBIIntegrationServiceResource.PostGobiOrdersResponse;
 import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.OrderMappings;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
@@ -44,7 +45,7 @@ import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 public class PostGobiOrdersHelper {
 
-  private static final Logger logger = Logger.getLogger(PostGobiOrdersHelper.class);
+  private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelper.class);
 
   private static final String CONFIGURATION_MODULE = "GOBI";
   private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
@@ -215,7 +216,6 @@ public class PostGobiOrdersHelper {
     }
   }
 
-  // TODO - Needs implementation
   public CompletableFuture<String> lookupMock(String data) {
     logger.info("Mocking the data lookup for: " + data);
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());
@@ -340,16 +340,16 @@ public class PostGobiOrdersHelper {
         response.getError().setCode(CODE_BAD_REQUEST);
         response.getError().setMessage(HelperUtils.truncate(t.getMessage(), 500));
         result = Future
-          .succeededFuture(PostGobiOrdersResponse.withXmlBadRequest(GobiResponseWriter.getWriter().write(response)));
+          .succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response)));
         break;
       case 500:
-        result = Future.succeededFuture(PostGobiOrdersResponse.withPlainInternalServerError(message));
+        result = Future.succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain(message));
         break;
       case 401:
-        result = Future.succeededFuture(PostGobiOrdersResponse.withPlainUnauthorized(message));
+        result = Future.succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain(message));
         break;
       default:
-        result = Future.succeededFuture(PostGobiOrdersResponse.withPlainInternalServerError(message));
+        result = Future.succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain(message));
       }
     } else if (t instanceof GobiPurchaseOrderParserException) {
       GobiResponse response = new GobiResponse();
@@ -357,16 +357,16 @@ public class PostGobiOrdersHelper {
       response.getError().setCode(CODE_INVALID_XML);
       response.getError().setMessage(HelperUtils.truncate(t.getMessage(), 500));
       result = Future
-        .succeededFuture(PostGobiOrdersResponse.withXmlBadRequest(GobiResponseWriter.getWriter().write(response)));
+        .succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response)));
     } else if (t instanceof InvalidTokenException) {
       GobiResponse response = new GobiResponse();
       response.setError(new ResponseError());
       response.getError().setCode(CODE_INVALID_TOKEN);
       response.getError().setMessage(HelperUtils.truncate(t.getMessage(), 500));
       result = Future
-        .succeededFuture(PostGobiOrdersResponse.withXmlBadRequest(GobiResponseWriter.getWriter().write(response)));
+        .succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response)));
     } else {
-      result = Future.succeededFuture(PostGobiOrdersResponse.withPlainInternalServerError(throwable.getMessage()));
+      result = Future.succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain(throwable.getMessage()));
     }
 
     if (httpClient != null) {

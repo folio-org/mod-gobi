@@ -48,7 +48,7 @@
     <jaxb_output_dir>${generated_sources_dir}/jaxb</jaxb_output_dir>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <ramlfiles_util_path>${ramlfiles_path}/raml-util</ramlfiles_util_path>
-    <raml-module-builder.version>23.2.1</raml-module-builder.version>
+    <raml-module-builder.version>19.1.5</raml-module-builder.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -112,12 +112,6 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- The RMB runtime defines usage of log4j2 for vert.x logging interface. Including Log4j 2 SLF4J Binding to allow SLF4J API to use Log4j 2 as the implementation. -->
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
-      <version>2.11.1</version>
-    </dependency>    
   </dependencies>
 
   <build>

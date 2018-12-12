@@ -1,4 +1,4 @@
-#%RAML 1.0
+#%RAML 0.8
 title: GOBI® (Global Online Bibliographic Information) Integration
 baseUri: https://github.com/folio-org/mod-gobi
 protocols: [ HTTPS ]
@@ -12,9 +12,9 @@ documentation:
       books for libraries. This module allows GOBI initiated orders to be
       fulfilled by FOLIO.
 
-types:
-    GobiResponse:  !include schemas/Response.xsd
-    
+traits:
+  - secured: !include raml-util/traits/auth.raml
+
 /gobi:
   displayName: GOBI Integration Service
   description: |
@@ -24,6 +24,7 @@ types:
     description: Validates the user has proper access to the module
     get:
       description: Validates the user has proper access to the module
+      is: [secured]
       responses:
         200:
           description: The user is valid
@@ -73,6 +74,7 @@ types:
     description: Fulfill an order that is delivered in GOBI format
     post:
       description: Fulfill an order that is delivered in GOBI format
+      is: [secured]
       body:
         application/xml:
           example: !include examples/po.xml
@@ -81,7 +83,6 @@ types:
           description: Creates a new order within FOLIO
           body:
             application/xml:
-              type: GobiResponse
               example: !include examples/response.xml
         400:
           description: Bad request

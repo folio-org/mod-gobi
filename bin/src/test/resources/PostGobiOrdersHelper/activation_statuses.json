@@ -1,0 +1,11 @@
+{
+  "activation_statuses":
+    [
+      {
+        "id": "2f0dfdec-00bb-462b-b1fb-20ab3d488f59",
+        "code": "NA",
+        "description": "Not active"
+      }
+    ],
+  "total_records": 1
+}

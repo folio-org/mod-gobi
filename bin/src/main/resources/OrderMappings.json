@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+          "orderType": {
+            "type": "string",
+            "description": "The type of the GOBI order",
+            "enum": [
+              "ListedElectronicMonograph",
+              "ListedElectronicSerial",
+              "ListedPrintMonograph",
+              "ListedPrintSerial",
+              "UnlistedPrintMonograph",
+              "UnlistedPrintSerial"
+            ]
+          },
+          "mappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "$ref": "mapping.json"
+            }
+          }        
+  },
+  "additionalProperties": false,
+  "required": [
+          "orderType",
+          "mappings"
+        ]
+}
