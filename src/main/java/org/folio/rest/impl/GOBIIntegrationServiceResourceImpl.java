@@ -41,7 +41,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
   }
 
   @Override
-  public void postGobiOrders(Object entity1, Map<String, String> okapiHeaders,
+  public void postGobiOrders(Object entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext) {
 
     HttpClientInterface httpClient = getHttpClient(okapiHeaders);
@@ -49,7 +49,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
         vertxContext);
 
     logger.info("Parsing Request...");
-    Reader entity = (Reader) entity1;
+    //Reader entity = (Reader) entity1;
     helper.parse(entity ).thenAccept(gobiPO -> {
       logger.info("Mapping Request...");
       helper.map(gobiPO).thenAccept(compPO -> {
