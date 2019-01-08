@@ -26,6 +26,7 @@ import org.folio.rest.acq.model.Renewal;
 import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Source;
 import org.folio.rest.acq.model.VendorDetail;
+import org.folio.rest.acq.model.Metadata;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -67,6 +68,7 @@ public class Mapper {
       Source source = new Source();
       Contributor contributor = new Contributor();
       ReportingCode reportingCode = new ReportingCode();
+      Metadata metaData = new Metadata();
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
       mapPurchaseOrder(futures, compPO, doc);
@@ -85,6 +87,7 @@ public class Mapper {
       mapSource(futures, source, doc);
       mapContributor(futures, contributor, doc);
       mapReportingCodes(futures, reportingCode, doc);
+      mapMetaData(futures, metaData, doc);
 
       CompletableFuture
           .allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
@@ -94,6 +97,7 @@ public class Mapper {
             detail.setProductIds(ids);
 
             setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
+            setObjectIfPresent(metaData, o -> compPO.setMetadata((Metadata) o));
             setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
             setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
             setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
@@ -134,6 +138,15 @@ public class Mapper {
     }
 
     return future;
+  }
+
+  private void mapMetaData(List<CompletableFuture<?>> futures, Metadata metaData, Document doc) {
+    if (mappings.containsKey(Mapping.Field.CREATED_DATE)) {
+      futures.add(mappings.get(Mapping.Field.CREATED_DATE)
+         .resolve(doc)
+         .thenAccept(o -> metaData.setCreatedDate((Date) o))
+         .exceptionally(Mapper::logException));
+   }
   }
 
   private void setObjectIfPresent(Object obj, Consumer<Object> setter) {
