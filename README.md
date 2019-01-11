@@ -13,6 +13,16 @@ for libraries. This module allows GOBI initiated orders to be fulfilled by
 FOLIO.
 
 ## Additional information
+MODGOBI currently can handle the below order Types:
+1. Listed Electronic Monograph
+2. Listed Electrnoic serial
+3. Listed Print Monograph
+4. Listed Print Serial
+5. Unlisted Print Monograph
+6. UnlistedPrint Serial
+
+When any of the above order types come through GOBI, the order is mapped to corresponding schemas in https://github.com/folio-org/acq-models
+and the Orders APIs are called. 
 
 ### Issue tracker
 

@@ -26,6 +26,7 @@ import org.folio.rest.acq.model.Renewal;
 import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Source;
 import org.folio.rest.acq.model.VendorDetail;
+import org.folio.rest.acq.model.Metadata;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -67,6 +68,7 @@ public class Mapper {
       Source source = new Source();
       Contributor contributor = new Contributor();
       ReportingCode reportingCode = new ReportingCode();
+      Metadata metaData = new Metadata();
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
       mapPurchaseOrder(futures, compPO, doc);
@@ -85,6 +87,7 @@ public class Mapper {
       mapSource(futures, source, doc);
       mapContributor(futures, contributor, doc);
       mapReportingCodes(futures, reportingCode, doc);
+      mapMetaData(futures, metaData, doc);
 
       CompletableFuture
           .allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
@@ -92,18 +95,19 @@ public class Mapper {
             List<ProductId> ids = new ArrayList<>();
             ids.add(productId);
             detail.setProductIds(ids);
-            
+
             setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
+            setObjectIfPresent(metaData, o -> compPO.setMetadata((Metadata) o));
             setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
-            setObjectIfPresent(detail, o -> pol.setDetails((Details) o));       
+            setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
             setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
             setObjectIfPresent(location, o -> pol.setLocation((Location) o));
             setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
             setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
-            setObjectIfPresent(renewal, o -> pol.setRenewal((Renewal) o));
+            setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
             setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
             setObjectIfPresent(source, o -> pol.setSource((Source) o));
-              
+
             setObjectIfPresent(contributor,o-> {
                List<Contributor> contributors = new ArrayList<>();
                contributors.add(contributor);
@@ -135,11 +139,20 @@ public class Mapper {
 
     return future;
   }
-  
+
+  private void mapMetaData(List<CompletableFuture<?>> futures, Metadata metaData, Document doc) {
+    if (mappings.containsKey(Mapping.Field.CREATED_DATE)) {
+      futures.add(mappings.get(Mapping.Field.CREATED_DATE)
+         .resolve(doc)
+         .thenAccept(o -> metaData.setCreatedDate((Date) o))
+         .exceptionally(Mapper::logException));
+   }
+  }
+
   private void setObjectIfPresent(Object obj, Consumer<Object> setter) {
     if(!isObjectEmpty(obj)) {
       setter.accept(obj);
-    }    
+    }
   }
 
   private void mapReportingCodes(List<CompletableFuture<?>> futures,ReportingCode reportingCode, Document doc) {
@@ -252,12 +265,6 @@ public class Mapper {
           .thenAccept(o -> physical.setReceiptDue((Date) o))
           .exceptionally(Mapper::logException));
     }
-    if (mappings.containsKey(Mapping.Field.VOLUMES)) {
-      futures.add(mappings.get(Mapping.Field.VOLUMES)
-          .resolve(doc)
-          .thenAccept(o -> physical.setVolumes((Integer) o))
-          .exceptionally(Mapper::logException));
-    }
   }
 
   private void mapRenewal(List<CompletableFuture<?>> futures, Renewal renewal, Document doc) {
@@ -316,12 +323,7 @@ public class Mapper {
   }
 
   private void mapPurchaseOrder(List<CompletableFuture<?>> futures, CompositePurchaseOrder compPo, Document doc) {
-    if (mappings.containsKey(Mapping.Field.CREATED_BY)) {
-      futures.add(mappings.get(Mapping.Field.CREATED_BY)
-          .resolve(doc)
-          .thenAccept(o -> compPo.setCreatedBy((String) o))
-          .exceptionally(Mapper::logException));
-    }
+
     if (mappings.containsKey(Mapping.Field.ORDER_TYPE)) {
       futures.add(mappings.get(Mapping.Field.ORDER_TYPE)
           .resolve(doc)
@@ -342,12 +344,7 @@ public class Mapper {
           .thenAccept(o -> compPo.setAssignedTo((String) o))
           .exceptionally(Mapper::logException));
     }
-    if (mappings.containsKey(Mapping.Field.CREATED_DATE)) {
-      futures.add(mappings.get(Mapping.Field.CREATED_DATE)
-          .resolve(doc)
-          .thenAccept(o -> compPo.setCreated((Date) o))
-          .exceptionally(Mapper::logException));
-    }
+
     if (mappings.containsKey(Mapping.Field.MANUAL_PO)) {
       futures.add(mappings.get(Mapping.Field.MANUAL_PO)
           .resolve(doc)
@@ -771,16 +768,16 @@ public class Mapper {
             .exceptionally(Mapper::logException));
       }
       }
-   
+
     if (mappings.containsKey(Mapping.Field.VENDOR_ACCOUNT)) {
-      futures.add(mappings.get(Mapping.Field.VENDOR_ACCOUNT) 
+      futures.add(mappings.get(Mapping.Field.VENDOR_ACCOUNT)
           .resolve(doc)
           .thenAccept(o -> vendorDetail.setVendorAccount((String) o))
           .exceptionally(Mapper::logException));
     }
   }
-  
-  public boolean isObjectEmpty(Object instance) { 
+
+  public boolean isObjectEmpty(Object instance) {
     for (Field f : instance.getClass().getDeclaredFields())
     {
       f.setAccessible(true);
@@ -793,7 +790,7 @@ public class Mapper {
         logger.error("Unable to access Object", e);
       }
     }
-      return true;               
+      return true;
   }
 
   public static Void logException(Throwable t) {

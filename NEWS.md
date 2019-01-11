@@ -1,3 +1,5 @@
+## 1.1.0 - unreleased
+ * [MODGOBI-43](https://issues.folio.org/browse/MODGOBI-43) Adjusting to new acq models with Renewal changes
 ## 1.0.1 (Released 12/03/2018)
  * Use the latest GOBI schema MODGOBI-39(https://issues.folio.org/browse/MODGOBI-39)
  * cache/reuse Mapping POJO MODGOBI-36(https://issues.folio.org/browse/MODGOBI-36)
