@@ -1,10 +1,7 @@
 package org.folio.rest.impl;
 
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import javax.ws.rs.core.Response;
 
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.rest.RestVerticle;
@@ -41,7 +38,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
   }
 
   @Override
-  public void postGobiOrders(Object entity, Map<String, String> okapiHeaders,
+  public void postGobiOrders(String entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext) {
 
     HttpClientInterface httpClient = getHttpClient(okapiHeaders);
@@ -50,19 +47,14 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
 
     logger.info("Parsing Request...");
     //Reader entity = (Reader) entity1;
-    helper.parse(entity ).thenAccept(gobiPO -> {
+    helper.parse(entity).thenAccept(gobiPO -> {
       logger.info("Mapping Request...");
       helper.map(gobiPO).thenAccept(compPO -> {
         logger.info("Calling mod-orders...");
         helper.placeOrder(compPO).thenAccept(poLineNumber -> {
-          GobiResponse gobiResponse = new GobiResponse();
-          gobiResponse.setPoLineNumber(poLineNumber);
-
-          javax.ws.rs.core.Response response = PostGobiOrdersResponse
-            .respond201WithApplicationXml(GobiResponseWriter.getWriter().write(gobiResponse));
-          AsyncResult<javax.ws.rs.core.Response> result = Future.succeededFuture(response);
-          asyncResultHandler.handle(result);
-
+          org.folio.rest.jaxrs.model.Response response = new org.folio.rest.jaxrs.model.Response();
+          response.setPoLineNumber(poLineNumber);
+          asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(response)));
         }).exceptionally(helper::handleError);
       }).exceptionally(helper::handleError);
     }).exceptionally(helper::handleError);
@@ -76,7 +68,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
   }
 
   @Override
-  public void postGobiValidate(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
+  public void postGobiValidate(Map<String, String> okapiHeaders, Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler,
       Context vertxContext) {
     BinaryOutStream binaryOutStream = new BinaryOutStream();
     binaryOutStream.setData(POST_DATA.getBytes(StandardCharsets.UTF_8));

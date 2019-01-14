@@ -38,6 +38,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import java.io.InputStream;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
@@ -142,12 +143,42 @@ public class GOBIIntegrationServiceResourceImplTest {
       .when()
         .post(validatePath)
       .then()
+        .contentType("application/xml")
         .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>"));
 
     asyncLocal.complete();
 
     logger.info("End: Testing for Post Gobi Validate 200 - valid call");
   }
+
+  @Test
+  public final void testPostGobiXMLContent(TestContext context) throws Exception {
+    logger.info("Begin: Testing for 201 - XML content");
+
+    final Async asyncLocal = context.async();
+
+    final String body = getMockData(poListedElectronicMonographPath);
+
+    // final GobiResponse order = RestAssured
+    RestAssured
+      .given()
+        .header(tokenHeader)
+        .header(urlHeader)
+        .header(tenantHeader)
+        .header(contentTypeHeaderXML)
+        .body(body)
+      .when()
+        .post(ordersPath)
+      .then()
+        .statusCode(201)
+        .contentType("application/xml")
+        .content(Matchers.equalTo("<test>POST - OK</test>"));
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing for 201 - XML content");
+  }
+
   
   @Test
   public final void testPostGobiOrdersPOListedElectronicMonograph(TestContext context) throws Exception {
@@ -172,7 +203,6 @@ public class GOBIIntegrationServiceResourceImplTest {
         .extract()
           .body()
             .as(GobiResponse.class, ObjectMapperType.JAXB);
-
     context.assertNotNull(order.getPoLineNumber());
 
     asyncLocal.complete();
@@ -579,6 +609,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   private String getMockData(String path) throws IOException {
-    return IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(path));
+    InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(path);
+    return IOUtils.toString(resourceAsStream, "UTF-8");
   }
 }

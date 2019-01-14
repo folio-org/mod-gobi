@@ -138,7 +138,7 @@ public class PostGobiOrdersHelper {
     }
   }
 
-  public CompletableFuture<Document> parse(Reader entity) {
+  public CompletableFuture<Document> parse(String entity) {
     VertxCompletableFuture<Document> future = new VertxCompletableFuture<>(ctx);
     final GobiPurchaseOrderParser parser = GobiPurchaseOrderParser.getParser();
 
