@@ -39,6 +39,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import java.io.InputStream;
+import java.util.LinkedList;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
@@ -171,8 +172,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .post(ordersPath)
       .then()
         .statusCode(201)
-        .contentType("application/xml")
-        .content(Matchers.equalTo("<test>POST - OK</test>"));
+        .contentType("application/xml");
 
     asyncLocal.complete();
 

@@ -52,9 +52,10 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
       helper.map(gobiPO).thenAccept(compPO -> {
         logger.info("Calling mod-orders...");
         helper.placeOrder(compPO).thenAccept(poLineNumber -> {
-          org.folio.rest.jaxrs.model.Response response = new org.folio.rest.jaxrs.model.Response();
-          response.setPoLineNumber(poLineNumber);
-          asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(response)));
+          GobiResponse gobiResponse = new GobiResponse();
+          gobiResponse.setPoLineNumber(poLineNumber);
+          BinaryOutStream binaryOutStream = GobiResponseWriter.getWriter().write(gobiResponse);
+          asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(binaryOutStream)));
         }).exceptionally(helper::handleError);
       }).exceptionally(helper::handleError);
     }).exceptionally(helper::handleError);

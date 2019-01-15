@@ -12,9 +12,6 @@ documentation:
       books for libraries. This module allows GOBI initiated orders to be
       fulfilled by FOLIO.
 
-types:
-  GobiResponse:  !include schemas/Response.xsd
-    
 /gobi:
   displayName: GOBI Integration Service
   description: |
@@ -82,7 +79,6 @@ types:
           description: Creates a new order within FOLIO
           body:
             application/xml:
-              type: GobiResponse
               example: !include examples/response.xml
         400:
           description: Bad request
