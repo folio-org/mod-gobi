@@ -44,6 +44,8 @@ import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 public class PostGobiOrdersHelper {
 
+  private static final String ORDERS_ENDPOINT = "/orders/composite-orders";
+
   private static final Logger logger = Logger.getLogger(PostGobiOrdersHelper.class);
 
   private static final String CONFIGURATION_MODULE = "GOBI";
@@ -55,7 +57,7 @@ public class PostGobiOrdersHelper {
   public static final String CODE_INVALID_XML = "INVALID_XML";
 
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
-  
+
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
 
   private final HttpClientInterface httpClient;
@@ -72,17 +74,17 @@ public class PostGobiOrdersHelper {
     this.asyncResultHandler = asyncResultHandler;
   }
 
-  
+
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
     final OrderMappings.OrderType orderType = getOrderType(doc);
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
     String tenant = okapiHeaders.get(TENANT_HEADER);
-    try {      
+    try {
       String userId=getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN));
       boolean cacheFound=OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
-       Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ? 
+       Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
            OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : MappingHelper.defaultMappingForOrderType(this, orderType);
-            
+
       if(!cacheFound)
         OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
       mappings.put(Mapping.Field.CREATED_BY, DataSourceResolver.builder()
@@ -246,8 +248,8 @@ public class PostGobiOrdersHelper {
       throw new CompletionException(e);
     }
   }
-  
-  
+
+
   public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings;
     String tenant = okapiHeaders.get(TENANT_HEADER);
@@ -266,13 +268,13 @@ public class PostGobiOrdersHelper {
           OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);
     }
     return mappings;
-    
+
   }
 
   public CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
     VertxCompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
     try {
-      httpClient.request(HttpMethod.POST, compPO, "/orders", okapiHeaders)
+      httpClient.request(HttpMethod.POST, compPO, ORDERS_ENDPOINT, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenAccept(body -> {
           logger.info("Response from mod-orders: " + body.encodePrettily());
@@ -283,7 +285,7 @@ public class PostGobiOrdersHelper {
           return null;
         });
     } catch (Exception e) {
-      logger.error("Exception calling POST /orders", e);
+      logger.error(String.format("Exception calling %s on %s",HttpMethod.POST,ORDERS_ENDPOINT), e);
       future.completeExceptionally(e);
     }
     return future;
