@@ -48,7 +48,7 @@
     <jaxb_output_dir>${generated_sources_dir}/jaxb</jaxb_output_dir>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <ramlfiles_util_path>${ramlfiles_path}/raml-util</ramlfiles_util_path>
-    <raml-module-builder.version>23.4.0-SNAPSHOT</raml-module-builder.version>
+    <raml-module-builder.version>23.4.0</raml-module-builder.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
