@@ -46,7 +46,6 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
         vertxContext);
 
     logger.info("Parsing Request...");
-    //Reader entity = (Reader) entity1;
     helper.parse(entity).thenAccept(gobiPO -> {
       logger.info("Mapping Request...");
       helper.map(gobiPO).thenAccept(compPO -> {
