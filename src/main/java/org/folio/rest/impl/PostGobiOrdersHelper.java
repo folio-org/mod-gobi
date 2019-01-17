@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-import java.io.Reader;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
