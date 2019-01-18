@@ -33,7 +33,6 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext) {
     BinaryOutStream binaryOutStream = new BinaryOutStream();
     binaryOutStream.setData(GET_DATA.getBytes(StandardCharsets.UTF_8));
-
     asyncResultHandler.handle(Future.succeededFuture(GetGobiValidateResponse.respond200WithApplicationXml(binaryOutStream)));
   }
 
