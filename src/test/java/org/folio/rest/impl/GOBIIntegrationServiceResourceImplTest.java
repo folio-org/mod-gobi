@@ -148,7 +148,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     logger.info("End: Testing for Post Gobi Validate 200 - valid call");
   }
-  
+
   @Test
   public final void testPostGobiOrdersPOListedElectronicMonograph(TestContext context) throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed electronic monograph");
@@ -435,6 +435,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   public static class MockServer {
 
+    private static final String ORDERS_ENDPOINT = "/orders/composite-orders";
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
     private static final Random rand = new Random(System.nanoTime());
 
@@ -460,7 +461,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       Router router = Router.router(vertx);
 
       router.route().handler(BodyHandler.create());
-      router.route(HttpMethod.POST, "/orders").handler(this::handlePostPurchaseOrder);
+      router.route(HttpMethod.POST, ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
       router.route(HttpMethod.GET, "/vendor").handler(this::handleGetVendor);
       router.route(HttpMethod.GET, "/material-types").handler(this::handleGetMaterialType);
       router.route(HttpMethod.GET, "/locations").handler(this::handleGetLocation);
