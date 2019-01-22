@@ -548,14 +548,6 @@ public class Mapper {
                   CompositePoLine.ReceiptStatus.fromValue((String) o)))
               .exceptionally(Mapper::logException));
     }
-    if (mappings.containsKey(Mapping.Field.PO_LINE_WORKFLOW_STATUS)) {
-      futures
-          .add(mappings.get(Mapping.Field.PO_LINE_WORKFLOW_STATUS)
-          .resolve(doc)
-          .thenAccept(o -> CompositePurchaseOrder.WorkflowStatus.fromValue((String) o))
-          .exceptionally(Mapper::logException));
-    }
-
   }
 
   private void mapCost(List<CompletableFuture<?>> futures, Cost cost,Document doc) {
