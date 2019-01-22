@@ -9,7 +9,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.folio.rest.impl.PostGobiOrdersHelper;
@@ -24,7 +25,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class MappingHelper {
-  private static final Logger logger = Logger.getLogger(MappingHelper.class);
+  private static final Logger logger = LoggerFactory.getLogger(MappingHelper.class);
 
   private MappingHelper() {
     throw new IllegalStateException("MappingHelper class cannot be instantiated");

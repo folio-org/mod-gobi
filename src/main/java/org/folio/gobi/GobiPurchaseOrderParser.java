@@ -4,10 +4,12 @@ import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
-import org.xml.sax.InputSource;
 
 public class GobiPurchaseOrderParser {
   private static final Logger logger = LoggerFactory.getLogger(GobiPurchaseOrderParser.class);
@@ -49,10 +50,11 @@ public class GobiPurchaseOrderParser {
     }
   }
 
-  public Document parse(Reader data) throws GobiPurchaseOrderParserException {
+  public Document parse(String data) throws GobiPurchaseOrderParserException {
     Document doc = null;
     try {
-      doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(data));
+      final InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+      doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
       validator.validate(new DOMSource(doc));
     } catch (Exception e) {
       logger.error("Parsing failed", e);
