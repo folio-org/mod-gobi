@@ -130,7 +130,7 @@ public class Mapper {
             });
             poLines.add(pol);
 
-            compPO.setPoLines(poLines);
+            compPO.setCompositePoLines(poLines);
             future.complete(compPO);
           });
     } catch (Exception e) {

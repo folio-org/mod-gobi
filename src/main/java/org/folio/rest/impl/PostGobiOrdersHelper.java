@@ -276,7 +276,7 @@ public class PostGobiOrdersHelper {
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenAccept(body -> {
           logger.info("Response from mod-orders: " + body.encodePrettily());
-          future.complete(body.getJsonArray("po_lines").getJsonObject(0).getString("po_line_number"));
+          future.complete(body.getJsonArray("compositePoLines").getJsonObject(0).getString("po_line_number"));
         })
         .exceptionally(t -> {
           future.completeExceptionally(t);
