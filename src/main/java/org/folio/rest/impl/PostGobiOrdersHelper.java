@@ -44,13 +44,15 @@ import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 public class PostGobiOrdersHelper {
 
+  private static final String GET_VENDORS_QUERY = "/vendor-storage/vendors?query=";
+
   private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelper.class);
 
   private static final String CONFIGURATION_MODULE = "GOBI";
   private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
   private static final String CONFIGURATION_CODE = "gobi.order.";
   private static final String ORDERS_ENDPOINT = "/orders/composite-orders";
-  
+
   public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
@@ -186,7 +188,7 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> lookupVendorId(String vendorCode) {
     try {
       String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, vendorCode));
-      return httpClient.request(HttpMethod.GET, "/vendor?query=" + query, okapiHeaders)
+      return httpClient.request(HttpMethod.GET, GET_VENDORS_QUERY + query, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenApply(HelperUtils::extractVendorId)
         .exceptionally(t -> {
