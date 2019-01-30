@@ -49,3 +49,29 @@
   you did. Add links to blog posts, patterns, libraries or addons used
   to solve this problem.
 -->
+
+## Pre-Merge Checklist:
+Before merging this PR, please go through the following list and take appropriate actions.
+
+- Does this introduce breaking changes?
+  - [ ] Were any API paths or methods changed, added or removed?
+  - [ ] Were there any schema changes?
+  - [ ] Did any of the interface versions change?
+  - [ ] Were permissions changed, added, or removed?
+  - [ ] Are there new interface dependencies?
+
+If the answer to any of those questions is yes, **STOP** and consider the following:
+
+- What other modules will these changes impact?
+- Do JIRAs exist to update the impacted modules?
+  - [ ] If not, please create them
+  - [ ] Do they contain the appropriate level of detail?  Which endpoints/schemas changed, etc.
+  - [ ] Do they have all they appropriate links to blocked/related issues?
+- Are the JIRAs under active development?  
+  - [ ] If not, contact the project's PO and make sure they're aware of the urgency.
+- Do PRs exist for these changes?
+  - [ ] If so, have they been approved?
+
+Ideally all of the PRs involved in breaking changes would be merged in the same day to avoid breaking the folio-testing environment.  Communication is paramount if that is to be achieved, especially as the number of intermodule and inter-team dependencies increase.  
+
+While it's helpful for reviewers to help identify potential problems, ensuring that it's safe to merge is ultimately the responsibility of the PR assignee.
