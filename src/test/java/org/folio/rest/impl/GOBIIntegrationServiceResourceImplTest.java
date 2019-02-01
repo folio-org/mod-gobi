@@ -523,7 +523,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       compPO.put("id", UUID.randomUUID().toString());
       String poNumber = "PO_" + randomDigits(10);
       compPO.put("po_number", poNumber);
-      compPO.getJsonArray("po_lines").forEach(line -> {
+      compPO.getJsonArray("compositePoLines").forEach(line -> {
         JsonObject poLine = (JsonObject) line;
         poLine.put("id", UUID.randomUUID().toString());
         poLine.put("po_line_number", poNumber + "-1");
