@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -52,9 +53,20 @@ public class GobiPurchaseOrderParser {
 
   public Document parse(String data) throws GobiPurchaseOrderParserException {
     Document doc = null;
+    String FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
     try {
       final InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
-      doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      
+      factory.setFeature(FEATURE, false);
+      factory.setXIncludeAware(false);
+      factory.setExpandEntityReferences(false);
+//      factory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, Boolean.TRUE);
+//      factory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA, Boolean.TRUE);
+//      factory.setAttribute(W3C_XML_SCHEMA_NS_URI, Boolean.TRUE);
+
+      doc = factory.newDocumentBuilder().parse(stream);
       validator.validate(new DOMSource(doc));
     } catch (Exception e) {
       logger.error("Parsing failed", e);
@@ -68,7 +80,7 @@ public class GobiPurchaseOrderParser {
       }
 
       throw new GobiPurchaseOrderParserException(message, e);
-    }
+    }  
     return doc;
   }
 
