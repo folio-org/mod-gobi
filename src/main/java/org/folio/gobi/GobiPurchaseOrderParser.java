@@ -53,8 +53,7 @@ public class GobiPurchaseOrderParser {
   }
 
   public Document parse(String data) throws GobiPurchaseOrderParserException {
-    Document doc = null;
-    
+    Document doc = null;    
     try {
       final InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -82,7 +81,7 @@ public class GobiPurchaseOrderParser {
       }
 
       throw new GobiPurchaseOrderParserException(message, e);
-    }  
+    }
     return doc;
   }
 
