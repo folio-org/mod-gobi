@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -31,6 +30,8 @@ public class GobiPurchaseOrderParser {
   private static final Logger logger = LoggerFactory.getLogger(GobiPurchaseOrderParser.class);
   private static final String PURCHASE_ORDER_SCHEMA = "GobiPurchaseOrder.xsd";
   private static final GobiPurchaseOrderParser INSTANCE = new GobiPurchaseOrderParser();
+  private static final String EXTERNAL_DTD_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+  private static final String DTD_FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
 
   private Validator validator;
 
@@ -53,18 +54,19 @@ public class GobiPurchaseOrderParser {
 
   public Document parse(String data) throws GobiPurchaseOrderParserException {
     Document doc = null;
-    String FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    
     try {
       final InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
       
-      factory.setFeature(FEATURE, false);
+      //https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet
+      // Protect against XML entity attacks by disallowing DTD
+      factory.setFeature(DTD_FEATURE, true);   
+      // Protect against external DTDs
+      factory.setFeature(EXTERNAL_DTD_FEATURE, false); 
+      // Protect from XML Schema
       factory.setXIncludeAware(false);
       factory.setExpandEntityReferences(false);
-//      factory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, Boolean.TRUE);
-//      factory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA, Boolean.TRUE);
-//      factory.setAttribute(W3C_XML_SCHEMA_NS_URI, Boolean.TRUE);
 
       doc = factory.newDocumentBuilder().parse(stream);
       validator.validate(new DOMSource(doc));
