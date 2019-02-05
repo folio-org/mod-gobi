@@ -12,6 +12,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
@@ -42,6 +43,9 @@ public class GobiPurchaseOrderParser {
   private GobiPurchaseOrderParser() {
     try {
       SchemaFactory schemaFactory = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
+      schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
       schemaFactory.setResourceResolver(new ResourceResolver());
       Schema schema = schemaFactory
         .newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(PURCHASE_ORDER_SCHEMA)));
