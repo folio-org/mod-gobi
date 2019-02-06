@@ -43,14 +43,15 @@ public class GobiPurchaseOrderParser {
   private GobiPurchaseOrderParser() {
     try {
       SchemaFactory schemaFactory = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
-      schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-      schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 
       schemaFactory.setResourceResolver(new ResourceResolver());
+      
       Schema schema = schemaFactory
         .newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(PURCHASE_ORDER_SCHEMA)));
-
+  
       validator = schema.newValidator();
+      validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
     } catch (Exception e) {
       logger.error("Unable to create GobiPurchaseOrderParser", e);
     }
