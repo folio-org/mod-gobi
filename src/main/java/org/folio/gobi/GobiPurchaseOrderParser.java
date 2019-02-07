@@ -46,7 +46,6 @@ public class GobiPurchaseOrderParser {
       schemaFactory.setResourceResolver(new ResourceResolver());
       Schema schema = schemaFactory
         .newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(PURCHASE_ORDER_SCHEMA)));
-  
       validator = schema.newValidator();
       validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
       validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
