@@ -57,8 +57,6 @@ public class GobiPurchaseOrderParser {
       doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
       validator.validate(new DOMSource(doc));
     } catch (Exception e) {
-      logger.error("Parsing failed", e);
-
       final Throwable cause = e.getCause();
       final String message;
       if (cause != null) {
@@ -98,34 +96,42 @@ public class GobiPurchaseOrderParser {
       this.inputStream = input;
     }
 
+    @Override
     public String getPublicId() {
       return publicId;
     }
 
+    @Override
     public void setPublicId(String publicId) {
       this.publicId = publicId;
     }
 
+    @Override
     public String getBaseURI() {
       return null;
     }
 
+    @Override
     public InputStream getByteStream() {
       return null;
     }
 
+    @Override
     public boolean getCertifiedText() {
       return false;
     }
 
+    @Override
     public Reader getCharacterStream() {
       return null;
     }
 
+    @Override
     public String getEncoding() {
       return null;
     }
 
+    @Override
     public String getStringData() {
       synchronized (inputStream) {
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -137,34 +143,42 @@ public class GobiPurchaseOrderParser {
       }
     }
 
+    @Override
     public void setBaseURI(String baseURI) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setByteStream(InputStream byteStream) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setCertifiedText(boolean certifiedText) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setCharacterStream(Reader characterStream) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setEncoding(String encoding) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setStringData(String stringData) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public String getSystemId() {
       return systemId;
     }
 
+    @Override
     public void setSystemId(String systemId) {
       this.systemId = systemId;
     }

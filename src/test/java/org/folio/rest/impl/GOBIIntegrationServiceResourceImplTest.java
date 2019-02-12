@@ -18,8 +18,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -429,39 +429,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("End: Testing for 201 - posted order listed print monograph");
   }
 
-  @Test
-  public final void testPostContentWithInvalidOkapiToken(TestContext context) throws Exception {
-    logger.info("Begin: Testing for 400 - posted order listed print monograph with invalid okapi token");
-
-    final Async asyncLocal = context.async();
-
-    final String body = getMockData(poListedPrintMonographPath);
-
-    final GobiResponse error = RestAssured
-      .given()
-        .header(tenantHeader)
-        .header(urlHeader)
-        .header(contentTypeHeaderXML)
-        .body(body)
-      .when()
-        .post(ordersPath)
-      .then()
-        .statusCode(400)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
-
-    context.assertNotNull(error);
-    context.assertNotNull(error.getError());
-    context.assertEquals(CODE_INVALID_TOKEN, error.getError().getCode());
-    context.assertNotNull(error.getError().getMessage());
-
-    asyncLocal.complete();
-
-    logger.info("End: Testing for 400 - posted order with invalid token");
-  }
-
   public static class MockServer {
 
     private static final String ORDERS_ENDPOINT = "/orders/composite-orders";
@@ -491,7 +458,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       router.route().handler(BodyHandler.create());
       router.route(HttpMethod.POST, ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
-      router.route(HttpMethod.GET, "/vendor").handler(this::handleGetVendor);
+      router.route(HttpMethod.GET, "/vendor-storage/vendors").handler(this::handleGetVendor);
       router.route(HttpMethod.GET, "/material-types").handler(this::handleGetMaterialType);
       router.route(HttpMethod.GET, "/locations").handler(this::handleGetLocation);
       router.route(HttpMethod.GET, "/configurations/entries").handler(this::handleGetConfigurationsEntries);

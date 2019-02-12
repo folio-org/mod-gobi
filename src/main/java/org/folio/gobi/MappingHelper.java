@@ -3,12 +3,14 @@ package org.folio.gobi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.folio.gobi.Mapper.NodeCombinator;
@@ -30,15 +32,15 @@ public class MappingHelper {
   private MappingHelper() {
     throw new IllegalStateException("MappingHelper class cannot be instantiated");
   }
-  
+
   private static Map<OrderMappings.OrderType,OrderMappings> defaultMappings=new EnumMap<>(OrderMappings.OrderType.class);
-  
+
   static {
     for(OrderMappings.OrderType orderType: OrderMappings.OrderType.values()){
       defaultMappings.put(orderType, Json.decodeValue(readMappingsFile(orderType.toString()+".json"), OrderMappings.class));
     }
   }
-  
+
   public static Map<Mapping.Field, DataSourceResolver> defaultMappingForOrderType(PostGobiOrdersHelper postGobiOrdersHelper, OrderType orderType) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
       List<Mapping> mappingsList = defaultMappings.get(orderType).getMappings();
@@ -177,13 +179,11 @@ public class MappingHelper {
     try {
       final InputStream is = PostGobiOrdersHelper.class.getClassLoader().getResourceAsStream(path);
       if (is != null) {
-        return IOUtils.toString(is, "UTF-8");
-      } else {
-        return "";
+        return IOUtils.toString(is, StandardCharsets.UTF_8);
       }
     } catch (IOException e) {
       logger.error(String.format("Unable to read configuration in %s file", path), e);
     }
-    return "";
+    return StringUtils.EMPTY;
   }
 }

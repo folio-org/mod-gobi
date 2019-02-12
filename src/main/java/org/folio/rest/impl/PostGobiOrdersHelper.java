@@ -1,5 +1,9 @@
 package org.folio.rest.impl;
 
+import static java.util.Objects.nonNull;
+import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
+import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
+import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +17,6 @@ import javax.xml.xpath.XPathFactory;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
@@ -23,9 +26,8 @@ import org.folio.gobi.MappingHelper;
 import org.folio.gobi.OrderMappingCache;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
-import org.folio.gobi.exceptions.InvalidTokenException;
-import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.acq.model.Vendor;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.mappings.model.Mapping;
@@ -43,10 +45,12 @@ import io.vertx.core.json.JsonObject;
 import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 public class PostGobiOrdersHelper {
-
-  private static final String GET_VENDORS_QUERY = "/vendor-storage/vendors?query=";
-
   private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelper.class);
+
+  private static final String LOCATIONS_QUERY = "/locations?query=";
+  private static final String MATERIAL_TYPES_QUERY = "/material-types?query=";
+  private static final String PAYMENT_STATUS_QUERY = "/payment_status?query=";
+  private static final String GET_VENDORS_QUERY = "/vendor-storage/vendors?query=";
 
   private static final String CONFIGURATION_MODULE = "GOBI";
   private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
@@ -60,6 +64,7 @@ public class PostGobiOrdersHelper {
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
 
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
+  private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -81,19 +86,16 @@ public class PostGobiOrdersHelper {
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
     String tenant = okapiHeaders.get(TENANT_HEADER);
     try {
-      String userId=getUuid(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TOKEN));
       boolean cacheFound=OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
        Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
            OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : MappingHelper.defaultMappingForOrderType(this, orderType);
 
       if(!cacheFound)
         OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
-      mappings.put(Mapping.Field.CREATED_BY, DataSourceResolver.builder()
-        .withDefault(userId)
-        .build());
       lookupOrderMappings(orderType).thenAccept(m -> {
-        // Override the default mappings with the configured mappings
-        mappings.putAll(m);
+        // Override the default mappings with the configured mappings if found
+        if(m!=null)
+         mappings.putAll(m);// TODO change this to add everything from con
         new Mapper(mappings).map(doc)
           .thenAccept(future::complete);
       }).exceptionally(e -> {
@@ -153,50 +155,70 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
+  public CompletableFuture<JsonObject> handleGetRequest(String endpoint) {
+      CompletableFuture<JsonObject> future = new VertxCompletableFuture<>(ctx);
+      try {
+        logger.debug("Calling GET {}", endpoint);
+        httpClient.request(HttpMethod.GET, endpoint, okapiHeaders)
+          .thenApply(response -> {
+            logger.debug("Validating response for GET {}", endpoint);
+            return HelperUtils.verifyAndExtractBody(response);
+          })
+          .thenAccept(body -> {
+            if (logger.isDebugEnabled()) {
+              logger.debug("The response body for GET {}: {}", endpoint, nonNull(body) ? body.encodePrettily() : null);
+            }
+            future.complete(body);
+          })
+          .exceptionally(t -> {
+            logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, t, HttpMethod.GET, endpoint);
+            future.completeExceptionally(t);
+            return null;
+          });
+      } catch (Exception e) {
+        logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, e, HttpMethod.GET, endpoint);
+        future.completeExceptionally(e);
+      }
+      return future;
+    }
+
   public CompletableFuture<String> lookupLocationId(String location) {
     try {
       String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
-      return httpClient.request("/locations?query=" + query, okapiHeaders)
-        .thenApply(HelperUtils::verifyAndExtractBody)
+      return handleGetRequest(LOCATIONS_QUERY + query)
         .thenApply(HelperUtils::extractLocationId)
         .exceptionally(t -> {
           logger.error("Exception looking up location id", t);
           return null;
         });
     } catch (Exception e) {
-      logger.error("Exception calling lookupLocationId", e);
       throw new CompletionException(e);
     }
   }
   public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
     try {
       String query = HelperUtils.encodeValue(String.format("name==\"%s\"", materialType));
-      return httpClient.request("/material-types?query=" + query, okapiHeaders)
-        .thenApply(HelperUtils::verifyAndExtractBody)
+      return handleGetRequest(MATERIAL_TYPES_QUERY + query)
         .thenApply(HelperUtils::extractMaterialTypeId)
         .exceptionally(t -> {
           logger.error("Exception looking up material-type id", t);
           return null;
         });
     } catch (Exception e) {
-      logger.error("Exception calling lookupMaterialTypeId", e);
-
       throw new CompletionException(e);
     }
   }
 
-  public CompletableFuture<String> lookupVendorId(String vendorCode) {
+  public CompletableFuture<Vendor> lookupVendorId(String vendorCode) {
     try {
       String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, vendorCode));
-      return httpClient.request(HttpMethod.GET, GET_VENDORS_QUERY + query, okapiHeaders)
-        .thenApply(HelperUtils::verifyAndExtractBody)
-        .thenApply(HelperUtils::extractVendorId)
+      return handleGetRequest(GET_VENDORS_QUERY + query)
+        .thenApply(resp -> resp.mapTo(Vendor.class))
         .exceptionally(t -> {
           logger.error("Exception looking up vendor id", t);
           return null;
         });
     } catch (Exception e) {
-      logger.error("Exception calling lookupVendorId", e);
       throw new CompletionException(e);
     }
   }
@@ -205,15 +227,13 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> lookupPaymentStatusId(String paymentStatusCode) {
     try {
       String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, paymentStatusCode));
-      return httpClient.request(HttpMethod.GET, "/payment_status?query=" + query, okapiHeaders)
-        .thenApply(HelperUtils::verifyAndExtractBody)
+      return handleGetRequest(PAYMENT_STATUS_QUERY + query)
         .thenApply(HelperUtils::extractPaymentStatusId)
         .exceptionally(t -> {
           logger.error("Exception looking up payment status id", t);
           return null;
         });
     } catch (Exception e) {
-      logger.error("Exception calling lookupPaymentStatusId", e);
       throw new CompletionException(e);
     }
   }
@@ -230,9 +250,7 @@ public class PostGobiOrdersHelper {
               CONFIGURATION_MODULE,
               CONFIGURATION_CONFIG_NAME,
               CONFIGURATION_CODE+orderType));
-      return httpClient.request(HttpMethod.GET,
-          "/configurations/entries?query=" + query, okapiHeaders)
-        .thenApply(HelperUtils::verifyAndExtractBody)
+      return handleGetRequest("/configurations/entries?query=" + query)
         .thenApply(jo ->  extractOrderMappings(orderType, jo))
         .exceptionally(t -> {
           logger.error("Exception looking up order mappings", t);
@@ -291,27 +309,6 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
-  public static String getUuid(String okapiToken) throws InvalidTokenException {
-
-    logger.info(okapiToken);
-    if (okapiToken == null || okapiToken.equals("")) {
-      throw new InvalidTokenException("x-okapi-tenant is NULL or empty");
-    }
-
-    JsonObject tokenJson = getClaims(okapiToken);
-    if (tokenJson != null) {
-      String userId = tokenJson.getString("user_id");
-
-      if (userId == null || userId.equals("")) {
-        throw new InvalidTokenException("user_id is not found in x-okapi-token");
-      }
-      return userId;
-
-    } else {
-      throw new InvalidTokenException("user_id is not found in x-okapi-token");
-    }
-  }
-
   public static JsonObject getClaims(String token) {
     String[] tokenPieces = token.split("\\.");
     if (tokenPieces.length > 1) {
@@ -327,9 +324,11 @@ public class PostGobiOrdersHelper {
   }
 
   public Void handleError(Throwable throwable) {
-    final Future<javax.ws.rs.core.Response> result;
+    final javax.ws.rs.core.Response result;
 
     logger.error("Exception placing order", throwable.getCause());
+    GobiResponse response = new GobiResponse();
+    response.setError(new ResponseError());
 
     final Throwable t = throwable.getCause();
     if (t instanceof HttpException) {
@@ -337,46 +336,31 @@ public class PostGobiOrdersHelper {
       final String message = ((HttpException) t).getMessage();
       switch (code) {
       case 400:
-        GobiResponse response = new GobiResponse();
-        response.setError(new ResponseError());
         response.getError().setCode(CODE_BAD_REQUEST);
         response.getError().setMessage(HelperUtils.truncate(t.getMessage(), 500));
-        result = Future
-          .succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response)));
+        result = respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response));
         break;
       case 500:
-        result = Future.succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain(message));
+        result = respond500WithTextPlain(message);
         break;
       case 401:
-        result = Future.succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain(message));
+        result = respond401WithTextPlain(message);
         break;
       default:
-        result = Future.succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain(message));
+        result = respond500WithTextPlain(message);
       }
     } else if (t instanceof GobiPurchaseOrderParserException) {
-      GobiResponse response = new GobiResponse();
-      response.setError(new ResponseError());
       response.getError().setCode(CODE_INVALID_XML);
       response.getError().setMessage(HelperUtils.truncate(t.getMessage(), 500));
-      result = Future
-        .succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response)));
-    } else if (t instanceof InvalidTokenException) {
-      GobiResponse response = new GobiResponse();
-      response.setError(new ResponseError());
-      response.getError().setCode(CODE_INVALID_TOKEN);
-      response.getError().setMessage(HelperUtils.truncate(t.getMessage(), 500));
-      result = Future
-        .succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response)));
+      result = respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response));
     } else {
-      result = Future.succeededFuture(org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain(throwable.getMessage()));
+      result = respond500WithTextPlain(throwable.getMessage());
     }
 
     if (httpClient != null) {
       httpClient.closeClient();
     }
-
-    asyncResultHandler.handle(result);
-
+    asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
 

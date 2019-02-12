@@ -153,12 +153,6 @@
           }
         },
         {
-          "field": "PO_LINE_WORKFLOW_STATUS",
-          "dataSource": {
-            "default": "Open"
-          }
-        },
-        {
           "field": "PRODUCT_ID",
           "dataSource": {
             "from": "//datafield[@tag='020']/subfield[@code='a']"
@@ -191,6 +185,14 @@
           }
         },
         {
+          "field": "RECEIPT_DUE",
+          "dataSource": {
+            "default": "true",
+            "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "RECEIVING_NOTE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData2']/Value"
@@ -200,6 +202,18 @@
           "field": "REQUESTER",
           "dataSource": {
             "from": "//LocalData[Description='LocalData3']/Value"
+          }
+        },
+        {
+          "field": "SOURCE_CODE",
+          "dataSource": {
+            "default": "mod-gobi"
+          }
+        },
+        {
+          "field": "SOURCE_DESCRIPTION",
+          "dataSource": {
+            "default": "An order placed from GOBI Interface"
           }
         },
         {

@@ -12,7 +12,7 @@ import io.vertx.core.Vertx;
 
 public class InitConfigService implements PostDeployVerticle {
   private static final Logger logger = LoggerFactory.getLogger(MappingHelper.class);
-  
+
   @Override
   public void init(Vertx vertx, Context context, Handler<AsyncResult<Boolean>> handler) {
     logger.info("Init Config Service");

@@ -1,6 +1,8 @@
 package org.folio.gobi;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -8,25 +10,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
-
-import org.folio.rest.acq.model.Adjustment;
-import org.folio.rest.acq.model.Alert;
-import org.folio.rest.acq.model.Claim;
-import org.folio.rest.acq.model.CompositePoLine;
-import org.folio.rest.acq.model.CompositePurchaseOrder;
-import org.folio.rest.acq.model.Contributor;
-import org.folio.rest.acq.model.Cost;
-import org.folio.rest.acq.model.Details;
-import org.folio.rest.acq.model.Eresource;
-import org.folio.rest.acq.model.FundDistribution;
-import org.folio.rest.acq.model.Location;
-import org.folio.rest.acq.model.Physical;
-import org.folio.rest.acq.model.ProductId;
-import org.folio.rest.acq.model.Renewal;
-import org.folio.rest.acq.model.ReportingCode;
-import org.folio.rest.acq.model.Source;
-import org.folio.rest.acq.model.VendorDetail;
-import org.folio.rest.acq.model.Metadata;
+import org.folio.rest.acq.model.*;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -68,7 +52,6 @@ public class Mapper {
       Source source = new Source();
       Contributor contributor = new Contributor();
       ReportingCode reportingCode = new ReportingCode();
-      Metadata metaData = new Metadata();
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
       mapPurchaseOrder(futures, compPO, doc);
@@ -87,7 +70,7 @@ public class Mapper {
       mapSource(futures, source, doc);
       mapContributor(futures, contributor, doc);
       mapReportingCodes(futures, reportingCode, doc);
-      mapMetaData(futures, metaData, doc);
+      mapVendorDependentFields(futures,eresource,physical,doc, compPO);
 
       CompletableFuture
           .allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
@@ -95,9 +78,9 @@ public class Mapper {
             List<ProductId> ids = new ArrayList<>();
             ids.add(productId);
             detail.setProductIds(ids);
+            compPO.setTotalItems(location.getQuantity());
 
             setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
-            setObjectIfPresent(metaData, o -> compPO.setMetadata((Metadata) o));
             setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
             setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
             setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
@@ -140,13 +123,40 @@ public class Mapper {
     return future;
   }
 
-  private void mapMetaData(List<CompletableFuture<?>> futures, Metadata metaData, Document doc) {
-    if (mappings.containsKey(Mapping.Field.CREATED_DATE)) {
-      futures.add(mappings.get(Mapping.Field.CREATED_DATE)
-         .resolve(doc)
-         .thenAccept(o -> metaData.setCreatedDate((Date) o))
-         .exceptionally(Mapper::logException));
-   }
+  /**
+   * This method handles all the different fields that are dependent on Vendor record to be fetched from the vendors-storage
+   *
+   * @param futures
+   * @param eresource
+   * @param physical
+   * @param doc
+   */
+  private void mapVendorDependentFields(List<CompletableFuture<?>> futures, Eresource eresource, Physical physical,
+      Document doc, CompositePurchaseOrder compPo) {
+    if (mappings.containsKey(Mapping.Field.VENDOR)) {
+      futures.add(mappings.get(Mapping.Field.VENDOR)
+          .resolve(doc)
+          .thenAccept(o -> {
+            Vendor vend = (Vendor) o;
+            compPo.setVendor(vend.getId());
+            LocalDateTime dt = LocalDateTime.from(new Date().toInstant().atOffset(ZoneOffset.UTC));
+            mappings.get(Mapping.Field.PO_LINE_ORDER_FORMAT)
+            .resolve(doc)
+            .thenAccept(format->{
+              if(((String) format).equalsIgnoreCase("Electronic Resource")){
+                Integer activationDue = vend.getExpectedActivationInterval();
+                eresource.setActivationDue(activationDue);
+                eresource.setExpectedActivation(Date.from(dt.plusDays(activationDue).toInstant(ZoneOffset.UTC)));
+              }else {
+                Integer expectedReceiptInterval = vend.getExpectedReceiptInterval();
+                physical.setExpectedReceiptDate(Date.from(dt.plusDays(expectedReceiptInterval).toInstant(ZoneOffset.UTC)));
+              }
+            })
+            .exceptionally(Mapper::logException);
+          })
+          .exceptionally(Mapper::logException));
+    }
+
   }
 
   private void setObjectIfPresent(Object obj, Consumer<Object> setter) {
@@ -244,13 +254,14 @@ public class Mapper {
           .exceptionally(Mapper::logException));
     }
     if (mappings.containsKey(Mapping.Field.USE_PRORATE)) {
-      futures.add(mappings.get(Mapping.Field.MATERIAL_SUPPLIER)
+      futures.add(mappings.get(Mapping.Field.USE_PRORATE)
           .resolve(doc)
           .thenAccept(o -> adjustment.setUseProRate((Boolean) o))
           .exceptionally(Mapper::logException));
     }
   }
 
+  @SuppressWarnings("unchecked")
   private void mapPhysical(List<CompletableFuture<?>> futures,Physical physical, Document doc) {
 
     if (mappings.containsKey(Mapping.Field.MATERIAL_SUPPLIER)) {
@@ -263,6 +274,13 @@ public class Mapper {
       futures.add(mappings.get(Mapping.Field.RECEIPT_DUE)
           .resolve(doc)
           .thenAccept(o -> physical.setReceiptDue((Date) o))
+          .exceptionally(Mapper::logException));
+    }
+
+    if (mappings.containsKey(Mapping.Field.VOLUMES)) {
+      futures.add(mappings.get(Mapping.Field.VOLUMES)
+          .resolve(doc)
+          .thenAccept(o -> physical.setVolumes((List<String>) o))
           .exceptionally(Mapper::logException));
     }
   }
@@ -298,7 +316,6 @@ public class Mapper {
           .thenAccept(o -> renewal.setReviewPeriod((Integer) o))
           .exceptionally(Mapper::logException));
     }
-
   }
 
   private void mapClaims(List<CompletableFuture<?>> futures, Claim claim, Document doc) {
@@ -321,9 +338,9 @@ public class Mapper {
           .exceptionally(Mapper::logException));
     }
   }
+  
 
   private void mapPurchaseOrder(List<CompletableFuture<?>> futures, CompositePurchaseOrder compPo, Document doc) {
-
     if (mappings.containsKey(Mapping.Field.ORDER_TYPE)) {
       futures.add(mappings.get(Mapping.Field.ORDER_TYPE)
           .resolve(doc)
@@ -371,18 +388,6 @@ public class Mapper {
       futures.add(mappings.get(Mapping.Field.TOTAL_ESTIMATED_PRICE)
           .resolve(doc)
           .thenAccept(o -> compPo.setTotalEstimatedPrice((Double) o))
-          .exceptionally(Mapper::logException));
-    }
-    if (mappings.containsKey(Mapping.Field.TOTAL_ITEMS)) {
-      futures.add(mappings.get(Mapping.Field.TOTAL_ITEMS)
-          .resolve(doc)
-          .thenAccept(o -> compPo.setTotalItems((Integer) o))
-          .exceptionally(Mapper::logException));
-    }
-    if (mappings.containsKey(Mapping.Field.VENDOR)) {
-      futures.add(mappings.get(Mapping.Field.VENDOR)
-          .resolve(doc)
-          .thenAccept(o -> compPo.setVendor((String) o))
           .exceptionally(Mapper::logException));
     }
     if (mappings.containsKey(Mapping.Field.WORKFLOW_STATUS)) {
@@ -639,7 +644,7 @@ public class Mapper {
     if (mappings.containsKey(Mapping.Field.ACCESS_PROVIDER)) {
       futures.add(mappings.get(Mapping.Field.ACCESS_PROVIDER)
           .resolve(doc)
-          .thenAccept(o -> eresource.setAccessProvider((String) o))
+          .thenAccept(o -> eresource.setAccessProvider(((Vendor) o).getId()))
           .exceptionally(Mapper::logException));
     }
     if (mappings.containsKey(Mapping.Field.USER_LIMIT)) {
@@ -655,24 +660,13 @@ public class Mapper {
           .exceptionally(Mapper::logException));
     }
 
-    if (mappings.containsKey(Mapping.Field.ACTIVATION_DUE)) {
-      futures.add(mappings.get(Mapping.Field.ACTIVATION_DUE)
-          .resolve(doc)
-          .thenAccept(o -> eresource.setActivationDue((Integer) o))
-          .exceptionally(Mapper::logException));
-    }
     if (mappings.containsKey(Mapping.Field.CREATE_INVENTORY)) {
       futures.add(mappings.get(Mapping.Field.CREATE_INVENTORY)
           .resolve(doc)
           .thenAccept(o -> eresource.setCreateInventory((Boolean) o))
           .exceptionally(Mapper::logException));
     }
-    if (mappings.containsKey(Mapping.Field.EXPECTED_ACTIVATION)) {
-      futures.add(mappings.get(Mapping.Field.EXPECTED_ACTIVATION)
-          .resolve(doc)
-          .thenAccept(o -> eresource.setExpectedActivation((Date) o))
-          .exceptionally(Mapper::logException));
-    }
+
     if (mappings.containsKey(Mapping.Field.LICENSE)) {
       futures.add(mappings.get(Mapping.Field.LICENSE)
           .resolve(doc)
@@ -716,21 +710,27 @@ public class Mapper {
           .thenAccept(o -> location.setLocationId((String) o))
           .exceptionally(Mapper::logException));
     }
+    // A GOBI order can only be one of the below type per order
     if (mappings.containsKey(Mapping.Field.QUANTITY_ORDERED_ELECTRONIC)) {
       futures.add(
           mappings.get(Mapping.Field.QUANTITY_ORDERED_ELECTRONIC)
           .resolve(doc)
-          .thenAccept(o -> location.setQuantityElectronic((Integer) o))
+          .thenAccept(o -> {
+            location.setQuantityElectronic((Integer) o);
+            location.setQuantity((Integer) o);
+          })
           .exceptionally(Mapper::logException));
     }
     if (mappings.containsKey(Mapping.Field.QUANTITY_ORDERED_PHYSICAL)) {
       futures.add(
           mappings.get(Mapping.Field.QUANTITY_ORDERED_PHYSICAL)
           .resolve(doc)
-              .thenAccept(o -> location.setQuantityPhysical((Integer) o))
+              .thenAccept(o -> {
+                location.setQuantityPhysical((Integer) o);
+                location.setQuantity((Integer) o);
+              })
               .exceptionally(Mapper::logException));
     }
-    //TODO calculate total quantity
   }
 
   private void mapVendorDetail(List<CompletableFuture<?>> futures, VendorDetail vendorDetail, Document doc) {

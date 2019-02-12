@@ -6,9 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;
-
 import org.folio.gobi.exceptions.HttpException;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -33,6 +31,7 @@ public class HelperUtils {
 
     return response.getBody();
   }
+
 
   public static String extractLocationId(JsonObject obj) {
     return extractIdOfFirst(obj, "locations");
