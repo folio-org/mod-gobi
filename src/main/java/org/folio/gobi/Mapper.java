@@ -84,13 +84,17 @@ public class Mapper {
             setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
             setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
             setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
-            setObjectIfPresent(location, o -> pol.setLocation((Location) o));
             setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
             setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
             setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
             setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
             setObjectIfPresent(source, o -> pol.setSource((Source) o));
 
+            setObjectIfPresent(location,o-> {
+              List<Location> locations = new ArrayList<>();
+              locations.add(location);
+              pol.setLocations(locations);
+            });
             setObjectIfPresent(contributor,o-> {
                List<Contributor> contributors = new ArrayList<>();
                contributors.add(contributor);
