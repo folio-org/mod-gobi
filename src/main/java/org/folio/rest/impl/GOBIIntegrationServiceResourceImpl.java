@@ -47,7 +47,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
     logger.info("Parsing Request...");
     helper.parse(entity).thenAccept(gobiPO -> {
       logger.info("Mapping Request...");
-      helper.map(gobiPO).thenAccept(compPO -> {
+      helper.mapToPurchaseOrder(gobiPO).thenAccept(compPO -> {
         logger.info("Calling mod-orders...");
         helper.placeOrder(compPO).thenAccept(poLineNumber -> {
           GobiResponse gobiResponse = new GobiResponse();

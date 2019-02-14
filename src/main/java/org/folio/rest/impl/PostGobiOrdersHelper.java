@@ -7,7 +7,6 @@ import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond4
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -56,13 +55,10 @@ public class PostGobiOrdersHelper {
   private static final String CONFIGURATION_MODULE = "GOBI";
   private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
   private static final String CONFIGURATION_CODE = "gobi.order.";
-
   public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
-
   public static final String CQL_CODE_STRING_FMT = "code==%s";
-
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
 
@@ -81,39 +77,21 @@ public class PostGobiOrdersHelper {
   }
 
 
-  public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
+  public CompletableFuture<CompositePurchaseOrder> mapToPurchaseOrder(Document doc) {
     final OrderMappings.OrderType orderType = getOrderType(doc);
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
-    String tenant = okapiHeaders.get(TENANT_HEADER);
-    try {
-      boolean cacheFound = OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
-       Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
-           OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : MappingHelper.defaultMappingForOrderType(this, orderType);
 
-      if(!cacheFound)
-        OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
-      lookupOrderMappings(orderType).thenAccept(m -> {
-        // Override the default mappings with the custom mappings if found
-        if(m!=null) {
-         logger.info("Custom Mappings Found, Using the Custom Mappings");
-        //Since the local data fields can be mapped to different keys, Custom mappings are expected to be set for all the fields
-         mappings.clear();
-         mappings.putAll(m);
-        }
-        new Mapper(mappings).map(doc)
-          .thenAccept(future::complete);
-      }).exceptionally(e -> {
-        logger.error("Exception looking up mappings", e);
+      lookupOrderMappings(orderType).thenAccept(ordermappings ->
+        new Mapper(ordermappings).map(doc)
+          .thenAccept(future::complete)
+      ).exceptionally(e -> {
+        logger.error("Exception looking up Order mappings", e);
         future.completeExceptionally(e);
         return null;
       });
-    } catch (Exception e) {
-      logger.error("Exception mapping request", e);
-      future.completeExceptionally(e);
-    }
-
     return future;
   }
+
 
   public static OrderMappings.OrderType getOrderType(Document doc) {
     final XPath xpath = XPathFactory.newInstance().newXPath();
@@ -241,7 +219,6 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<Map<Mapping.Field, DataSourceResolver>> lookupOrderMappings(OrderMappings.OrderType orderType) {
-    try {
       final String query = HelperUtils.encodeValue(
           String.format("module==%s AND configName==%s AND code==%s",
               CONFIGURATION_MODULE,
@@ -253,28 +230,44 @@ public class PostGobiOrdersHelper {
         .thenApply(jo ->  {
           if(!jo.getJsonArray("configs").isEmpty())
             return extractOrderMappings(orderType, jo);
-          return null;
+          return getDefaultMappingsFromCache(orderType);
         })
         .exceptionally(t -> {
-          logger.error("Exception looking up order mappings", t);
+          logger.error("Exception looking up custom order mappings for tenant", t);
           String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(okapiHeaders.get(TENANT_HEADER), orderType);
           if(tenantKey!=null) {
-            logger.info("falling back on a cached value");
+            logger.info("Using the cached value of custom mappings");
             return OrderMappingCache.getInstance().getValue(tenantKey);
           }
-          return null;
+          return getDefaultMappingsFromCache(orderType);
         });
-    } catch (Exception e) {
-      logger.error("Exception calling lookupOrderMappings", e);
-      throw new CompletionException(e);
-    }
   }
 
+  /**
+   * If retrieval of custom tenant mapping fails, and there is no cached value, then the default mappings will be used for placing an order
+   *
+   * @param orderType
+   * @return Map<Mapping.Field, org.folio.gobi.DataSourceResolver>
+   */
+  private Map<Mapping.Field, org.folio.gobi.DataSourceResolver> getDefaultMappingsFromCache(
+      final OrderMappings.OrderType orderType) {
 
-  public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
+    logger.info("No custom Mappings found for tenant, using default mappings");
+    String tenant = okapiHeaders.get(TENANT_HEADER);
+    boolean cacheFound = OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
+    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
+         OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : MappingHelper.getDefaultMappingForOrderType(this, orderType);
+
+    if(!cacheFound)
+      OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
+    return mappings;
+  }
+
+  private Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings;
     String tenant = okapiHeaders.get(TENANT_HEADER);
     String tenantConfigKey=OrderMappingCache.computeKey(tenant, orderType, jo);
+
     if(OrderMappingCache.getInstance().containsKey(tenantConfigKey)){
       mappings = OrderMappingCache.getInstance().getValue(tenantConfigKey);
     } else {
@@ -306,7 +299,7 @@ public class PostGobiOrdersHelper {
           return null;
         });
     } catch (Exception e) {
-      logger.error(String.format("Exception calling %s on %s",HttpMethod.POST,ORDERS_ENDPOINT), e);
+      logger.error("Exception calling {} on {}",HttpMethod.POST,ORDERS_ENDPOINT, e);
       future.completeExceptionally(e);
     }
     return future;

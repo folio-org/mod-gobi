@@ -41,7 +41,7 @@ public class MappingHelper {
     }
   }
 
-  public static Map<Mapping.Field, DataSourceResolver> defaultMappingForOrderType(PostGobiOrdersHelper postGobiOrdersHelper, OrderType orderType) {
+  public static Map<Mapping.Field, DataSourceResolver> getDefaultMappingForOrderType(PostGobiOrdersHelper postGobiOrdersHelper, OrderType orderType) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
       List<Mapping> mappingsList = defaultMappings.get(orderType).getMappings();
 
