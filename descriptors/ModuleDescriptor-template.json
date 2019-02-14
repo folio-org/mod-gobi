@@ -13,6 +13,11 @@
         },
         {
           "methods": ["POST"],
+          "pathPattern": "/gobi/validate",
+          "permissionsRequired": ["gobi.item.post"]
+        },
+        {
+          "methods": ["POST"],
           "pathPattern": "/gobi/orders",
           "permissionsRequired": ["gobi.item.post"],
           "modulePermissions": [
