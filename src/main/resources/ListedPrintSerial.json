@@ -117,12 +117,6 @@
           }
         },
         {
-          "field": "PRODUCT_ID_TYPE",
-          "dataSource": {
-            "default": "ISBN"
-          }
-        },
-        {
           "field": "PUBLISHER",
           "dataSource": {
             "from": "//datafield[@tag='260']/subfield[@code='b']"

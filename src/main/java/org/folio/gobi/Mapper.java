@@ -528,10 +528,15 @@ public class Mapper {
               .setProductIdType(ProductId.ProductIdType.fromValue((String) o)))
           .exceptionally(Mapper::logException)));
 
-      Optional.ofNullable(
-          mappings.get(Mapping.Field.PRODUCT_ID)
-          ).ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(o -> productId.setProductId(o.toString()))
+      Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID))
+          .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> {
+            productId.setProductId(o.toString());
+            Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
+            .ifPresent(prodidtype -> prodidtype.resolve(doc)
+                .thenAccept(idType -> productId
+                    .setProductIdType(ProductId.ProductIdType.fromValue((String) idType))));
+          })
           .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.RECEIVING_NOTE)
