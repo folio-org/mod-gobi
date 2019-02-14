@@ -58,7 +58,7 @@ public class PostGobiOrdersHelper {
   public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
-  public static final String CQL_CODE_STRING_FMT = "code==%s";
+  public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
 
@@ -81,10 +81,11 @@ public class PostGobiOrdersHelper {
     final OrderMappings.OrderType orderType = getOrderType(doc);
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
 
-      lookupOrderMappings(orderType).thenAccept(ordermappings ->
+      lookupOrderMappings(orderType).thenAccept(ordermappings -> {
+       logger.info("Using Mappings {}",ordermappings.toString());
         new Mapper(ordermappings).map(doc)
-          .thenAccept(future::complete)
-      ).exceptionally(e -> {
+          .thenAccept(future::complete);
+      }).exceptionally(e -> {
         logger.error("Exception looking up Order mappings", e);
         future.completeExceptionally(e);
         return null;
@@ -112,7 +113,7 @@ public class PostGobiOrdersHelper {
       logger.error("Cannot determine order type", e);
       throw new IllegalArgumentException("Invalid order type: " + provided);
     }
-
+    logger.info("Order Type Recieved {}",orderType);
     return orderType;
   }
 

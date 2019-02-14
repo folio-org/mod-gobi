@@ -519,10 +519,7 @@ public class Mapper {
 
       Optional.ofNullable(mappings.get(Mapping.Field.MATERIAL_TYPE))
           .ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(o -> {
-            List<String> materialTypes = new ArrayList<>();
-            materialTypes.add((String) o);
-            detail.setMaterialTypes(materialTypes);})
+          .thenAccept(o -> detail.setMaterialTypes((List<String>) o))
           .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
@@ -562,7 +559,10 @@ public class Mapper {
   private void mapEresource(List<CompletableFuture<?>> futures,Eresource eresource, Document doc) {
       Optional.ofNullable(mappings.get(Mapping.Field.ACCESS_PROVIDER)
           ).ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(o -> eresource.setAccessProvider(((Vendor) o).getId()))
+          .thenAccept(o ->
+            Optional.ofNullable(o)
+            .ifPresent(vendor -> eresource.setAccessProvider(((Vendor) o).getId()))
+          )
           .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.USER_LIMIT)

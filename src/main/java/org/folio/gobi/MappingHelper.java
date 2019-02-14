@@ -52,7 +52,6 @@ public class MappingHelper {
         fieldDataSourceMapping.put(field, dataSource);
       }
 
-    logger.info(defaultMappings.toString());
     return fieldDataSourceMapping;
   }
 

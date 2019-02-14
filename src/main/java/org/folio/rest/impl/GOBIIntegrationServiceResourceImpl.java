@@ -11,22 +11,22 @@ import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.TenantTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.json.Json;
 
 public class GOBIIntegrationServiceResourceImpl implements Gobi {
 
   private static final Logger logger = LoggerFactory.getLogger(GOBIIntegrationServiceResourceImpl.class);
   private static final String GET_DATA = "<test>GET - OK</test>";
   private static final String POST_DATA = "<test>POST - OK</test>";
-  
+
   public static final String OKAPI_HEADER_URL = "X-Okapi-Url";
-  
+
 
   @Override
   public void getGobiValidate(Map<String, String> okapiHeaders,
@@ -48,7 +48,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
     helper.parse(entity).thenAccept(gobiPO -> {
       logger.info("Mapping Request...");
       helper.mapToPurchaseOrder(gobiPO).thenAccept(compPO -> {
-        logger.info("Calling mod-orders...");
+        logger.info("Calling mod-orders with order {}",Json.encodePrettily(compPO));
         helper.placeOrder(compPO).thenAccept(poLineNumber -> {
           GobiResponse gobiResponse = new GobiResponse();
           gobiResponse.setPoLineNumber(poLineNumber);
