@@ -243,7 +243,7 @@ public class PostGobiOrdersHelperTest {
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
     server.requestHandler(req -> {
-      if (req.path().equals("/configurations/entries")) {
+      if (req.path().equals(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT)) {
         req.response()
           .setStatusCode(200)
           .putHeader("content-type", "application/json")
@@ -308,7 +308,7 @@ public class PostGobiOrdersHelperTest {
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
     server.requestHandler(req -> {
-      if (req.path().equals("/payment_status")) {
+      if (req.path().equals(PostGobiOrdersHelper.PAYMENT_STATUS_ENDPOINT)) {
         req.response()
           .setStatusCode(200)
           .putHeader("content-type", "application/json")

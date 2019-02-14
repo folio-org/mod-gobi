@@ -185,14 +185,6 @@
           }
         },
         {
-          "field": "RECEIPT_DUE",
-          "dataSource": {
-            "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "RECEIVING_NOTE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData2']/Value"

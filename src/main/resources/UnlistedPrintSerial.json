@@ -123,14 +123,6 @@
           }
         },
         {
-          "field": "RECEIPT_DUE",
-          "dataSource": {
-            "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "SOURCE_CODE",
           "dataSource": {
             "default": "mod-gobi"

@@ -1,13 +1,13 @@
 package org.folio.rest.impl;
 
-import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_TOKEN;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.gobi.model.GobiResponse;
@@ -39,11 +39,15 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import java.io.InputStream;
-import java.util.LinkedList;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
-
+  static {
+    System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, "io.vertx.core.logging.Log4j2LogDelegateFactory");
+  }
   private static final Logger logger = LoggerFactory.getLogger(GOBIIntegrationServiceResourceImplTest.class);
 
   private static final String APPLICATION_JSON = "application/json";
@@ -72,6 +76,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final String poUnlistedPrintMonographPath = mockDataRootPath + "/po_unlisted_print_monograph.xml";
   private final String poUnlistedPrintSerialPath = mockDataRootPath + "/po_unlisted_print_serial.xml";
   private final String poListedElectronicMonographBadDataPath = mockDataRootPath + "/po_listed_electronic_monograph_bad_data.xml";
+  private static final  String VENDOR_MOCK_DATA =  "GOBIIntegrationServiceResourceImpl/vendor.json";
 
   private static Vertx vertx;
   private static MockServer mockServer;
@@ -431,7 +436,6 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   public static class MockServer {
 
-    private static final String ORDERS_ENDPOINT = "/orders/composite-orders";
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
     private static final Random rand = new Random(System.nanoTime());
 
@@ -457,11 +461,11 @@ public class GOBIIntegrationServiceResourceImplTest {
       Router router = Router.router(vertx);
 
       router.route().handler(BodyHandler.create());
-      router.route(HttpMethod.POST, ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
-      router.route(HttpMethod.GET, "/vendor-storage/vendors").handler(this::handleGetVendor);
-      router.route(HttpMethod.GET, "/material-types").handler(this::handleGetMaterialType);
-      router.route(HttpMethod.GET, "/locations").handler(this::handleGetLocation);
-      router.route(HttpMethod.GET, "/configurations/entries").handler(this::handleGetConfigurationsEntries);
+      router.route(HttpMethod.POST, PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
+      router.get(PostGobiOrdersHelper.GET_VENDORS_ENDPOINT).handler(this::handleGetVendor);
+      router.get(PostGobiOrdersHelper.MATERIAL_TYPES_ENDPOINT).handler(this::handleGetMaterialType);
+      router.get(PostGobiOrdersHelper.LOCATIONS_ENDPOINT).handler(this::handleGetLocation);
+      router.get(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
 
       return router;
     }
@@ -483,7 +487,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handlePostPurchaseOrder(RoutingContext ctx) {
-      logger.info("got: " + ctx.getBodyAsString());
+      logger.info("Handle Post Purchase Order got: " + ctx.getBodyAsString());
 
       JsonObject compPO = ctx.getBodyAsJson();
 
@@ -505,21 +509,20 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handleGetVendor(RoutingContext ctx) {
-
       logger.info("got vendor request: " + ctx.request().query());
 
-      JsonObject vendors = new JsonObject()
-        .put("vendors", new JsonArray()
-          .add(new JsonObject()
-            .put("id", UUID.randomUUID().toString())
-            .put("name", "GOBI LIbrary Systems")
-            .put("code", "GOBI")))
-        .put("total_records", 1);
+      try {
+        JsonObject vendors = new JsonObject(getMockData(VENDOR_MOCK_DATA));
 
-      ctx.response()
-        .setStatusCode(200)
-        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-        .end(vendors.encodePrettily());
+        ctx.response()
+          .setStatusCode(200)
+          .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+          .end(vendors.encodePrettily());
+      }catch (IOException e) {
+        ctx.response()
+        .setStatusCode(404)
+        .end();
+       }
     }
 
     private void handleGetMaterialType(RoutingContext ctx) {
@@ -575,8 +578,19 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
   }
 
-  private String getMockData(String path) throws IOException {
-    InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(path);
-    return IOUtils.toString(resourceAsStream, "UTF-8");
+  private static String getMockData(String path) throws IOException {
+    logger.info("Using mock datafile: {}", path);
+    try (InputStream resourceAsStream = GOBIIntegrationServiceResourceImplTest.class.getClassLoader().getResourceAsStream(path)) {
+      if (resourceAsStream != null) {
+        return IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
+      } else {
+        StringBuilder sb = new StringBuilder();
+        try (Stream<String> lines = Files.lines(Paths.get(path))) {
+          lines.forEach(sb::append);
+        }
+        return sb.toString();
+      }
+    }
   }
+
 }

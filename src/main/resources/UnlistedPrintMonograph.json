@@ -123,6 +123,12 @@
           }
         },
         {
+          "field": "PO_LINE_ORDER_FORMAT",
+          "dataSource": {
+            "default": "Physical Resource"
+          }
+        },
+        {
           "field": "PO_LINE_PAYMENT_STATUS",
           "dataSource": {
             "default": "Awaiting Payment"
@@ -152,14 +158,6 @@
             "from": "//Quantity",
             "default": "1",
             "translation": "toInteger"
-          }
-        },
-        {
-          "field": "RECEIPT_DUE",
-          "dataSource": {
-            "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
           }
         },
         {

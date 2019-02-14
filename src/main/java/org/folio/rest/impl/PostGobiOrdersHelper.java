@@ -4,10 +4,8 @@ import static java.util.Objects.nonNull;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -47,21 +45,23 @@ import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 public class PostGobiOrdersHelper {
   private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelper.class);
 
-  private static final String LOCATIONS_QUERY = "/locations?query=";
-  private static final String MATERIAL_TYPES_QUERY = "/material-types?query=";
-  private static final String PAYMENT_STATUS_QUERY = "/payment_status?query=";
-  private static final String GET_VENDORS_QUERY = "/vendor-storage/vendors?query=";
+  static final String LOCATIONS_ENDPOINT = "/locations";
+  static final String MATERIAL_TYPES_ENDPOINT = "/material-types";
+  static final String PAYMENT_STATUS_ENDPOINT = "/payment_status";
+  static final String GET_VENDORS_ENDPOINT = "/vendor-storage/vendors";
+  static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
+  static final String ORDERS_ENDPOINT = "/orders/composite-orders";
+  private static final String QUERY = "?query=%s";
 
   private static final String CONFIGURATION_MODULE = "GOBI";
   private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
   private static final String CONFIGURATION_CODE = "gobi.order.";
-  private static final String ORDERS_ENDPOINT = "/orders/composite-orders";
 
   public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
 
-  public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
+  public static final String CQL_CODE_STRING_FMT = "code==%s";
 
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
@@ -86,16 +86,20 @@ public class PostGobiOrdersHelper {
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
     String tenant = okapiHeaders.get(TENANT_HEADER);
     try {
-      boolean cacheFound=OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
+      boolean cacheFound = OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
        Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
            OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : MappingHelper.defaultMappingForOrderType(this, orderType);
 
       if(!cacheFound)
         OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
       lookupOrderMappings(orderType).thenAccept(m -> {
-        // Override the default mappings with the configured mappings if found
-        if(m!=null)
-         mappings.putAll(m);// TODO change this to add everything from con
+        // Override the default mappings with the custom mappings if found
+        if(m!=null) {
+         logger.info("Custom Mappings Found, Using the Custom Mappings");
+        //Since the local data fields can be mapped to different keys, Custom mappings are expected to be set for all the fields
+         mappings.clear();
+         mappings.putAll(m);
+        }
         new Mapper(mappings).map(doc)
           .thenAccept(future::complete);
       }).exceptionally(e -> {
@@ -183,59 +187,52 @@ public class PostGobiOrdersHelper {
     }
 
   public CompletableFuture<String> lookupLocationId(String location) {
-    try {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
-      return handleGetRequest(LOCATIONS_QUERY + query)
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location), logger);
+      String endpoint = String.format(LOCATIONS_ENDPOINT+QUERY, query);
+      return handleGetRequest(endpoint)
         .thenApply(HelperUtils::extractLocationId)
         .exceptionally(t -> {
           logger.error("Exception looking up location id", t);
           return null;
         });
-    } catch (Exception e) {
-      throw new CompletionException(e);
-    }
+
   }
   public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
-    try {
-      String query = HelperUtils.encodeValue(String.format("name==\"%s\"", materialType));
-      return handleGetRequest(MATERIAL_TYPES_QUERY + query)
+      String query = HelperUtils.encodeValue(String.format("name==%s", materialType), logger);
+      String endpoint = String.format(MATERIAL_TYPES_ENDPOINT+QUERY, query);
+      return handleGetRequest(endpoint)
         .thenApply(HelperUtils::extractMaterialTypeId)
         .exceptionally(t -> {
           logger.error("Exception looking up material-type id", t);
           return null;
         });
-    } catch (Exception e) {
-      throw new CompletionException(e);
-    }
   }
 
   public CompletableFuture<Vendor> lookupVendorId(String vendorCode) {
-    try {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, vendorCode));
-      return handleGetRequest(GET_VENDORS_QUERY + query)
-        .thenApply(resp -> resp.mapTo(Vendor.class))
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, vendorCode), logger);
+      String endpoint = String.format(GET_VENDORS_ENDPOINT+QUERY, query);
+      return handleGetRequest(endpoint)
+        .thenApply(resp ->
+          Optional.ofNullable(resp.getJsonArray("vendors"))
+          .flatMap(vendors -> vendors.stream().findFirst())
+          .map(vendor -> ((JsonObject) vendor).mapTo(Vendor.class))
+          .orElse(null))
         .exceptionally(t -> {
           logger.error("Exception looking up vendor id", t);
           return null;
         });
-    } catch (Exception e) {
-      throw new CompletionException(e);
-    }
   }
 
 
   public CompletableFuture<String> lookupPaymentStatusId(String paymentStatusCode) {
-    try {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, paymentStatusCode));
-      return handleGetRequest(PAYMENT_STATUS_QUERY + query)
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, paymentStatusCode), logger);
+      String endpoint = String.format(PAYMENT_STATUS_ENDPOINT+QUERY, query);
+      return handleGetRequest(endpoint)
         .thenApply(HelperUtils::extractPaymentStatusId)
         .exceptionally(t -> {
           logger.error("Exception looking up payment status id", t);
           return null;
         });
-    } catch (Exception e) {
-      throw new CompletionException(e);
-    }
   }
 
   public CompletableFuture<String> lookupMock(String data) {
@@ -246,12 +243,18 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<Map<Mapping.Field, DataSourceResolver>> lookupOrderMappings(OrderMappings.OrderType orderType) {
     try {
       final String query = HelperUtils.encodeValue(
-          String.format("(module==%s AND configName==%s AND code==%s)",
+          String.format("module==%s AND configName==%s AND code==%s",
               CONFIGURATION_MODULE,
               CONFIGURATION_CONFIG_NAME,
-              CONFIGURATION_CODE+orderType));
-      return handleGetRequest("/configurations/entries?query=" + query)
-        .thenApply(jo ->  extractOrderMappings(orderType, jo))
+              CONFIGURATION_CODE+orderType), logger);
+
+      String endpoint = String.format(CONFIGURATION_ENDPOINT+QUERY, query);
+      return handleGetRequest(endpoint)
+        .thenApply(jo ->  {
+          if(!jo.getJsonArray("configs").isEmpty())
+            return extractOrderMappings(orderType, jo);
+          return null;
+        })
         .exceptionally(t -> {
           logger.error("Exception looking up order mappings", t);
           String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(okapiHeaders.get(TENANT_HEADER), orderType);

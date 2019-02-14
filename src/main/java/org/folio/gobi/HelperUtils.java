@@ -9,6 +9,7 @@ import java.util.concurrent.CompletionException;
 import org.folio.gobi.exceptions.HttpException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
 
 public class HelperUtils {
 
@@ -80,8 +81,13 @@ public class HelperUtils {
     return item.getString("id");
   }
 
-  public static String encodeValue(String value) throws UnsupportedEncodingException {
-    return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+  public static String encodeValue(String query, Logger logger) {
+    try {
+      return URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
+    } catch (UnsupportedEncodingException e) {
+      logger.error("Error occured while attempting to encode '{}'", e, query);
+      throw new CompletionException(e);
+    }
   }
 
 }
