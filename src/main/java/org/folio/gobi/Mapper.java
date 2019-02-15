@@ -522,11 +522,6 @@ public class Mapper {
           .thenAccept(o -> detail.setMaterialTypes((List<String>) o))
           .exceptionally(Mapper::logException)));
 
-      Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
-          .ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(o -> productId
-              .setProductIdType(ProductId.ProductIdType.fromValue((String) o)))
-          .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID))
           .ifPresent(field -> futures.add(field.resolve(doc)
