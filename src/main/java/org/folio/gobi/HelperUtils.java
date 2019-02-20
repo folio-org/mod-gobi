@@ -6,11 +6,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;
-
 import org.folio.gobi.exceptions.HttpException;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
 
 public class HelperUtils {
 
@@ -28,7 +27,8 @@ public class HelperUtils {
     }
 
     if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
-      throw new CompletionException(new HttpException(response.getCode(), response.getError().toString()));
+      throw new CompletionException(new HttpException(response.getCode(), response.getError()
+          .toString()));
     }
 
     return response.getBody();
@@ -50,20 +50,8 @@ public class HelperUtils {
     return extractIdOfFirst(obj, "vendors");
   }
 
-  public static String extractWorkflowStatusId(JsonObject obj) {
-    return extractIdOfFirst(obj, "workflow_statuses");
-  }
-
-  public static String extractReceiptStatusId(JsonObject obj) {
-    return extractIdOfFirst(obj, "receipt_statuses");
-  }
-
   public static String extractPaymentStatusId(JsonObject obj) {
     return extractIdOfFirst(obj, "payment_statuses");
-  }
-
-  public static String extractActivationStatusId(JsonObject obj) {
-    return extractIdOfFirst(obj, "activation_statuses");
   }
 
   public static String extractIdOfFirst(JsonObject obj, String arrField) {
@@ -71,7 +59,7 @@ public class HelperUtils {
       return null;
     }
     JsonArray jsonArray = obj.getJsonArray(arrField);
-    if (jsonArray == null || jsonArray.size() == 0 ) {
+    if (jsonArray == null || jsonArray.size() == 0) {
       return null;
     }
     JsonObject item = jsonArray.getJsonObject(0);
@@ -81,8 +69,13 @@ public class HelperUtils {
     return item.getString("id");
   }
 
-  public static String encodeValue(String value) throws UnsupportedEncodingException {
-    return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+  public static String encodeValue(String query, Logger logger) {
+    try {
+      return URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
+    } catch (UnsupportedEncodingException e) {
+      logger.error("Error occured while attempting to encode '{}'", e, query);
+      throw new CompletionException(e);
+    }
   }
 
 }

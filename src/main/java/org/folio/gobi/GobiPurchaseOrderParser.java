@@ -33,7 +33,6 @@ public class GobiPurchaseOrderParser {
   private static final GobiPurchaseOrderParser INSTANCE = new GobiPurchaseOrderParser();
   private static final String EXTERNAL_DTD_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
   private static final String DTD_FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
-
   private Validator validator;
 
   public static GobiPurchaseOrderParser getParser() {
@@ -55,16 +54,18 @@ public class GobiPurchaseOrderParser {
   }
 
   public Document parse(String data) throws GobiPurchaseOrderParserException {
-    Document doc = null;    
+    Document doc = null;
     try {
       final InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      
+
       //https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet
-      // Protect against XML entity attacks by disallowing DTD
-      factory.setFeature(DTD_FEATURE, true);   
+      // By disabling DTD, almost all XXE attacks will be prevented.
+      factory.setFeature(DTD_FEATURE, Boolean.TRUE);
+      //Protect against Denial of Service attack and remote file access.
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
       // Protect against external DTDs
-      factory.setFeature(EXTERNAL_DTD_FEATURE, false); 
+      factory.setFeature(EXTERNAL_DTD_FEATURE, Boolean.FALSE);
       // Protect from XML Schema
       factory.setXIncludeAware(false);
       factory.setExpandEntityReferences(false);
@@ -72,8 +73,6 @@ public class GobiPurchaseOrderParser {
       doc = factory.newDocumentBuilder().parse(stream);
       validator.validate(new DOMSource(doc));
     } catch (Exception e) {
-      logger.error("Parsing failed", e);
-
       final Throwable cause = e.getCause();
       final String message;
       if (cause != null) {
@@ -113,34 +112,42 @@ public class GobiPurchaseOrderParser {
       this.inputStream = input;
     }
 
+    @Override
     public String getPublicId() {
       return publicId;
     }
 
+    @Override
     public void setPublicId(String publicId) {
       this.publicId = publicId;
     }
 
+    @Override
     public String getBaseURI() {
       return null;
     }
 
+    @Override
     public InputStream getByteStream() {
       return null;
     }
 
+    @Override
     public boolean getCertifiedText() {
       return false;
     }
 
+    @Override
     public Reader getCharacterStream() {
       return null;
     }
 
+    @Override
     public String getEncoding() {
       return null;
     }
 
+    @Override
     public String getStringData() {
       synchronized (inputStream) {
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -152,34 +159,42 @@ public class GobiPurchaseOrderParser {
       }
     }
 
+    @Override
     public void setBaseURI(String baseURI) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setByteStream(InputStream byteStream) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setCertifiedText(boolean certifiedText) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setCharacterStream(Reader characterStream) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setEncoding(String encoding) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setStringData(String stringData) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public String getSystemId() {
       return systemId;
     }
 
+    @Override
     public void setSystemId(String systemId) {
       this.systemId = systemId;
     }

@@ -1,5 +1,5 @@
 {
-      "orderType": "ListedElectronicMonograph",
+      "orderType": "ListedElectronicSerial",
       "mappings": [
         {
           "field": "ACCESS_PROVIDER",
@@ -47,10 +47,12 @@
           }
         },
         {
-          "field": "CONTRIBUTOR",
+          "field": "CREDIT",
           "dataSource": {
-            "from": "//datafield[@tag='100']/*",
-            "combinator": "concat"
+            "from": "//ListPrice/Amount",
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
           }
         },
         {
@@ -73,6 +75,31 @@
           "dataSource": {
             "from": "//ListPrice/Currency",
             "default": "USD"
+          }
+        },
+        {
+          "field": "DESCRIPTION",
+          "dataSource": {
+            "from": "//datafield[@tag='490']/*",
+            "combinator": "concat"
+          }
+        },
+        {
+          "field": "DISCOUNT",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "INSURANCE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
           }
         },
         {
@@ -108,13 +135,6 @@
           }
         },
         {
-          "field": "LOCATION",
-          "dataSource": {
-            "from": "//Location",
-            "translation": "lookupLocationId"
-          }
-        },
-        {
           "field": "MANUAL_PO",
           "dataSource": {
             "default": "false",
@@ -123,10 +143,9 @@
           }
         },
         {
-          "field": "MATERIAL_TYPE",
+          "field": "NOTES",
           "dataSource": {
-            "from": "//LocalData[Description='LocalData1']/Value",
-            "translation": "lookupMaterialTypeId"
+            "from": "//OrderNotes"
           }
         },
         {
@@ -138,7 +157,7 @@
         {
           "field": "ORDER_TYPE",
           "dataSource": {
-            "default": "One-Time"
+            "default": "Ongoing"
           }
         },
         {
@@ -182,24 +201,6 @@
           }
         },
         {
-          "field": "PRODUCT_ID",
-          "dataSource": {
-            "from": "//datafield[@tag='020']/subfield[@code='a']"
-          }
-        },
-        {
-          "field": "PRODUCT_ID_TYPE",
-          "dataSource": {
-            "default": "ISBN"
-          }
-        },
-        {
-          "field": "PUBLICATION_DATE",
-          "dataSource": {
-            "from": "//datafield[@tag='260']/subfield[@code='c']"
-          }
-        },
-        {
           "field": "PUBLISHER",
           "dataSource": {
             "from": "//datafield[@tag='260']/subfield[@code='b']"
@@ -211,18 +212,6 @@
             "from": "//Quantity",
             "default": "1",
             "translation": "toInteger"
-          }
-        },
-        {
-          "field": "RECEIVING_NOTE",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData2']/Value"
-          }
-        },
-        {
-          "field": "REQUESTER",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData3']/Value"
           }
         },
         {
@@ -261,13 +250,6 @@
           }
         },
         {
-          "field": "VENDOR_ACCOUNT",
-          "dataSource": {
-            "from": "//SubAccount",
-            "default": "0"
-          }
-        },
-        {
           "field": "VENDOR_REF_NO",
           "dataSource": {
             "from": "//YBPOrderKey"
@@ -277,6 +259,106 @@
           "field": "VENDOR_REF_NO_TYPE",
           "dataSource": {
             "default": "Supplier's unique order line reference number"
+          }
+        },
+        {
+          "field": "WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
+        },
+        {
+          "field": "REPORTING_DESCRIPTION",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "REPORTING_CODE",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "ASSIGNED_TO",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "CANCELLATION_RESTRICTION_NOTE",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "DONOR",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "OWNER",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "SELECTOR",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "ALERT",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "VOLUMES",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "TAGS",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "PO_LINE_DESCRIPTION",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "LICENSE",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "CONTRIBUTOR_TYPE",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "OVERHEAD",
+          "dataSource": {
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "SHIPMENT",
+          "dataSource": {
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
           }
         }
       ]

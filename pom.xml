@@ -186,7 +186,6 @@
             </goals>
             <configuration>
               <mainClass>org.folio.rest.tools.GenerateRunner</mainClass>
-              <!-- <executable>java</executable> -->
               <cleanupDaemonThreads>false</cleanupDaemonThreads>
               <systemProperties>
                 <systemProperty>
@@ -508,6 +507,16 @@
               <targetPackage>org.folio.rest.mappings.model</targetPackage>
             </configuration>
           </execution>
+          <execution>
+            <id>acq-models-vend</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/ramls/acq-models/mod-vendors/schemas/vendor.json</sourceDirectory>
+              <targetPackage>org.folio.rest.acq.model</targetPackage>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -515,6 +524,9 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.22.1</version>
         <configuration>
+        <systemPropertyVariables>
+            <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.Log4j2LogDelegateFactory</vertx.logger-delegate-factory-class-name>
+          </systemPropertyVariables>
           <!-- TODO: update to version 3.0.0 and remove useSystemClassLoader
                https://issues.folio.org/browse/FOLIO-1609
                https://issues.apache.org/jira/browse/SUREFIRE-1588

@@ -109,23 +109,23 @@
           }
         },
         {
-          "field": "PO_LINE_WORKFLOW_STATUS",
-          "dataSource": {
-            "default": "Open"
-          }
-        },
-        {
-          "field": "PRODUCT_ID_TYPE",
-          "dataSource": {
-            "default": "ISBN"
-          }
-        },
-        {
           "field": "QUANTITY_ORDERED_PHYSICAL",
           "dataSource": {
             "from": "//Quantity",
             "default": "1",
             "translation": "toInteger"
+          }
+        },
+        {
+          "field": "SOURCE_CODE",
+          "dataSource": {
+            "default": "mod-gobi"
+          }
+        },
+        {
+          "field": "SOURCE_DESCRIPTION",
+          "dataSource": {
+            "default": "An order placed from GOBI Interface"
           }
         },
         {
@@ -147,6 +147,12 @@
           "field": "VENDOR_REF_NO",
           "dataSource": {
             "from": "//YBPOrderKey"
+          }
+        },
+        {
+          "field": "VENDOR_REF_NO_TYPE",
+          "dataSource": {
+            "default": "Supplier's unique order line reference number"
           }
         },
         {

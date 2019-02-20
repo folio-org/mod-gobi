@@ -123,6 +123,12 @@
           }
         },
         {
+          "field": "PO_LINE_ORDER_FORMAT",
+          "dataSource": {
+            "default": "Physical Resource"
+          }
+        },
+        {
           "field": "PO_LINE_PAYMENT_STATUS",
           "dataSource": {
             "default": "Awaiting Payment"
@@ -132,12 +138,6 @@
           "field": "PO_LINE_RECEIPT_STATUS",
           "dataSource": {
             "default": "Awaiting Receipt"
-          }
-        },
-        {
-          "field": "PO_LINE_WORKFLOW_STATUS",
-          "dataSource": {
-            "default": "Open"
           }
         },
         {
@@ -170,6 +170,18 @@
           "field": "REQUESTER",
           "dataSource": {
             "from": "//LocalData[Description='LocalData3']/Value"
+          }
+        },
+        {
+          "field": "SOURCE_CODE",
+          "dataSource": {
+            "default": "mod-gobi"
+          }
+        },
+        {
+          "field": "SOURCE_DESCRIPTION",
+          "dataSource": {
+            "default": "An order placed from GOBI Interface"
           }
         },
         {
