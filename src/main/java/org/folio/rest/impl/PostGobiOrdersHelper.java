@@ -166,6 +166,7 @@ public class PostGobiOrdersHelper {
     }
 
   public CompletableFuture<String> lookupLocationId(String location) {
+    logger.info("Received location is {}", location);
     //Always getting the first location until GOBI responds with how to handle locations for various orders
       String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, "*"), logger);
       String endpoint = String.format(LOCATIONS_ENDPOINT+QUERY, query);

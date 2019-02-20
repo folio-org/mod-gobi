@@ -32,6 +32,7 @@ public class GobiPurchaseOrderParser {
   private static final String PURCHASE_ORDER_SCHEMA = "GobiPurchaseOrder.xsd";
   private static final GobiPurchaseOrderParser INSTANCE = new GobiPurchaseOrderParser();
   private static final String EXTERNAL_DTD_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+  private static final String DTD_FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
   private Validator validator;
 
   public static GobiPurchaseOrderParser getParser() {
@@ -59,7 +60,9 @@ public class GobiPurchaseOrderParser {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
       //https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet
-      // Protect against XML entity attacks by disallowing DTD
+      // By disabling DTD, almost all XXE attacks will be prevented.
+      factory.setFeature(DTD_FEATURE, Boolean.TRUE);
+      //Protect against Denial of Service attack and remote file access.
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
       // Protect against external DTDs
       factory.setFeature(EXTERNAL_DTD_FEATURE, Boolean.FALSE);
