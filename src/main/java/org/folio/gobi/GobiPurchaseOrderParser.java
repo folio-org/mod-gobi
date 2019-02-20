@@ -57,7 +57,7 @@ public class GobiPurchaseOrderParser {
     Document doc = null;
     try {
       final InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory factory =  DocumentBuilderFactory.newInstance();
 
       //https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet
       // By disabling DTD, almost all XXE attacks will be prevented.
