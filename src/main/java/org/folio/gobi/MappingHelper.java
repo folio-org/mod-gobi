@@ -93,12 +93,12 @@ public class MappingHelper {
           try {
             return (String) combinatorMethod.invoke(null, data);
           } catch (Exception e) {
-            logger.error("Unable to invoke combinator method: " + combinator, e);
+            logger.error("Unable to invoke combinator method: {}", e, combinator);
           }
           return null;
         };
       } catch (NoSuchMethodException e) {
-        logger.error("Combinator method not found: " + combinator, e);
+        logger.error("Combinator method not found: {}", e, combinator);
       }
     }
 
@@ -174,7 +174,7 @@ public class MappingHelper {
 
       if (orderMappingList != null) {
         for (Mapping mapping : orderMappingList) {
-          logger.info("Mapping exists for type: " + orderType.value() + ", field: " + mapping.getField());
+          logger.info("Mapping exists for type: {} , field: {}", orderType.value(), mapping.getField());
           map.put(mapping.getField(), getDS(mapping, map, postGobiOrdersHelper));
         }
       }
@@ -190,7 +190,7 @@ public class MappingHelper {
         return IOUtils.toString(is, StandardCharsets.UTF_8);
       }
     } catch (IOException e) {
-      logger.error(String.format("Unable to read configuration in %s file", path), e);
+      logger.error("Unable to read configuration in {} file", e, path);
     }
     return StringUtils.EMPTY;
   }

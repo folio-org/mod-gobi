@@ -1,7 +1,6 @@
 package org.folio.rest.impl;
 
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Random;
@@ -52,30 +51,31 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   private static final String APPLICATION_JSON = "application/json";
 
-  private static final int okapiPort = NetworkUtils.nextFreePort();
-  private static final int mockPort = NetworkUtils.nextFreePort();
+  private static final int OKAPIPORT = NetworkUtils.nextFreePort();
+  private static final int MOCKPORT = NetworkUtils.nextFreePort();
 
   // private final int serverPort = NetworkUtils.nextFreePort();
-  private final Header tenantHeader = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
-  private final Header tokenHeader = new Header("X-Okapi-Token",
+  private final Header TENANTHEADER = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
+  private final Header TOKENHEADER = new Header("X-Okapi-Token",
       "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
-  private final Header urlHeader = new Header("X-Okapi-Url", "http://localhost:" + mockPort);
-  private final Header contentTypeHeaderXML = new Header("Content-Type", "application/xml");
+  private final Header URLHEADER = new Header("X-Okapi-Url", "http://localhost:" + MOCKPORT);
+  private final Header CONTENTTYPEHEADERXML = new Header("Content-Type", "application/xml");
 
   // API paths
-  private final String rootPath = "/gobi";
-  private final String validatePath = rootPath + "/validate";
-  private final String ordersPath = rootPath + "/orders";
+  private final String ROOTPATH = "/gobi";
+  private final String VALIDATEPATH = ROOTPATH + "/validate";
+  private final String ORDERSPATH = ROOTPATH + "/orders";
 
   // Mock data paths
-  private final String mockDataRootPath = "GOBIIntegrationServiceResourceImpl";
-  private final String poListedElectronicMonographPath = mockDataRootPath + "/po_listed_electronic_monograph.xml";
-  private final String poListedElectronicSerialPath = mockDataRootPath + "/po_listed_electronic_serial.xml";
-  private final String poListedPrintMonographPath = mockDataRootPath + "/po_listed_print_monograph.xml";
-  private final String poListedPrintSerialPath = mockDataRootPath + "/po_listed_print_serial.xml";
-  private final String poUnlistedPrintMonographPath = mockDataRootPath + "/po_unlisted_print_monograph.xml";
-  private final String poUnlistedPrintSerialPath = mockDataRootPath + "/po_unlisted_print_serial.xml";
-  private final String poListedElectronicMonographBadDataPath = mockDataRootPath + "/po_listed_electronic_monograph_bad_data.xml";
+  private final String MOCKDATAROOTPATH = "GOBIIntegrationServiceResourceImpl";
+  private final String POLISTEDELECTRONICMONOGRAPHPATH = MOCKDATAROOTPATH + "/po_listed_electronic_monograph.xml";
+  private final String POLISTEDELECTRONICSERIALPATH = MOCKDATAROOTPATH + "/po_listed_electronic_serial.xml";
+  private final String POLISTEDPRINTMONOGRAPHPATH = MOCKDATAROOTPATH + "/po_listed_print_monograph.xml";
+  private final String POLISTEDPRINTSERIALPATH = MOCKDATAROOTPATH + "/po_listed_print_serial.xml";
+  private final String POUNLISTEDPRINTMONOGRAPHPATH = MOCKDATAROOTPATH + "/po_unlisted_print_monograph.xml";
+  private final String POUNLISTEDPRINTSERIALPATH = MOCKDATAROOTPATH + "/po_unlisted_print_serial.xml";
+  private final String POLISTEDELECTRONICMONOGRAPHBADDATAPATH = MOCKDATAROOTPATH + "/po_listed_electronic_monograph_bad_data.xml";
+  private static final String CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING = "MappingHelper/Custom_ListedElectronicSerial.json";
   private static final  String VENDOR_MOCK_DATA =  "GOBIIntegrationServiceResourceImpl/vendor.json";
 
   private static Vertx vertx;
@@ -85,22 +85,22 @@ public class GOBIIntegrationServiceResourceImplTest {
   public static void setUpOnce(TestContext context) throws Exception {
     vertx = Vertx.vertx();
 
-    mockServer = new MockServer(mockPort);
+    mockServer = new MockServer(MOCKPORT);
     mockServer.start(context);
 
     String moduleName = PomReader.INSTANCE.getModuleName().replaceAll("_", "-");
     String moduleVersion = PomReader.INSTANCE.getVersion();
     String moduleId = moduleName + "-" + moduleVersion;
-    logger.info("Test setup starting for " + moduleId);
+    logger.info("Test setup starting for {}", moduleId);
 
     final JsonObject conf = new JsonObject();
-    conf.put("http.port", okapiPort);
+    conf.put("http.port", OKAPIPORT);
 
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
     vertx.deployVerticle(RestVerticle.class.getName(), opt, context.asyncAssertSuccess());
-    RestAssured.port = okapiPort;
+    RestAssured.port = OKAPIPORT;
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    logger.info("GOBI Integration Service Test Setup Done using port " + okapiPort);
+    logger.info("GOBI Integration Service Test Setup Done using port {}", OKAPIPORT);
   }
 
   @AfterClass
@@ -122,11 +122,11 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     RestAssured
       .given()
-        .header(tenantHeader)
-        .header(tokenHeader)
-        .header(urlHeader)
+        .header(TENANTHEADER)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
       .when()
-        .get(validatePath)
+        .get(VALIDATEPATH)
       .then()
         .statusCode(200).content(Matchers.equalTo("<test>GET - OK</test>"));
 
@@ -143,11 +143,11 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     RestAssured
       .given()
-        .header(tenantHeader)
-        .header(tokenHeader)
-        .header(urlHeader)
+        .header(TENANTHEADER)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
       .when()
-        .post(validatePath)
+        .post(VALIDATEPATH)
       .then()
         .contentType("application/xml")
         .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>"));
@@ -163,18 +163,18 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poListedElectronicMonographPath);
+    final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
 
     // final GobiResponse order = RestAssured
     RestAssured
       .given()
-        .header(tokenHeader)
-        .header(urlHeader)
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
+        .header(TENANTHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(201)
         .contentType("application/xml");
@@ -190,17 +190,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poListedElectronicMonographPath);
+    final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(tokenHeader)
-        .header(urlHeader)
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
+        .header(TENANTHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -220,17 +220,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poListedElectronicSerialPath);
+    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(tokenHeader)
-        .header(urlHeader)
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
+        .header(TENANTHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -251,17 +251,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poListedPrintMonographPath);
+    final String body = getMockData(POLISTEDPRINTMONOGRAPHPATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(tokenHeader)
-        .header(urlHeader)
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
+        .header(TENANTHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -282,17 +282,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poListedPrintSerialPath);
+    final String body = getMockData(POLISTEDPRINTSERIALPATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(tokenHeader)
-        .header(urlHeader)
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
+        .header(TENANTHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -313,17 +313,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poUnlistedPrintMonographPath);
+    final String body = getMockData(POUNLISTEDPRINTMONOGRAPHPATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(tokenHeader)
-        .header(urlHeader)
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
+        .header(TENANTHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -344,17 +344,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poUnlistedPrintSerialPath);
+    final String body = getMockData(POUNLISTEDPRINTSERIALPATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(tokenHeader)
-        .header(tenantHeader)
-        .header(urlHeader)
-        .header(contentTypeHeaderXML)
+        .header(TOKENHEADER)
+        .header(TENANTHEADER)
+        .header(URLHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -375,17 +375,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poListedElectronicMonographBadDataPath);
+    final String body = getMockData(POLISTEDELECTRONICMONOGRAPHBADDATAPATH);
 
     final GobiResponse error = RestAssured
       .given()
-        .header(tenantHeader)
-        .header(tokenHeader)
-        .header(urlHeader)
-        .header(contentTypeHeaderXML)
+        .header(TENANTHEADER)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(400)
         .contentType(ContentType.XML)
@@ -409,17 +409,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(poListedPrintMonographPath);
+    final String body = getMockData(POLISTEDPRINTMONOGRAPHPATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(tokenHeader)
-        .header(urlHeader)
-        .header(tenantHeader)
-        .header(contentTypeHeaderXML)
+        .header(TOKENHEADER)
+        .header(URLHEADER)
+        .header(TENANTHEADER)
+        .header(CONTENTTYPEHEADERXML)
         .body(body)
       .when()
-        .post(ordersPath)
+        .post(ORDERSPATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -487,7 +487,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handlePostPurchaseOrder(RoutingContext ctx) {
-      logger.info("Handle Post Purchase Order got: " + ctx.getBodyAsString());
+      logger.info("Handle Post Purchase Order got: {}", ctx.getBodyAsString());
 
       JsonObject compPO = ctx.getBodyAsJson();
 
@@ -509,7 +509,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handleGetVendor(RoutingContext ctx) {
-      logger.info("got vendor request: " + ctx.request().query());
+      logger.info("got vendor request: {}", ctx.request().query());
 
       try {
         JsonObject vendors = new JsonObject(getMockData(VENDOR_MOCK_DATA));
@@ -527,7 +527,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     private void handleGetMaterialType(RoutingContext ctx) {
 
-      logger.info("got material-type request: " + ctx.request().query());
+      logger.info("got material-type request: {}", ctx.request().query());
 
       JsonObject mtypes = new JsonObject()
         .put("mtypes", new JsonArray()
@@ -544,7 +544,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     private void handleGetLocation(RoutingContext ctx) {
 
-      logger.info("got location request: " + ctx.request().query());
+      logger.info("got location request: {}", ctx.request().query());
 
       JsonObject locations = new JsonObject()
         .put("locations", new JsonArray()
@@ -561,16 +561,33 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     private void handleGetConfigurationsEntries(RoutingContext ctx) {
 
-      logger.info("got configurations entries request: " + ctx.request().query());
+      logger.info("got configurations entries request: {}", ctx.request()
+          .query());
 
-      JsonObject configurationsEntries = new JsonObject()
-        .put("configs", new JsonArray())
-        .put("total_records", 0);
+      JsonObject configurationsEntries = new JsonObject();
+      try {
+        if (ctx.request()
+            .query()
+            .contains("ListedElectronicSerial")) {
+          configurationsEntries
+              .put("configs",
+                  new JsonArray().add(
+                      new JsonObject().put("value", getMockData(CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING))))
+              .put("total_records", 1);
 
-      ctx.response()
-        .setStatusCode(200)
-        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-        .end(configurationsEntries.encodePrettily());
+        } else {
+          configurationsEntries.put("configs", new JsonArray())
+              .put("total_records", 0);
+        }
+        ctx.response()
+            .setStatusCode(200)
+            .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+            .end(configurationsEntries.encodePrettily());
+      } catch (IOException e) {
+        ctx.response()
+        .setStatusCode(500)
+        .end();
+       }
     }
 
     private String randomDigits(int len) {

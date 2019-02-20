@@ -27,12 +27,12 @@ public class HelperUtils {
     }
 
     if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
-      throw new CompletionException(new HttpException(response.getCode(), response.getError().toString()));
+      throw new CompletionException(new HttpException(response.getCode(), response.getError()
+          .toString()));
     }
 
     return response.getBody();
   }
-
 
   public static String extractLocationId(JsonObject obj) {
     return extractIdOfFirst(obj, "locations");
@@ -71,7 +71,7 @@ public class HelperUtils {
       return null;
     }
     JsonArray jsonArray = obj.getJsonArray(arrField);
-    if (jsonArray == null || jsonArray.size() == 0 ) {
+    if (jsonArray == null || jsonArray.size() == 0) {
       return null;
     }
     JsonObject item = jsonArray.getJsonObject(0);
