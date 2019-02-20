@@ -47,6 +47,15 @@
           }
         },
         {
+          "field": "CREDIT",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "CREATED_DATE",
           "dataSource": {
             "from": "//OrderPlaced",
@@ -76,27 +85,29 @@
           }
         },
         {
-          "field": "FUND_CODE",
+          "field": "DISCOUNT",
           "dataSource": {
-            "from": "//FundCode",
+            "from": "//ListPrice/Amount",
             "default": "0",
-            "translation": "lookupMock"
-          }
-        },
-        {
-          "field": "FUND_CODE",
-          "dataSource": {
-            "from": "//FundCode",
-            "default": "0",
-            "translation": "lookupMock"
-          }
-        },
-        {
-          "field": "FUND_PERCENTAGE",
-          "dataSource": {
-            "default": "100",
             "translation": "toDouble",
             "translateDefault": true
+          }
+        },
+        {
+          "field": "INSURANCE",
+          "dataSource": {
+            "from": "//ListPrice/Amount",
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "FUND_CODE",
+          "dataSource": {
+            "from": "//FundCode",
+            "default": "0",
+            "translation": "lookupMock"
           }
         },
         {
@@ -254,6 +265,100 @@
           "field": "WORKFLOW_STATUS",
           "dataSource": {
             "default": "Open"
+          }
+        },
+        {
+          "field": "REPORTING_DESCRIPTION",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "REPORTING_CODE",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "ASSIGNED_TO",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "CANCELLATION_RESTRICTION_NOTE",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "DONOR",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "OWNER",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "SELECTOR",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "ALERT",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "VOLUMES",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "TAGS",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "PO_LINE_DESCRIPTION",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "LICENSE",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "CONTRIBUTOR_TYPE",
+          "dataSource": {
+            "default": "Test Data"
+          }
+        },
+        {
+          "field": "OVERHEAD",
+          "dataSource": {
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "SHIPMENT",
+          "dataSource": {
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
           }
         }
       ]

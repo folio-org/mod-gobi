@@ -50,20 +50,8 @@ public class HelperUtils {
     return extractIdOfFirst(obj, "vendors");
   }
 
-  public static String extractWorkflowStatusId(JsonObject obj) {
-    return extractIdOfFirst(obj, "workflow_statuses");
-  }
-
-  public static String extractReceiptStatusId(JsonObject obj) {
-    return extractIdOfFirst(obj, "receipt_statuses");
-  }
-
   public static String extractPaymentStatusId(JsonObject obj) {
     return extractIdOfFirst(obj, "payment_statuses");
-  }
-
-  public static String extractActivationStatusId(JsonObject obj) {
-    return extractIdOfFirst(obj, "activation_statuses");
   }
 
   public static String extractIdOfFirst(JsonObject obj, String arrField) {
