@@ -1,4 +1,4 @@
-## 2.1.1 Released
+## 1.2.0 Released
 * [MODGOBI-49](https://issues.folio.org/browse/MODGOBI-49) Sonar cloud security fix
 * [MODGOBI-48](https://issues.folio.org/browse/MODGOBI-48) Make location repeatable
 * [MODGOBI-46](https://issues.folio.org/browse/MODGOBI-46) Property name change in composite_purchase_order.json schema
