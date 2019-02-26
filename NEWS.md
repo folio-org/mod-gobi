@@ -1,3 +1,12 @@
+## 1.2.1 Released
+ * [MODGOBI-49](https://issues.folio.org/browse/MODGOBI-49) Sonar cloud security fix
+ * [MODGOBI-48](https://issues.folio.org/browse/MODGOBI-48) Make location repeatable
+ * [MODGOBI-46](https://issues.folio.org/browse/MODGOBI-46) Property name change in composite_purchase_order.json schema
+ * [MODGOBI-42](https://issues.folio.org/browse/MODGOBI-42) Mapping Remaining fields for default mapping
+
+## 1.2.0 Unreleased
+ * Ignore this release to conform with vendor-storage.vendors interface version 1.0 and other ui modules
+ 
 ## 1.1.0 Released
  * [MODGOBI-43](https://issues.folio.org/browse/MODGOBI-43) Adjusting to new acq models with Renewal changes
  * Updating to use mod-orders Interface 2.0
