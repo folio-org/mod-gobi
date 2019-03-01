@@ -71,9 +71,6 @@ public class Mapper {
 
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
           .thenAccept(v -> {
-            List<ProductId> ids = new ArrayList<>();
-            ids.add(productId);
-            detail.setProductIds(ids);
             compPO.setTotalItems(location.getQuantity());
 
             setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
@@ -523,7 +520,12 @@ public class Mapper {
               Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
                   .ifPresent(prodidtype -> prodidtype.resolve(doc)
                       .thenAccept(
-                          idType -> productId.setProductIdType(ProductId.ProductIdType.fromValue((String) idType))));
+                          idType -> {
+                              productId.setProductIdType(ProductId.ProductIdType.fromValue((String) idType));
+                              List<ProductId> ids = new ArrayList<>();
+                              ids.add(productId);
+                              detail.setProductIds(ids);
+                          }));
             })
             .exceptionally(Mapper::logException)));
 

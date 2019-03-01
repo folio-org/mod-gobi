@@ -278,6 +278,12 @@
           "dataSource": {
             "default": "Supplier's unique order line reference number"
           }
+        },
+        {
+          "field": "WORKFLOW_STATUS",
+          "dataSource": {
+            "default": "Open"
+          }
         }
       ]
     }
