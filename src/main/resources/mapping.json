@@ -112,6 +112,7 @@
             "toInteger",
             "lookupMaterialTypeId",
             "lookupLocationId",
+            "lookupDefaultLocationId",
             "lookupVendorId",
             "getPurchaseOptionCode",
             "toDate",
