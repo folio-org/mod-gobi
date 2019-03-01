@@ -75,7 +75,6 @@ public class Mapper {
 
             setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
             setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
-            setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
             setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
             setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
             setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
