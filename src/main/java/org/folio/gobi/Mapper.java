@@ -512,6 +512,8 @@ public class Mapper {
             .thenAccept(o -> detail.setMaterialTypes((List<String>) o))
             .exceptionally(Mapper::logException)));
 
+    //Adding a new entry to product id only if the product ID and product id type are present
+    // as both of them are together are mandatory to create an inventory instance
     Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID))
         .ifPresent(field -> futures.add(field.resolve(doc)
             .thenAccept(o -> {
