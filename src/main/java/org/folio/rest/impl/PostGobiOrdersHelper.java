@@ -172,17 +172,17 @@ public class PostGobiOrdersHelper {
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location), logger);
     String endpoint = String.format(LOCATIONS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
-        .thenCompose(locations -> {
-              String locationId = HelperUtils.extractLocationId(locations);
-               if (StringUtils.isEmpty(locationId)) {
-        	   return lookupDefaultLocationId(DEFAULT_LOCATION_CODE);
-               }
-               return completedFuture(locationId);
-            })
-        .exceptionally(t -> {
-          logger.error("Exception looking up location id", t);
-          return null;
-        });
+      .thenCompose(locations -> {
+        String locationId = HelperUtils.extractLocationId(locations);
+        if (StringUtils.isEmpty(locationId)) {
+          return lookupDefaultLocationId(DEFAULT_LOCATION_CODE);
+        }
+        return completedFuture(locationId);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up location id", t);
+        return null;
+      });
   }
 
   public CompletableFuture<String> lookupDefaultLocationId(String defaultLocation) {

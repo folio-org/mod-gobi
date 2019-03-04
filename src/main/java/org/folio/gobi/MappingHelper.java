@@ -121,8 +121,8 @@ public class MappingHelper {
             translatedValue = postGobiOrdersHelper.lookupLocationId(data);
             break;
           case LOOKUP_DEFAULT_LOCATION_ID:
-              translatedValue = postGobiOrdersHelper.lookupDefaultLocationId(data);
-              break;
+            translatedValue = postGobiOrdersHelper.lookupDefaultLocationId(data);
+            break;
           case LOOKUP_MATERIAL_TYPE_ID:
             translatedValue = postGobiOrdersHelper.lookupMaterialTypeId(data);
             break;
