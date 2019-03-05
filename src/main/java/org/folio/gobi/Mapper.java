@@ -49,6 +49,7 @@ public class Mapper {
       Source source = new Source();
       Contributor contributor = new Contributor();
       ReportingCode reportingCode = new ReportingCode();
+      License license = new License();
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
       mapPurchaseOrder(futures, compPO, doc);
@@ -68,6 +69,7 @@ public class Mapper {
       mapContributor(futures, contributor, doc);
       mapReportingCodes(futures, reportingCode, doc);
       mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
+      mapLicense(futures, license, doc);
 
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
         .thenAccept(v -> {
@@ -76,6 +78,7 @@ public class Mapper {
           setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
           setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
           setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
+          setObjectIfPresent(license, o -> eresource.setLicense((License) o));
           setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
           setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
           setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
@@ -576,14 +579,26 @@ public class Mapper {
         .thenAccept(o -> eresource.setCreateInventory((Boolean) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> eresource.setLicense((String) o))
-        .exceptionally(Mapper::logException)));
-
     Optional.ofNullable(mappings.get(Mapping.Field.TRIAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> eresource.setTrial((Boolean) o))
+        .exceptionally(Mapper::logException)));
+  }
+
+  private void mapLicense(List<CompletableFuture<?>> futures, License license, Document doc) {
+    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_CODE))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> license.setCode((String) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_DESCRIPTION))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> license.setDescription((String) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_REFERENCE))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> license.setReference((String) o))
         .exceptionally(Mapper::logException)));
   }
 
