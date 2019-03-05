@@ -117,6 +117,14 @@
           }
         },
         {
+          "field": "LOCATION",
+          "dataSource": {
+            "default" : "*",
+            "translation": "lookupDefaultLocationId",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "MANUAL_PO",
           "dataSource": {
             "default": "false",

@@ -7,7 +7,8 @@ import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond4
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import org.apache.commons.lang.StringUtils;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -61,6 +62,7 @@ public class PostGobiOrdersHelper {
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
+  private static final String DEFAULT_LOCATION_CODE = "*";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -167,8 +169,26 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupLocationId(String location) {
     logger.info("Received location is {}", location);
+    String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location), logger);
+    String endpoint = String.format(LOCATIONS_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenCompose(locations -> {
+        String locationId = HelperUtils.extractLocationId(locations);
+        if (StringUtils.isEmpty(locationId)) {
+          return lookupDefaultLocationId(DEFAULT_LOCATION_CODE);
+        }
+        return completedFuture(locationId);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up location id", t);
+        return null;
+      });
+  }
+
+  public CompletableFuture<String> lookupDefaultLocationId(String defaultLocation) {
+    logger.info("No location received, using the default location");
     //Always getting the first location until GOBI responds with how to handle locations for various orders
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, "*"), logger);
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, defaultLocation), logger);
       String endpoint = String.format(LOCATIONS_ENDPOINT+QUERY, query);
       return handleGetRequest(endpoint)
         .thenApply(HelperUtils::extractLocationId)
@@ -178,6 +198,7 @@ public class PostGobiOrdersHelper {
         });
 
   }
+
   public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
       String query = HelperUtils.encodeValue(String.format("name==%s", materialType), logger);
       String endpoint = String.format(MATERIAL_TYPES_ENDPOINT+QUERY, query);
