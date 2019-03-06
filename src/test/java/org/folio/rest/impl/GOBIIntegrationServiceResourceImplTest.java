@@ -3,17 +3,18 @@ package org.folio.rest.impl;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
 
 import java.io.IOException;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.folio.rest.RestVerticle;
+import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.tools.PomReader;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,9 +42,21 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
+  private static final String CONFIGS = "configs";
+
+  private static final String PURCHASEORDER = "PURCHASEORDER";
+
+  private static final String CONFIGURATION = "CONFIGURATION";
+
   static {
     System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, "io.vertx.core.logging.Log4j2LogDelegateFactory");
   }
@@ -114,6 +127,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     async.awaitSuccess();
   }
 
+  @Before
+  public void setUp() {
+    MockServer.serverRqRs.clear();
+  }
+
   @Test
   public final void testGetGobiValidate(TestContext context) {
     logger.info("Begin: Testing for Get Gobi Validate 200 - valid call");
@@ -165,7 +183,6 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
 
-    // final GobiResponse order = RestAssured
     RestAssured
       .given()
         .header(TOKENHEADER)
@@ -178,6 +195,9 @@ public class GOBIIntegrationServiceResourceImplTest {
       .then()
         .statusCode(201)
         .contentType("application/xml");
+
+    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
+    assertEquals(4, column.size());
 
     asyncLocal.complete();
 
@@ -209,14 +229,17 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
     context.assertNotNull(order.getPoLineNumber());
 
+    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
+    assertEquals(4, column.size());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic monograph");
   }
 
   @Test
-  public final void testPostGobiOrdersPOListedElectronicSerial(TestContext context) throws Exception {
-    logger.info("Begin: Testing for 201 - posted order listed electronic serial");
+  public final void testPostGobiOrdersCustomPOListedElectronicSerial(TestContext context) throws Exception {
+    logger.info("Begin: Testing for 201 - posted order listed electronic serial with custom mappings");
 
     final Async asyncLocal = context.async();
 
@@ -239,6 +262,21 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
+
+    List<JsonObject> configEntries = MockServer.serverRqRs.get(CONFIGURATION, HttpMethod.GET);
+    assertNotNull(configEntries);
+
+    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
+    assertEquals(3, column.size()); // Currently Material-types are not
+                                    // handled,change this after MODGOBI-57
+
+    // Make sure the mappings from custom configuration were used
+    assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    assertEquals("Description from Custom Mapping", ppo.getCompositePoLines().get(0).getPoLineDescription());
+
 
     asyncLocal.complete();
 
@@ -271,6 +309,9 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     context.assertNotNull(order.getPoLineNumber());
 
+    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
+    assertEquals(4, column.size());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed print monograph");
@@ -301,6 +342,10 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
+
+    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
+    assertEquals(3, column.size()); // Currently Material-types are not handled,
+                                    // change this after MODGOBI-57
 
     asyncLocal.complete();
 
@@ -333,6 +378,9 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     context.assertNotNull(order.getPoLineNumber());
 
+    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
+    assertEquals(4, column.size());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order unlisted print monograph");
@@ -363,6 +411,10 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
+
+    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
+    assertEquals(3, column.size()); // Currently Material-types are not handled,
+                                    // change this after MODGOBI-57
 
     asyncLocal.complete();
 
@@ -398,6 +450,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertEquals(CODE_INVALID_XML, error.getError().getCode());
     context.assertNotNull(error.getError().getMessage());
 
+    assertTrue(MockServer.serverRqRs.isEmpty());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 400 - posted order listed electronic monograph bad data (missing tag)");
@@ -429,6 +483,9 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     context.assertNotNull(order.getPoLineNumber());
 
+    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
+    assertEquals(4, column.size());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed print monograph");
@@ -436,8 +493,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   public static class MockServer {
 
+    private static final String LOCATION = "LOCATION";
+    private static final String MATERIAL_TYPES = "MATERIAL-TYPES";
+    private static final String VENDOR = "VENDOR";
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
     private static final Random rand = new Random(System.nanoTime());
+    static Table<String, HttpMethod, List<JsonObject>> serverRqRs = HashBasedTable.create();
 
     public final int port;
     public final Vertx vertx;
@@ -493,14 +554,15 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       compPO.put("id", UUID.randomUUID().toString());
       String poNumber = "PO_" + randomDigits(10);
-      compPO.put("po_number", poNumber);
+      compPO.put("poNumber", poNumber);
       compPO.getJsonArray("compositePoLines").forEach(line -> {
         JsonObject poLine = (JsonObject) line;
         poLine.put("id", UUID.randomUUID().toString());
-        poLine.put("po_line_number", poNumber + "-1");
-        poLine.put("purchase_order_id", compPO.getString("id"));
-        poLine.put("barcode", randomDigits(10));
+        poLine.put("poLineNumber", poNumber + "-1");
+        poLine.put("purchaseOrderId", compPO.getString("id"));
       });
+
+      addServerRqRsData(HttpMethod.POST, PURCHASEORDER, compPO);
 
       ctx.response()
         .setStatusCode(201)
@@ -513,6 +575,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       try {
         JsonObject vendors = new JsonObject(getMockData(VENDOR_MOCK_DATA));
+
+        addServerRqRsData(HttpMethod.GET, VENDOR, vendors);
 
         ctx.response()
           .setStatusCode(200)
@@ -536,6 +600,8 @@ public class GOBIIntegrationServiceResourceImplTest {
             .put("name", ctx.queryParam("query").get(0).split("=")[1])))
         .put("total_records", 1);
 
+      addServerRqRsData(HttpMethod.GET, MATERIAL_TYPES, mtypes);
+
       ctx.response()
         .setStatusCode(200)
         .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
@@ -553,6 +619,8 @@ public class GOBIIntegrationServiceResourceImplTest {
             .put("code", ctx.queryParam("query").get(0).split("=")[1])))
         .put("total_records", 1);
 
+      addServerRqRsData(HttpMethod.GET, LOCATION, locations);
+
       ctx.response()
         .setStatusCode(200)
         .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
@@ -566,23 +634,21 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       JsonObject configurationsEntries = new JsonObject();
       try {
-        if (ctx.request()
-            .query()
-            .contains("ListedElectronicSerial")) {
+        if (ctx.request().query().contains("ListedElectronicSerial")) {
           configurationsEntries
-              .put("configs",
-                  new JsonArray().add(
-                      new JsonObject().put("value", getMockData(CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING))))
-              .put("total_records", 1);
+            .put(CONFIGS, new JsonArray().add(
+                    new JsonObject().put("value", getMockData(CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING))))
+            .put("total_records", 1);
 
         } else {
-          configurationsEntries.put("configs", new JsonArray())
-              .put("total_records", 0);
+          configurationsEntries.put(CONFIGS, new JsonArray())
+            .put("total_records", 0);
         }
+        addServerRqRsData(HttpMethod.GET, CONFIGURATION, configurationsEntries);
         ctx.response()
-            .setStatusCode(200)
-            .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-            .end(configurationsEntries.encodePrettily());
+          .setStatusCode(200)
+          .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+          .end(configurationsEntries.encodePrettily());
       } catch (IOException e) {
         ctx.response()
         .setStatusCode(500)
@@ -592,6 +658,15 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     private String randomDigits(int len) {
       return rand.ints(len, 0, 9).mapToObj(Integer::toString).collect(Collectors.joining());
+    }
+
+    private void addServerRqRsData(HttpMethod method, String objName, JsonObject data) {
+      List<JsonObject> entries = serverRqRs.get(objName, method);
+      if (entries == null) {
+        entries = new ArrayList<>();
+      }
+      entries.add(data);
+      serverRqRs.put(objName, method, entries);
     }
   }
 

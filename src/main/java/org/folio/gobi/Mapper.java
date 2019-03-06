@@ -361,6 +361,11 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> compPo.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.fromValue((String) o)))
         .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.DATE_ORDERED))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> compPo.setDateOrdered((Date) o))
+        .exceptionally(Mapper::logException)));
   }
 
   private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
@@ -406,7 +411,7 @@ public class Mapper {
         .thenAccept(o -> pol.setAcquisitionMethod(CompositePoLine.AcquisitionMethod.fromValue(o.toString())))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.ALERT))
+    Optional.ofNullable(mappings.get(Mapping.Field.ALERTS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           Alert alert = new Alert();
@@ -498,12 +503,12 @@ public class Mapper {
         .thenAccept(o -> cost.setPoLineEstimatedPrice((Double) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ORDERED_ELECTRONIC))
+    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ELECTRONIC))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> cost.setQuantityElectronic((Integer) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ORDERED_PHYSICAL))
+    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_PHYSICAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> cost.setQuantityPhysical((Integer) o))
         .exceptionally(Mapper::logException)));
@@ -625,7 +630,10 @@ public class Mapper {
 
     // A GOBI order can only be one of the below type per order, hence the total
     // quantity will be the same
-    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ORDERED_ELECTRONIC))
+
+    // Also, GOBI doesn't support ordering by location so the quantity in
+    // location and cost will always be the same
+    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ELECTRONIC))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           location.setQuantityElectronic((Integer) o);
@@ -633,7 +641,7 @@ public class Mapper {
         })
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ORDERED_PHYSICAL))
+    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_PHYSICAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           location.setQuantityPhysical((Integer) o);
@@ -643,7 +651,7 @@ public class Mapper {
   }
 
   private void mapVendorDetail(List<CompletableFuture<?>> futures, VendorDetail vendorDetail, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.INSTRUCTIONS))
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_INSTRUCTIONS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> vendorDetail.setInstructions((String) o))
         .exceptionally(Mapper::logException)));

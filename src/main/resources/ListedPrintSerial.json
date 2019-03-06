@@ -32,7 +32,7 @@
           }
         },
         {
-          "field": "CREATED_DATE",
+          "field": "DATE_ORDERED",
           "dataSource": {
             "from": "//OrderPlaced",
             "translation": "toDate"
@@ -63,7 +63,7 @@
           }
         },
         {
-          "field": "INSTRUCTIONS",
+          "field": "VENDOR_INSTRUCTIONS",
           "dataSource": {
             "from": "//OrderNotes",
             "default" : "N/A"
@@ -131,7 +131,7 @@
           }
         },
         {
-          "field": "QUANTITY_ORDERED_PHYSICAL",
+          "field": "QUANTITY_PHYSICAL",
           "dataSource": {
             "from": "//Quantity",
             "default": "1",

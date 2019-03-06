@@ -47,13 +47,6 @@
           }
         },
         {
-          "field": "CREATED_DATE",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
-          }
-        },
-        {
           "field": "CREATE_INVENTORY",
           "dataSource": {
             "default": "false",
@@ -69,6 +62,13 @@
           }
         },
         {
+          "field": "DATE_ORDERED",
+          "dataSource": {
+            "from": "//OrderPlaced",
+            "translation": "toDate"
+          }
+        },
+        {
           "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",
@@ -101,7 +101,7 @@
           }
         },
         {
-          "field": "INSTRUCTIONS",
+          "field": "VENDOR_INSTRUCTIONS",
           "dataSource": {
             "from": "//OrderNotes",
             "default" : "N/A"
@@ -191,7 +191,7 @@
           }
         },
         {
-          "field": "QUANTITY_ORDERED_ELECTRONIC",
+          "field": "QUANTITY_ELECTRONIC",
           "dataSource": {
             "from": "//Quantity",
             "default": "1",

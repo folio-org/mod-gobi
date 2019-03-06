@@ -56,13 +56,6 @@
           }
         },
         {
-          "field": "CREATED_DATE",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
-          }
-        },
-        {
           "field": "CREATE_INVENTORY",
           "dataSource": {
             "default": "false",
@@ -75,6 +68,13 @@
           "dataSource": {
             "from": "//ListPrice/Currency",
             "default": "USD"
+          }
+        },
+        {
+          "field": "DATE_ORDERED",
+          "dataSource": {
+            "from": "//OrderPlaced",
+            "translation": "toDate"
           }
         },
         {
@@ -119,7 +119,7 @@
           }
         },
         {
-          "field": "INSTRUCTIONS",
+          "field": "VENDOR_INSTRUCTIONS",
           "dataSource": {
             "from": "//OrderNotes",
             "default" : "N/A"
@@ -207,7 +207,7 @@
           }
         },
         {
-          "field": "QUANTITY_ORDERED_ELECTRONIC",
+          "field": "QUANTITY_ELECTRONIC",
           "dataSource": {
             "from": "//Quantity",
             "default": "1",
@@ -310,7 +310,7 @@
           }
         },
         {
-          "field": "ALERT",
+          "field": "ALERTS",
           "dataSource": {
             "default": "Test Data"
           }
@@ -330,11 +330,19 @@
         {
           "field": "PO_LINE_DESCRIPTION",
           "dataSource": {
-            "default": "Test Data"
+            "default": "Description from Custom Mapping"
+          }
+        },
+         {
+          "field": "LOCATION",
+          "dataSource": {
+            "default" : "*",
+            "translation": "lookupDefaultLocationId",
+            "translateDefault": true
           }
         },
         {
-          "field": "LICENSE",
+          "field": "LICENSE_CODE",
           "dataSource": {
             "default": "Test Data"
           }
