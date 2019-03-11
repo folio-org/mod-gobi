@@ -62,7 +62,8 @@ public class PostGobiOrdersHelper {
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
-  private static final String DEFAULT_LOCATION_CODE = "*";
+  private static final String DEFAULT_LOOKUP_CODE = "*";
+  private static final String UNSPECIFIED_MATERIAL_ID = "unspecified";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -167,6 +168,13 @@ public class PostGobiOrdersHelper {
       return future;
     }
 
+  /**
+   * Use the provided location code. if one isn't provided, or the specified
+   * type can't be found, fallback using the first one listed
+   *
+   * @param location
+   * @return
+   */
   public CompletableFuture<String> lookupLocationId(String location) {
     logger.info("Received location is {}", location);
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location), logger);
@@ -175,7 +183,7 @@ public class PostGobiOrdersHelper {
       .thenCompose(locations -> {
         String locationId = HelperUtils.extractLocationId(locations);
         if (StringUtils.isEmpty(locationId)) {
-          return lookupDefaultLocationId(DEFAULT_LOCATION_CODE);
+          return lookupLocationId(DEFAULT_LOOKUP_CODE);
         }
         return completedFuture(locationId);
       })
@@ -185,29 +193,32 @@ public class PostGobiOrdersHelper {
       });
   }
 
-  public CompletableFuture<String> lookupDefaultLocationId(String defaultLocation) {
-    logger.info("No location received, using the default location");
-    //Always getting the first location until GOBI responds with how to handle locations for various orders
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, defaultLocation), logger);
-      String endpoint = String.format(LOCATIONS_ENDPOINT+QUERY, query);
-      return handleGetRequest(endpoint)
-        .thenApply(HelperUtils::extractLocationId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up location id", t);
-          return null;
-        });
-
-  }
-
-  public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
-      String query = HelperUtils.encodeValue(String.format("name==%s", materialType), logger);
-      String endpoint = String.format(MATERIAL_TYPES_ENDPOINT+QUERY, query);
-      return handleGetRequest(endpoint)
-        .thenApply(HelperUtils::extractMaterialTypeId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up material-type id", t);
-          return null;
-        });
+  /**
+   * Use the provided materialType. if one isn't provided, or the specified type
+   * can't be found, fallback to looking up "unspecified".If that fails,
+   * fallback to using the first one listed
+   *
+   * @param materialTypeCode
+   */
+  public CompletableFuture<List<String>> lookupMaterialTypeId(String materialTypeCode) {
+    String query = HelperUtils.encodeValue(String.format("name==%s", materialTypeCode), logger);
+    String endpoint = String.format(MATERIAL_TYPES_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenCompose(materialTypes -> {
+        List<String> materialType = HelperUtils.extractMaterialTypeId(materialTypes);
+        if (materialType.isEmpty() || materialType.contains(null)) {
+          if (StringUtils.equalsIgnoreCase(materialTypeCode, UNSPECIFIED_MATERIAL_ID)) {
+            return lookupMaterialTypeId(DEFAULT_LOOKUP_CODE);
+          } else {
+            return lookupMaterialTypeId(UNSPECIFIED_MATERIAL_ID);
+          }
+        }
+        return completedFuture(materialType);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up material-type id", t);
+        return null;
+      });
   }
 
   public CompletableFuture<Vendor> lookupVendorId(String vendorCode) {
@@ -383,6 +394,5 @@ public class PostGobiOrdersHelper {
     asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
-
 
 }

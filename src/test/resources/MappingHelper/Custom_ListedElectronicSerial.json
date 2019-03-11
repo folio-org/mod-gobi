@@ -336,8 +336,8 @@
          {
           "field": "LOCATION",
           "dataSource": {
-            "default" : "*",
-            "translation": "lookupDefaultLocationId",
+            "default" : "NonExistent",
+            "translation": "lookupLocationId",
             "translateDefault": true
           }
         },
@@ -366,6 +366,14 @@
           "dataSource": {
             "default": "0",
             "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "MATERIAL_TYPE",
+          "dataSource": {
+            "default" : "NonExistent",
+            "translation": "lookupMaterialTypeId",
             "translateDefault": true
           }
         }
