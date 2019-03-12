@@ -49,6 +49,7 @@ public class Mapper {
       Source source = new Source();
       Contributor contributor = new Contributor();
       ReportingCode reportingCode = new ReportingCode();
+      License license = new License();
 
       List<CompletableFuture<?>> futures = new ArrayList<>();
       mapPurchaseOrder(futures, compPO, doc);
@@ -68,6 +69,7 @@ public class Mapper {
       mapContributor(futures, contributor, doc);
       mapReportingCodes(futures, reportingCode, doc);
       mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
+      mapLicense(futures, license, doc);
 
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
         .thenAccept(v -> {
@@ -76,6 +78,7 @@ public class Mapper {
           setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
           setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
           setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
+          setObjectIfPresent(license, o -> eresource.setLicense((License) o));
           setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
           setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
           setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
@@ -358,6 +361,11 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> compPo.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.fromValue((String) o)))
         .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.DATE_ORDERED))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> compPo.setDateOrdered((Date) o))
+        .exceptionally(Mapper::logException)));
   }
 
   private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
@@ -403,7 +411,7 @@ public class Mapper {
         .thenAccept(o -> pol.setAcquisitionMethod(CompositePoLine.AcquisitionMethod.fromValue(o.toString())))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.ALERT))
+    Optional.ofNullable(mappings.get(Mapping.Field.ALERTS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           Alert alert = new Alert();
@@ -495,12 +503,12 @@ public class Mapper {
         .thenAccept(o -> cost.setPoLineEstimatedPrice((Double) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ORDERED_ELECTRONIC))
+    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ELECTRONIC))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> cost.setQuantityElectronic((Integer) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ORDERED_PHYSICAL))
+    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_PHYSICAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> cost.setQuantityPhysical((Integer) o))
         .exceptionally(Mapper::logException)));
@@ -576,14 +584,26 @@ public class Mapper {
         .thenAccept(o -> eresource.setCreateInventory((Boolean) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> eresource.setLicense((String) o))
-        .exceptionally(Mapper::logException)));
-
     Optional.ofNullable(mappings.get(Mapping.Field.TRIAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> eresource.setTrial((Boolean) o))
+        .exceptionally(Mapper::logException)));
+  }
+
+  private void mapLicense(List<CompletableFuture<?>> futures, License license, Document doc) {
+    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_CODE))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> license.setCode((String) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_DESCRIPTION))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> license.setDescription((String) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_REFERENCE))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> license.setReference((String) o))
         .exceptionally(Mapper::logException)));
   }
 
@@ -610,7 +630,10 @@ public class Mapper {
 
     // A GOBI order can only be one of the below type per order, hence the total
     // quantity will be the same
-    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ORDERED_ELECTRONIC))
+
+    // Also, GOBI doesn't support ordering by location so the quantity in
+    // location and cost will always be the same
+    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ELECTRONIC))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           location.setQuantityElectronic((Integer) o);
@@ -618,7 +641,7 @@ public class Mapper {
         })
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ORDERED_PHYSICAL))
+    Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_PHYSICAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           location.setQuantityPhysical((Integer) o);
@@ -628,7 +651,7 @@ public class Mapper {
   }
 
   private void mapVendorDetail(List<CompletableFuture<?>> futures, VendorDetail vendorDetail, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.INSTRUCTIONS))
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_INSTRUCTIONS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> vendorDetail.setInstructions((String) o))
         .exceptionally(Mapper::logException)));
