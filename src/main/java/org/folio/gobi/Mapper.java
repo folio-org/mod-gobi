@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import io.netty.util.internal.StringUtil;
 import scala.math.BigDecimal;
 
 public class Mapper {
@@ -651,14 +652,28 @@ public class Mapper {
   }
 
   private void mapVendorDetail(List<CompletableFuture<?>> futures, VendorDetail vendorDetail, Document doc) {
+  	
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_INSTRUCTIONS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> vendorDetail.setInstructions((String) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.NOTE_FROM_VENDOR))
+    .ifPresent(field -> futures.add(field.resolve(doc)
+      .thenAccept(o -> vendorDetail.setNoteFromVendor((String) o))
+      .exceptionally(Mapper::logException)));
+    
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_INSTRUCTIONS))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> vendorDetail.setNoteFromVendor((String) o))
+        .thenAccept(o -> {
+        	String vendorCode = vendorDetail.getNoteFromVendor();       	
+        	if(!StringUtil.isNullOrEmpty(vendorCode) && o.toString().equalsIgnoreCase("N/A"))
+        		vendorDetail.setInstructions(vendorCode);
+        	else if(!StringUtil.isNullOrEmpty(vendorCode) && !o.toString().equalsIgnoreCase("N/A"))
+        		vendorDetail.setInstructions(vendorCode + " " + (String) o);
+        	else
+        		vendorDetail.setInstructions((String) o);
+        })
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO))
