@@ -356,4 +356,38 @@ public class PostGobiOrdersHelperTest {
     });
   }
 
+  @Test
+  public final void testLookupFirstMaterialTypes(TestContext context) throws Exception {
+
+    logger.info("Begin: Testing if all material type calls return empty, must use first in the list");
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(PostGobiOrdersHelper.MATERIAL_TYPES_ENDPOINT) && req.query().contains("*")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_materialType.json");
+      } else {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/empty_materialType.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testDefaultMaterialTypes");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
+          GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
+          vertx.getOrCreateContext());
+      pgoh.lookupMaterialTypeId("BOOKSSS")
+        .thenAccept(list -> {
+          context.assertNotNull(list);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
 }
