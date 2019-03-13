@@ -653,20 +653,22 @@ public class Mapper {
 
   private void mapVendorDetail(List<CompletableFuture<?>> futures, VendorDetail vendorDetail, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.NOTE_FROM_VENDOR))
-    .ifPresent(field -> futures.add(field.resolve(doc)
-      .thenAccept(o -> vendorDetail.setNoteFromVendor((String) o))
-      .exceptionally(Mapper::logException)));
-    
-    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_INSTRUCTIONS))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-        	String vendorCode = vendorDetail.getNoteFromVendor();       	
-        	if(!StringUtil.isNullOrEmpty(vendorCode) && o.toString().equalsIgnoreCase("N/A"))
-        		vendorDetail.setInstructions(vendorCode);
-        	else if(!StringUtil.isNullOrEmpty(vendorCode) && !o.toString().equalsIgnoreCase("N/A"))
-        		vendorDetail.setInstructions(vendorCode + " " + (String) o);
-        	else
-        		vendorDetail.setInstructions((String) o);
+      .ifPresent(purchaseOptionVendorCodeField -> futures.add(purchaseOptionVendorCodeField.resolve(doc)
+        .thenAccept( purchaseOptionVendorCode -> {
+          vendorDetail.setNoteFromVendor((String) purchaseOptionVendorCode);
+          Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_INSTRUCTIONS))
+            .ifPresent(orderNotesField -> futures.add(orderNotesField.resolve(doc)
+              .thenAccept(orderDetailOrderNotes -> {
+  	            String instructions = orderDetailOrderNotes.toString();
+  	            String vendorCode = vendorDetail.getNoteFromVendor();
+  	            if(!StringUtil.isNullOrEmpty(vendorCode) && instructions.equalsIgnoreCase("N/A"))	// VendorCode exists and OrderNotes does NOT exists
+                  vendorDetail.setInstructions(vendorCode);
+  	            else if(!StringUtil.isNullOrEmpty(vendorCode) && !instructions.equalsIgnoreCase("N/A"))	//VendorCode exists and OrderNotes exists
+                  vendorDetail.setInstructions(vendorCode + " " + (String) orderDetailOrderNotes);
+  	            else	                                                                          //VendorCode does NOT exists and OrderNotes exists
+                  vendorDetail.setInstructions((String) orderDetailOrderNotes);
+            })
+            .exceptionally(Mapper::logException)));
         })
         .exceptionally(Mapper::logException)));
 

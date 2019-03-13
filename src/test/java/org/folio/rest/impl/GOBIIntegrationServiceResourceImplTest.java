@@ -231,7 +231,14 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertEquals(4, column.size());
-
+    
+    // OrderNotes does not exists so instructions should be mapped to 5 character vendor code
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    String noteFromVendor = ppo.getCompositePoLines().get(0).getVendorDetail().getNoteFromVendor();
+    String instructions = ppo.getCompositePoLines().get(0).getVendorDetail().getInstructions();
+    assertEquals(instructions, noteFromVendor);
+    
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic monograph");
@@ -280,9 +287,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     // OrderNotes exists so instructions should be mapped to 5 character vendor code followed by OrderNotes
     String noteFromVendor = ppo.getCompositePoLines().get(0).getVendorDetail().getNoteFromVendor();
     String instructions = ppo.getCompositePoLines().get(0).getVendorDetail().getInstructions();
-    logger.info("noteFromVendor: " + noteFromVendor);
-    logger.info("instructions: " + instructions);
-    
     assertTrue(instructions.contains(noteFromVendor));
     
     asyncLocal.complete();
