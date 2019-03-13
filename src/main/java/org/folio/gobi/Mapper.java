@@ -667,9 +667,6 @@ public class Mapper {
         		vendorDetail.setInstructions(vendorCode + " " + (String) o);
         	else
         		vendorDetail.setInstructions((String) o);
-        	
-        	logger.info("vendorDetail.getInstructions(): " + vendorDetail.getInstructions());
-
         })
         .exceptionally(Mapper::logException)));
 
