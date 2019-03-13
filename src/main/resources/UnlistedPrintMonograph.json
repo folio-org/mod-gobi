@@ -88,6 +88,7 @@
           "field": "LOCATION",
           "dataSource": {
             "from": "//Location",
+            "default": "*",
             "translation": "lookupLocationId"
           }
         },
@@ -103,6 +104,7 @@
           "field": "MATERIAL_TYPE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData1']/Value",
+            "default" : "unspecified",
             "translation": "lookupMaterialTypeId"
           }
         },
