@@ -493,7 +493,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <sourceDirectory>${basedir}/ramls/acq-models</sourceDirectory>
+              <sourceDirectory>${basedir}/ramls/acq-models/mod-orders/schemas</sourceDirectory>
               <targetPackage>org.folio.rest.acq.model</targetPackage>
             </configuration>
           </execution>
