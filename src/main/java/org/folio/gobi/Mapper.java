@@ -652,12 +652,6 @@ public class Mapper {
   }
 
   private void mapVendorDetail(List<CompletableFuture<?>> futures, VendorDetail vendorDetail, Document doc) {
-  	
-    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_INSTRUCTIONS))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> vendorDetail.setInstructions((String) o))
-        .exceptionally(Mapper::logException)));
-
     Optional.ofNullable(mappings.get(Mapping.Field.NOTE_FROM_VENDOR))
     .ifPresent(field -> futures.add(field.resolve(doc)
       .thenAccept(o -> vendorDetail.setNoteFromVendor((String) o))
