@@ -277,7 +277,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertEquals("Description from Custom Mapping", ppo.getCompositePoLines().get(0).getPoLineDescription());
 
-
+   // OrderNotes exists so instructions should be mapped to 5 character vendor code followed by OrderNotes
+    String noteFromVendor = ppo.getCompositePoLines().get(0).getVendorDetail().getNoteFromVendor();
+    String instructions = ppo.getCompositePoLines().get(0).getVendorDetail().getInstructions();
+    assertTrue(instructions.contains(noteFromVendor));
+    
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic serial");
