@@ -110,7 +110,6 @@
         },
         "translation": {
           "enum": [
-            "getPurchaseOptionCode",
             "lookupLocationId",
             "lookupMaterialTypeId",
             "lookupMock",

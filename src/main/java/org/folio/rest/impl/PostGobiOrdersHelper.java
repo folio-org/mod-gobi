@@ -120,14 +120,6 @@ public class PostGobiOrdersHelper {
     return orderType;
   }
 
-  public CompletableFuture<Integer> getPurchaseOptionCode(Object s) {
-    if (s != null) {
-      return CompletableFuture.completedFuture(3);
-    } else {
-      return CompletableFuture.completedFuture(null);
-    }
-  }
-
   public CompletableFuture<Document> parse(String entity) {
     VertxCompletableFuture<Document> future = new VertxCompletableFuture<>(ctx);
     final GobiPurchaseOrderParser parser = GobiPurchaseOrderParser.getParser();
@@ -338,20 +330,6 @@ public class PostGobiOrdersHelper {
       future.completeExceptionally(e);
     }
     return future;
-  }
-
-  public static JsonObject getClaims(String token) {
-    String[] tokenPieces = token.split("\\.");
-    if (tokenPieces.length > 1) {
-      String encodedJson = tokenPieces[1];
-      if (encodedJson == null) {
-        return null;
-      }
-
-      String decodedJson = new String(Base64.getDecoder().decode(encodedJson));
-      return new JsonObject(decodedJson);
-    }
-    return null;
   }
 
   public Void handleError(Throwable throwable) {

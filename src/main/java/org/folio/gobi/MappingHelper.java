@@ -111,9 +111,6 @@ public class MappingHelper {
         Object translatedValue;
         try {
           switch (translation) {
-          case GET_PURCHASE_OPTION_CODE:
-            translatedValue = postGobiOrdersHelper.getPurchaseOptionCode(data);
-            break;
           case LOOKUP_MOCK:
             translatedValue = postGobiOrdersHelper.lookupMock(data);
             break;

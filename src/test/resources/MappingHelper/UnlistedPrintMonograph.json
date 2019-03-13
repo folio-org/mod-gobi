@@ -8,13 +8,6 @@
           }
         },
         {
-          "field": "USER_LIMIT",
-          "dataSource": {
-            "from": "//PurchaseOption/Code",
-            "translation": "getPurchaseOptionCode"
-          }
-        },
-        {
           "field": "CONTRIBUTOR",
           "dataSource": {
             "from": "//datafield[@tag='100']/*",

@@ -17,97 +17,73 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class MappingHelperTest {
 
   private static final Logger logger = LoggerFactory.getLogger(MappingHelper.class);
   private static final String LISTED_PRINT_PATH = "MappingHelper/ListedPrintMonograph.json";
   private static final String UNLISTED_PRINT_PATH = "MappingHelper/UnlistedPrintMonograph.json";
-  
+
   private static final String EXPECTEDORDERTYPE1 = "ListedPrintMonograph";
   private static final String EXPECTEDORDERTYPE2 = "UnlistedPrintMonograph";
-  
+
   private static String actualListedPrintJson = null;
   private static String actualUnlistedPrintJson = null;
   private static OrderMappings actualUnlistedPrintMappings = null;
   private static OrderMappings actuallistedPrintMappings = null;
   private static Mapping mapping1 = null;
   private static Mapping mapping2 = null;
-  
+
   @Before
   public void setUp() throws Exception {
     logger.info("Begin: SetUp by initializing a default mapping");
-    
-    String expectedListedPrintMonographJson = 
-        "{\n" + 
-        "      \"orderType\": \"ListedPrintMonograph\",\n" + 
-        "      \"mappings\": [\n" + 
-        "        {\n" + 
-        "          \"field\": \"ACCESS_PROVIDER\",\n" + 
-        "          \"dataSource\": {\n" + 
-        "            \"from\": \"//PurchaseOption/VendorPOCode\",\n" + 
-        "            \"translation\": \"lookupVendorId\"\n" + 
-        "          }\n" + 
-        "        },  \n" + 
-        "        {\n" + 
-        "          \"field\": \"USER_LIMIT\",\n" + 
-        "          \"dataSource\": {\n" + 
-        "            \"from\": \"//PurchaseOption/Code\",\n" + 
-        "            \"translation\": \"getPurchaseOptionCode\"\n" + 
-        "          }\n" + 
-        "        }\n" + 
-        "      ]\n" + 
-        "}" ;
-        
-     String expectedUnListedPrintMonographJson =
-        "{\n" + 
-        "      \"orderType\": \"UnlistedPrintMonograph\",\n" + 
-        "      \"mappings\": [\n" + 
-        "        {\n" + 
-        "          \"field\": \"PRODUCT_ID\",\n" + 
-        "          \"dataSource\": {\n" + 
-        "            \"from\": \"//datafield[@tag='020']/subfield[@code='a']\"\n" + 
-        "          }\n" + 
-        "        },\n" + 
-        "        {\n" + 
-        "          \"field\": \"USER_LIMIT\",\n" + 
-        "          \"dataSource\": {\n" + 
-        "            \"from\": \"//PurchaseOption/Code\",\n" + 
-        "            \"translation\": \"getPurchaseOptionCode\"\n" + 
-        "          }\n" + 
-        "        },\n" + 
-        "        {\n" + 
-        "          \"field\": \"CONTRIBUTOR\",\n" + 
-        "          \"dataSource\": {\n" + 
-        "            \"from\": \"//datafield[@tag='100']/*\",\n" + 
-        "            \"combinator\": \"concat\"\n" + 
-        "          }\n" + 
-        "        } \n" + 
-        "      ]\n" + 
-        "}" ; 
-     
+
+    JsonObject expectedListedPrintMonographJsonObj = new JsonObject();
+    expectedListedPrintMonographJsonObj.put("orderType", "ListedPrintMonograph");
+    expectedListedPrintMonographJsonObj.put("mappings",
+        new JsonArray().add(new JsonObject().put("field", "ACCESS_PROVIDER")
+          .put("dataSource",
+              new JsonObject().put("from", "//PurchaseOption/VendorPOCode").put("translation", "lookupVendorId"))));
+
+    String expectedListedPrintMonographJson = expectedListedPrintMonographJsonObj.toString();
+
+    JsonObject expectedUnListedPrintMonographJsonObj = new JsonObject();
+    expectedUnListedPrintMonographJsonObj.put("orderType", "UnlistedPrintMonograph");
+    expectedUnListedPrintMonographJsonObj.put("mappings",
+        new JsonArray().add(new JsonObject().put("field", "PRODUCT_ID")
+          .put("dataSource",
+              new JsonObject().put("from", "//datafield[@tag='020']/subfield[@code='a']")))
+          .add(new JsonObject().put("field", "CONTRIBUTOR")
+            .put("dataSource",
+                new JsonObject().put("from", "//datafield[@tag='100']/*").put("combinator", "concat"))));
+
+    String expectedUnListedPrintMonographJson = expectedUnListedPrintMonographJsonObj.toString();
+
     actualListedPrintJson = MappingHelper.readMappingsFile(LISTED_PRINT_PATH);
-    assertEquals(expectedListedPrintMonographJson, actualListedPrintJson);
-    
+    assertEquals(expectedListedPrintMonographJson, actualListedPrintJson.replaceAll("\\s", ""));
+
     actuallistedPrintMappings = Json.decodeValue(actualListedPrintJson, OrderMappings.class);
-    
+
     actualUnlistedPrintJson = MappingHelper.readMappingsFile(UNLISTED_PRINT_PATH);
-    assertEquals(expectedUnListedPrintMonographJson, actualUnlistedPrintJson);
-    
+    assertEquals(expectedUnListedPrintMonographJson,
+        actualUnlistedPrintJson.replaceAll("\\s", ""));
+
     actualUnlistedPrintMappings = Json.decodeValue(actualUnlistedPrintJson, OrderMappings.class);
-    
-    
+
+
     OrderType orderType1 = actuallistedPrintMappings.getOrderType();
     OrderType orderType2 = actualUnlistedPrintMappings.getOrderType();
     assertEquals(EXPECTEDORDERTYPE1, orderType1.toString());
     assertEquals(EXPECTEDORDERTYPE2, orderType2.toString());
-  
+
     List<Mapping> mappingsList1 = actuallistedPrintMappings.getMappings();
     List<Mapping> mappingsList2 = actualUnlistedPrintMappings.getMappings();
     mapping1 = mappingsList1.get(0);
     mapping2 = mappingsList2.get(0);
-    assertEquals(2, mappingsList1.size());
-    assertEquals(3, mappingsList2.size());
+    assertEquals(1, mappingsList1.size());
+    assertEquals(2, mappingsList2.size());
     assertEquals("ACCESS_PROVIDER", mapping1.getField().toString());
     assertEquals("PRODUCT_ID", mapping2.getField().toString());
   }
@@ -117,7 +93,7 @@ public class MappingHelperTest {
     logger.info("Begin: Testing for failure when default mappings filepath is null");
     fail(MappingHelper.readMappingsFile(null));
   }
-  
+
   @Test
   public void testMappingHelperDefaultMappingGetDSMapping1() {
     logger.info(

@@ -7,13 +7,6 @@
             "from": "//PurchaseOption/VendorPOCode",
             "translation": "lookupVendorId"
           }
-        },  
-        {
-          "field": "USER_LIMIT",
-          "dataSource": {
-            "from": "//PurchaseOption/Code",
-            "translation": "getPurchaseOptionCode"
-          }
         }
       ]
 }
