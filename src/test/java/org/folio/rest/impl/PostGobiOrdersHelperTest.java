@@ -1,7 +1,6 @@
 package org.folio.rest.impl;
 
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_BAD_REQUEST;
-import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_TOKEN;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -303,18 +302,15 @@ public class PostGobiOrdersHelperTest {
   }
 
   @Test
-  public final void testLookupPaymentStatusId(TestContext context) throws Exception {
+  public final void testLookupDefaultOrderMappings(TestContext context) throws Exception {
+
+    logger.info("Begin: Testing for Order Mappings to fetch default mappings if configuration Call fails");
     final Async async = context.async();
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
     server.requestHandler(req -> {
-      if (req.path().equals(PostGobiOrdersHelper.PAYMENT_STATUS_ENDPOINT)) {
-        req.response()
-          .setStatusCode(200)
-          .putHeader("content-type", "application/json")
-          .sendFile("PostGobiOrdersHelper/payment_statuses.json");
-      } else {
-        req.response().setStatusCode(500).end("Unexpected call: " + req.path());
+      if (req.path().equals(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT)) {
+        req.response().setStatusCode(500).end("Unrecheable End point: " + req.path());
       }
     });
 
@@ -328,10 +324,31 @@ public class PostGobiOrdersHelperTest {
       PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
           GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
           vertx.getOrCreateContext());
-      pgoh.lookupPaymentStatusId("AP")
-        .thenAccept(id -> {
-          context.assertNotNull(id);
-          context.assertEquals("37ea6927-bc92-485a-b748-288b50660e02", id);
+      pgoh.lookupOrderMappings(OrderMappings.OrderType.fromValue("ListedElectronicMonograph"))
+        .thenAccept(map -> {
+          context.assertNotNull(map);
+          context.assertNotNull(map.get(Mapping.Field.CURRENCY));
+          DataSourceResolver ds = map.get(Mapping.Field.CURRENCY);
+          context.assertEquals("//ListPrice/Currency", ds.from);
+          context.assertEquals("USD", ds.defValue);
+
+          context.assertNotNull(map.get(Mapping.Field.LIST_PRICE));
+          ds = map.get(Mapping.Field.LIST_PRICE);
+          context.assertEquals("//ListPrice/Amount", ds.from);
+          context.assertEquals("0", ds.defValue);
+          try {
+            Double result = (Double) ds.translation.apply(ds.defValue.toString()).get();
+            context.assertEquals(0.0, result);
+          } catch (Exception e) {
+            logger.error("Failed to execute translation LIST_PRICE", e);
+          }
+
+          context.assertNotNull((map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE)));
+          ds = map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE);
+          context.assertEquals("//ListPrice/Amount", ds.from);
+          context.assertNotNull(ds.defValue);
+          DataSourceResolver defVal = (DataSourceResolver) ds.defValue;
+          context.assertEquals("//NetPrice/Amount|//Quantity", defVal.from);
 
           vertx.close(context.asyncAssertSuccess());
           async.complete();

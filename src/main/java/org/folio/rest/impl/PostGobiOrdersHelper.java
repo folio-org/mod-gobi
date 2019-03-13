@@ -228,18 +228,6 @@ public class PostGobiOrdersHelper {
         });
   }
 
-
-  public CompletableFuture<String> lookupPaymentStatusId(String paymentStatusCode) {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, paymentStatusCode), logger);
-      String endpoint = String.format(PAYMENT_STATUS_ENDPOINT+QUERY, query);
-      return handleGetRequest(endpoint)
-        .thenApply(HelperUtils::extractPaymentStatusId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up payment status id", t);
-          return null;
-        });
-  }
-
   public CompletableFuture<String> lookupMock(String data) {
     logger.info("Mocking the data lookup for: " + data);
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());

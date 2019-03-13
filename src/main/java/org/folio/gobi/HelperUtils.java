@@ -50,10 +50,6 @@ public class HelperUtils {
     return extractIdOfFirst(obj, "vendors");
   }
 
-  public static String extractPaymentStatusId(JsonObject obj) {
-    return extractIdOfFirst(obj, "payment_statuses");
-  }
-
   public static String extractIdOfFirst(JsonObject obj, String arrField) {
     if (obj == null || arrField == null || arrField.isEmpty()) {
       return null;
