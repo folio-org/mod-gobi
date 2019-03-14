@@ -63,13 +63,6 @@
           }
         },
         {
-          "field": "VENDOR_INSTRUCTIONS",
-          "dataSource": {
-            "from": "//OrderNotes",
-            "default" : "N/A"
-          }
-        },
-        {
           "field": "LIST_PRICE",
           "dataSource": {
             "default" : "0",
@@ -171,6 +164,13 @@
             "default": "GOBI",
             "translation": "lookupVendorId",
             "translateDefault": true
+          }
+        },
+        {
+          "field": "VENDOR_INSTRUCTIONS",
+          "dataSource": {
+            "from": "//OrderNotes",
+            "default" : "N/A"
           }
         },
         {

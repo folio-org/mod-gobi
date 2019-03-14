@@ -63,7 +63,7 @@ public class PostGobiOrdersHelper {
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
   private static final String DEFAULT_LOOKUP_CODE = "*";
-  private static final String UNSPECIFIED_MATERIAL_ID = "unspecified";
+  private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -175,7 +175,7 @@ public class PostGobiOrdersHelper {
       .thenCompose(locations -> {
         String locationId = HelperUtils.extractLocationId(locations);
         if (StringUtils.isEmpty(locationId)) {
-          return lookupLocationId(DEFAULT_LOOKUP_CODE);
+          return completedFuture(null);
         }
         return completedFuture(locationId);
       })
@@ -186,9 +186,9 @@ public class PostGobiOrdersHelper {
   }
 
   /**
-   * Use the provided materialType. if one isn't provided, or the specified type
-   * can't be found, fallback to looking up "unspecified".If that fails,
-   * fallback to using the first one listed
+   * Use the provided materialType. if the specified type can't be found,
+   * fallback to looking up "unspecified"(handled via default mappings).If that
+   * cannot be found too, fallback to using the first one listed
    *
    * @param materialTypeCode
    */
@@ -199,10 +199,10 @@ public class PostGobiOrdersHelper {
       .thenCompose(materialTypes -> {
         List<String> materialType = HelperUtils.extractMaterialTypeId(materialTypes);
         if (materialType.isEmpty() || materialType.contains(null)) {
-          if (StringUtils.equalsIgnoreCase(materialTypeCode, UNSPECIFIED_MATERIAL_ID)) {
+          if (StringUtils.equalsIgnoreCase(materialTypeCode, UNSPECIFIED_MATERIAL_NAME)) {
             return lookupMaterialTypeId(DEFAULT_LOOKUP_CODE);
           } else {
-            return lookupMaterialTypeId(UNSPECIFIED_MATERIAL_ID);
+            return completedFuture(null);
           }
         }
         return completedFuture(materialType);

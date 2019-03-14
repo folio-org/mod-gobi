@@ -336,7 +336,8 @@
          {
           "field": "LOCATION",
           "dataSource": {
-            "default" : "NonExistent",
+            "from" : "//FundCode",
+            "default" : "*",
             "translation": "lookupLocationId",
             "translateDefault": true
           }
@@ -372,7 +373,8 @@
         {
           "field": "MATERIAL_TYPE",
           "dataSource": {
-            "default" : "NonExistent",
+            "from" : "//FundCode",
+            "default" : "unspecified",
             "translation": "lookupMaterialTypeId",
             "translateDefault": true
           }

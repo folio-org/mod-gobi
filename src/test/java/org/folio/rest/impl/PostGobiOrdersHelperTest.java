@@ -28,8 +28,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;
@@ -42,6 +42,11 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class PostGobiOrdersHelperTest {
+
+  static {
+    System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME,
+        "io.vertx.core.logging.Log4j2LogDelegateFactory");
+  }
 
   private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelperTest.class);
 
@@ -381,7 +386,7 @@ public class PostGobiOrdersHelperTest {
       PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
           GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
           vertx.getOrCreateContext());
-      pgoh.lookupMaterialTypeId("BOOKSSS")
+      pgoh.lookupMaterialTypeId("unspecified")
         .thenAccept(list -> {
           context.assertNotNull(list);
           vertx.close(context.asyncAssertSuccess());

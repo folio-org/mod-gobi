@@ -105,7 +105,8 @@
           "dataSource": {
             "from": "//Location",
             "default": "*",
-            "translation": "lookupLocationId"
+            "translation": "lookupLocationId",
+            "translateDefault": true
           }
         },
         {
@@ -121,7 +122,8 @@
           "dataSource": {
             "from": "//LocalData[Description='LocalData1']/Value",
             "default": "unspecified",
-            "translation": "lookupMaterialTypeId"
+            "translation": "lookupMaterialTypeId",
+            "translateDefault": true
           }
         },
         {

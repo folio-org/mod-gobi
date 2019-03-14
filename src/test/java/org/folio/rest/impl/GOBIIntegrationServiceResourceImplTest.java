@@ -502,19 +502,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(TOKENHEADER)
-      .header(URLHEADER)
-      .header(TENANTHEADER)
-      .header(CONTENTTYPEHEADERXML)
+       .header(TOKENHEADER)
+       .header(URLHEADER)
+       .header(TENANTHEADER)
+       .header(CONTENTTYPEHEADERXML)
       .body(body)
       .when()
       .post(ORDERSPATH)
-      .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+       .then()
+         .statusCode(201)
+         .contentType(ContentType.XML)
+         .extract()
+         .body()
+         .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -541,19 +541,19 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final GobiResponse order = RestAssured
       .given()
-      .header(TOKENHEADER)
-      .header(URLHEADER)
-      .header(TENANTHEADER)
-      .header(CONTENTTYPEHEADERXML)
+       .header(TOKENHEADER)
+       .header(URLHEADER)
+       .header(TENANTHEADER)
+       .header(CONTENTTYPEHEADERXML)
       .body(body)
       .when()
       .post(ORDERSPATH)
-      .then()
-      .statusCode(201)
-      .contentType(ContentType.XML)
-      .extract()
-      .body()
-      .as(GobiResponse.class, ObjectMapperType.JAXB);
+       .then()
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+        .body()
+        .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -568,6 +568,9 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   public static class MockServer {
 
+    private static final String NAME = "name";
+    private static final String ID = "id";
+    private static final String TOTAL_RECORDS = "total_records";
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
     private static final Random rand = new Random(System.nanoTime());
     static Table<String, HttpMethod, List<JsonObject>> serverRqRs = HashBasedTable.create();
@@ -624,14 +627,14 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       JsonObject compPO = ctx.getBodyAsJson();
 
-      compPO.put("id", UUID.randomUUID().toString());
+      compPO.put(ID, UUID.randomUUID().toString());
       String poNumber = "PO_" + randomDigits(10);
       compPO.put("poNumber", poNumber);
       compPO.getJsonArray("compositePoLines").forEach(line -> {
         JsonObject poLine = (JsonObject) line;
-        poLine.put("id", UUID.randomUUID().toString());
+        poLine.put(ID, UUID.randomUUID().toString());
         poLine.put("poLineNumber", poNumber + "-1");
-        poLine.put("purchaseOrderId", compPO.getString("id"));
+        poLine.put("purchaseOrderId", compPO.getString(ID));
       });
 
       addServerRqRsData(HttpMethod.POST, PURCHASEORDER, compPO);
@@ -666,21 +669,21 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got material-type request: {}", ctx.request().query());
       JsonObject mtypes = new JsonObject();
 
-      if (ctx.request().query().contains("NonExistent")) {
+      if (ctx.request().query().contains("HUM")) {
         mtypes.put("mtypes", new JsonArray())
-          .put("total_records", 0);
+          .put(TOTAL_RECORDS, 0);
       } else if (ctx.request().query().contains("unspecified")) {
         mtypes.put("mtypes", new JsonArray()
           .add(new JsonObject()
-            .put("id", UNSPECIFIED_MATERIAL_TYPE_ID)
-            .put("name", "unspecified")))
-          .put("total_records", 1);
+            .put(ID, UNSPECIFIED_MATERIAL_TYPE_ID)
+            .put(NAME, "unspecified")))
+          .put(TOTAL_RECORDS, 1);
       } else {
         mtypes.put("mtypes", new JsonArray()
           .add(new JsonObject()
-            .put("id", UUID.randomUUID().toString())
-            .put("name", ctx.queryParam("query").get(0).split("=")[1])))
-          .put("total_records", 1);
+            .put(ID, UUID.randomUUID().toString())
+            .put(NAME, ctx.queryParam("query").get(0).split("=")[1])))
+          .put(TOTAL_RECORDS, 1);
       }
 
       addServerRqRsData(HttpMethod.GET, MATERIAL_TYPES, mtypes);
@@ -696,16 +699,16 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got location request: {}", ctx.request().query());
 
       JsonObject locations = new JsonObject();
-      if (ctx.request().query().contains("NonExistent")) {
+      if (ctx.request().query().contains("HUM")) {
         locations.put("locations", new JsonArray())
-          .put("total_records", 0);
+          .put(TOTAL_RECORDS, 0);
       }
       else {
         locations.put("locations", new JsonArray()
           .add(new JsonObject()
-            .put("id", UUID.randomUUID().toString())
+            .put(ID, UUID.randomUUID().toString())
             .put("code", ctx.queryParam("query").get(0).split("=")[1])))
-        .put("total_records", 1);
+        .put(TOTAL_RECORDS, 1);
       }
 
       addServerRqRsData(HttpMethod.GET, LOCATION, locations);
@@ -727,11 +730,11 @@ public class GOBIIntegrationServiceResourceImplTest {
           configurationsEntries
             .put(CONFIGS, new JsonArray().add(
                     new JsonObject().put("value", getMockData(CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING))))
-            .put("total_records", 1);
+            .put(TOTAL_RECORDS, 1);
 
         } else {
           configurationsEntries.put(CONFIGS, new JsonArray())
-            .put("total_records", 0);
+            .put(TOTAL_RECORDS, 0);
         }
         addServerRqRsData(HttpMethod.GET, CONFIGURATION, configurationsEntries);
         ctx.response()
