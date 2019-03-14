@@ -570,7 +570,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     private static final String NAME = "name";
     private static final String ID = "id";
-    private static final String TOTAL_RECORDS = "total_records";
+    private static final String TOTAL_RECORDS = "totalRecords";
     private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
     private static final Random rand = new Random(System.nanoTime());
     static Table<String, HttpMethod, List<JsonObject>> serverRqRs = HashBasedTable.create();
