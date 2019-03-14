@@ -63,13 +63,6 @@
           }
         },
         {
-          "field": "VENDOR_INSTRUCTIONS",
-          "dataSource": {
-            "from": "//OrderNotes",
-            "default" : "N/A"
-          }
-        },
-        {
           "field": "LIST_PRICE",
           "dataSource": {
             "default" : "0",
@@ -81,7 +74,7 @@
           "field": "LOCATION",
           "dataSource": {
             "default" : "*",
-            "translation": "lookupDefaultLocationId",
+            "translation": "lookupLocationId",
             "translateDefault": true
           }
         },
@@ -90,6 +83,14 @@
           "dataSource": {
             "default": "false",
             "translation": "toBoolean",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "MATERIAL_TYPE",
+          "dataSource": {
+            "default" : "unspecified",
+            "translation": "lookupMaterialTypeId",
             "translateDefault": true
           }
         },
@@ -163,6 +164,13 @@
             "default": "GOBI",
             "translation": "lookupVendorId",
             "translateDefault": true
+          }
+        },
+        {
+          "field": "VENDOR_INSTRUCTIONS",
+          "dataSource": {
+            "from": "//OrderNotes",
+            "default" : "N/A"
           }
         },
         {

@@ -1,7 +1,6 @@
 package org.folio.rest.impl;
 
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_BAD_REQUEST;
-import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_TOKEN;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -29,8 +28,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;
@@ -43,6 +42,11 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class PostGobiOrdersHelperTest {
+
+  static {
+    System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME,
+        "io.vertx.core.logging.Log4j2LogDelegateFactory");
+  }
 
   private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelperTest.class);
 
@@ -303,18 +307,15 @@ public class PostGobiOrdersHelperTest {
   }
 
   @Test
-  public final void testLookupPaymentStatusId(TestContext context) throws Exception {
+  public final void testLookupDefaultOrderMappings(TestContext context) throws Exception {
+
+    logger.info("Begin: Testing for Order Mappings to fetch default mappings if configuration Call fails");
     final Async async = context.async();
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
     server.requestHandler(req -> {
-      if (req.path().equals(PostGobiOrdersHelper.PAYMENT_STATUS_ENDPOINT)) {
-        req.response()
-          .setStatusCode(200)
-          .putHeader("content-type", "application/json")
-          .sendFile("PostGobiOrdersHelper/payment_statuses.json");
-      } else {
-        req.response().setStatusCode(500).end("Unexpected call: " + req.path());
+      if (req.path().equals(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT)) {
+        req.response().setStatusCode(500).end("Unrecheable End point: " + req.path());
       }
     });
 
@@ -328,11 +329,66 @@ public class PostGobiOrdersHelperTest {
       PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
           GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
           vertx.getOrCreateContext());
-      pgoh.lookupPaymentStatusId("AP")
-        .thenAccept(id -> {
-          context.assertNotNull(id);
-          context.assertEquals("37ea6927-bc92-485a-b748-288b50660e02", id);
+      pgoh.lookupOrderMappings(OrderMappings.OrderType.fromValue("ListedElectronicMonograph"))
+        .thenAccept(map -> {
+          context.assertNotNull(map);
+          context.assertNotNull(map.get(Mapping.Field.CURRENCY));
+          DataSourceResolver ds = map.get(Mapping.Field.CURRENCY);
+          context.assertEquals("//ListPrice/Currency", ds.from);
+          context.assertEquals("USD", ds.defValue);
 
+          context.assertNotNull(map.get(Mapping.Field.LIST_PRICE));
+          ds = map.get(Mapping.Field.LIST_PRICE);
+          context.assertEquals("//ListPrice/Amount", ds.from);
+          context.assertEquals("0", ds.defValue);
+          try {
+            Double result = (Double) ds.translation.apply(ds.defValue.toString()).get();
+            context.assertEquals(0.0, result);
+          } catch (Exception e) {
+            logger.error("Failed to execute translation LIST_PRICE", e);
+          }
+
+          context.assertNotNull((map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE)));
+          ds = map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE);
+          context.assertEquals("//ListPrice/Amount", ds.from);
+          context.assertNotNull(ds.defValue);
+          DataSourceResolver defVal = (DataSourceResolver) ds.defValue;
+          context.assertEquals("//NetPrice/Amount|//Quantity", defVal.from);
+
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testLookupFirstMaterialTypes(TestContext context) throws Exception {
+
+    logger.info("Begin: Testing if all material type calls return empty, must use first in the list");
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(PostGobiOrdersHelper.MATERIAL_TYPES_ENDPOINT) && req.query().contains("*")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_materialType.json");
+      } else {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/empty_materialType.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testDefaultMaterialTypes");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
+          GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
+          vertx.getOrCreateContext());
+      pgoh.lookupMaterialTypeId("unspecified")
+        .thenAccept(list -> {
+          context.assertNotNull(list);
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });

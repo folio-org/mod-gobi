@@ -62,7 +62,8 @@ public class PostGobiOrdersHelper {
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
-  private static final String DEFAULT_LOCATION_CODE = "*";
+  private static final String DEFAULT_LOOKUP_CODE = "*";
+  private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -119,14 +120,6 @@ public class PostGobiOrdersHelper {
     return orderType;
   }
 
-  public CompletableFuture<Integer> getPurchaseOptionCode(Object s) {
-    if (s != null) {
-      return CompletableFuture.completedFuture(3);
-    } else {
-      return CompletableFuture.completedFuture(null);
-    }
-  }
-
   public CompletableFuture<Document> parse(String entity) {
     VertxCompletableFuture<Document> future = new VertxCompletableFuture<>(ctx);
     final GobiPurchaseOrderParser parser = GobiPurchaseOrderParser.getParser();
@@ -167,6 +160,13 @@ public class PostGobiOrdersHelper {
       return future;
     }
 
+  /**
+   * Use the provided location code. if one isn't provided, or the specified
+   * type can't be found, fallback using the first one listed
+   *
+   * @param location
+   * @return
+   */
   public CompletableFuture<String> lookupLocationId(String location) {
     logger.info("Received location is {}", location);
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location), logger);
@@ -175,7 +175,7 @@ public class PostGobiOrdersHelper {
       .thenCompose(locations -> {
         String locationId = HelperUtils.extractLocationId(locations);
         if (StringUtils.isEmpty(locationId)) {
-          return lookupDefaultLocationId(DEFAULT_LOCATION_CODE);
+          return completedFuture(null);
         }
         return completedFuture(locationId);
       })
@@ -185,29 +185,32 @@ public class PostGobiOrdersHelper {
       });
   }
 
-  public CompletableFuture<String> lookupDefaultLocationId(String defaultLocation) {
-    logger.info("No location received, using the default location");
-    //Always getting the first location until GOBI responds with how to handle locations for various orders
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, defaultLocation), logger);
-      String endpoint = String.format(LOCATIONS_ENDPOINT+QUERY, query);
-      return handleGetRequest(endpoint)
-        .thenApply(HelperUtils::extractLocationId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up location id", t);
-          return null;
-        });
-
-  }
-
-  public CompletableFuture<List<String>> lookupMaterialTypeId(String materialType) {
-      String query = HelperUtils.encodeValue(String.format("name==%s", materialType), logger);
-      String endpoint = String.format(MATERIAL_TYPES_ENDPOINT+QUERY, query);
-      return handleGetRequest(endpoint)
-        .thenApply(HelperUtils::extractMaterialTypeId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up material-type id", t);
-          return null;
-        });
+  /**
+   * Use the provided materialType. if the specified type can't be found,
+   * fallback to looking up "unspecified"(handled via default mappings).If that
+   * cannot be found too, fallback to using the first one listed
+   *
+   * @param materialTypeCode
+   */
+  public CompletableFuture<List<String>> lookupMaterialTypeId(String materialTypeCode) {
+    String query = HelperUtils.encodeValue(String.format("name==%s", materialTypeCode), logger);
+    String endpoint = String.format(MATERIAL_TYPES_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenCompose(materialTypes -> {
+        List<String> materialType = HelperUtils.extractMaterialTypeId(materialTypes);
+        if (materialType.isEmpty() || materialType.contains(null)) {
+          if (StringUtils.equalsIgnoreCase(materialTypeCode, UNSPECIFIED_MATERIAL_NAME)) {
+            return lookupMaterialTypeId(DEFAULT_LOOKUP_CODE);
+          } else {
+            return completedFuture(null);
+          }
+        }
+        return completedFuture(materialType);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up material-type id", t);
+        return null;
+      });
   }
 
   public CompletableFuture<Vendor> lookupVendorId(String vendorCode) {
@@ -221,18 +224,6 @@ public class PostGobiOrdersHelper {
           .orElse(null))
         .exceptionally(t -> {
           logger.error("Exception looking up vendor id", t);
-          return null;
-        });
-  }
-
-
-  public CompletableFuture<String> lookupPaymentStatusId(String paymentStatusCode) {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, paymentStatusCode), logger);
-      String endpoint = String.format(PAYMENT_STATUS_ENDPOINT+QUERY, query);
-      return handleGetRequest(endpoint)
-        .thenApply(HelperUtils::extractPaymentStatusId)
-        .exceptionally(t -> {
-          logger.error("Exception looking up payment status id", t);
           return null;
         });
   }
@@ -329,20 +320,6 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
-  public static JsonObject getClaims(String token) {
-    String[] tokenPieces = token.split("\\.");
-    if (tokenPieces.length > 1) {
-      String encodedJson = tokenPieces[1];
-      if (encodedJson == null) {
-        return null;
-      }
-
-      String decodedJson = new String(Base64.getDecoder().decode(encodedJson));
-      return new JsonObject(decodedJson);
-    }
-    return null;
-  }
-
   public Void handleError(Throwable throwable) {
     final javax.ws.rs.core.Response result;
 
@@ -383,6 +360,5 @@ public class PostGobiOrdersHelper {
     asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
-
 
 }

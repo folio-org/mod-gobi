@@ -276,13 +276,13 @@
         {
           "field": "REPORTING_CODE",
           "dataSource": {
-            "default": "Test Data"
+            "default": "TestReportingCode"
           }
         },
         {
           "field": "ASSIGNED_TO",
           "dataSource": {
-            "default": "Test Data"
+            "default": "5980020f-6c3a-41e1-a16c-f449f0d8af71"
           }
         },
         {
@@ -336,8 +336,9 @@
          {
           "field": "LOCATION",
           "dataSource": {
+            "from" : "//FundCode",
             "default" : "*",
-            "translation": "lookupDefaultLocationId",
+            "translation": "lookupLocationId",
             "translateDefault": true
           }
         },
@@ -350,7 +351,7 @@
         {
           "field": "CONTRIBUTOR_TYPE",
           "dataSource": {
-            "default": "Test Data"
+            "default": "3e12234b-26ad-4003-b1a4-2259f45f1afb"
           }
         },
         {
@@ -366,6 +367,15 @@
           "dataSource": {
             "default": "0",
             "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "MATERIAL_TYPE",
+          "dataSource": {
+            "from" : "//FundCode",
+            "default" : "unspecified",
+            "translation": "lookupMaterialTypeId",
             "translateDefault": true
           }
         }

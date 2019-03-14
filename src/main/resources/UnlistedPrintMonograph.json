@@ -69,13 +69,6 @@
           }
         },
         {
-          "field": "VENDOR_INSTRUCTIONS",
-          "dataSource": {
-            "from": "//OrderNotes",
-            "default" : "N/A"
-          }
-        },
-        {
           "field": "LIST_PRICE",
           "dataSource": {
             "from": "//ListPrice/Amount",
@@ -88,7 +81,9 @@
           "field": "LOCATION",
           "dataSource": {
             "from": "//Location",
-            "translation": "lookupLocationId"
+            "default": "*",
+            "translation": "lookupLocationId",
+            "translateDefault": true
           }
         },
         {
@@ -103,7 +98,9 @@
           "field": "MATERIAL_TYPE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData1']/Value",
-            "translation": "lookupMaterialTypeId"
+            "default" : "unspecified",
+            "translation": "lookupMaterialTypeId",
+            "translateDefault": true
           }
         },
         {
@@ -204,6 +201,13 @@
           "dataSource": {
             "from": "//SubAccount",
             "default": "0"
+          }
+        },
+        {
+          "field": "VENDOR_INSTRUCTIONS",
+          "dataSource": {
+            "from": "//OrderNotes",
+            "default" : "N/A"
           }
         },
         {

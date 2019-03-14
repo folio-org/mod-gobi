@@ -110,18 +110,14 @@
         },
         "translation": {
           "enum": [
-            "toDouble",
-            "toInteger",
-            "lookupMaterialTypeId",
             "lookupLocationId",
-            "lookupDefaultLocationId",
-            "lookupVendorId",
-            "getPurchaseOptionCode",
-            "toDate",
-            "lookupReceiptStatusId",
-            "lookupPaymentStatusId",
+            "lookupMaterialTypeId",
             "lookupMock",
-            "toBoolean"
+            "lookupVendorId",
+            "toBoolean",
+            "toDate",
+            "toDouble",
+            "toInteger"
           ],
           "description": "Method to translate the specified type"
         },
