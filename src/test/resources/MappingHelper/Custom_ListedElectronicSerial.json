@@ -23,6 +23,14 @@
           }
         },
         {
+          "field": "ADDITIONAL_COST",
+          "dataSource": {
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "APPROVED",
           "dataSource": {
             "default": "true",
@@ -82,6 +90,12 @@
             "default": "0",
             "translation": "toDouble",
             "translateDefault": true
+          }
+        },
+        {
+          "field": "DISCOUNT_TYPE",
+          "dataSource": {
+            "default": "Amount"
           }
         },
         {
