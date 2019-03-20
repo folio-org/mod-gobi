@@ -275,8 +275,8 @@ public class PostGobiOrdersHelperTest {
           context.assertEquals("//ListPrice/Currency", ds.from);
           context.assertEquals("USD", ds.defValue);
 
-          context.assertNotNull(map.get(Mapping.Field.LIST_PRICE));
-          ds = map.get(Mapping.Field.LIST_PRICE);
+          context.assertNotNull(map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC));
+          ds = map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC);
           context.assertEquals("//ListPrice/Amount", ds.from);
           context.assertEquals("0", ds.defValue);
           try {
@@ -337,8 +337,8 @@ public class PostGobiOrdersHelperTest {
           context.assertEquals("//ListPrice/Currency", ds.from);
           context.assertEquals("USD", ds.defValue);
 
-          context.assertNotNull(map.get(Mapping.Field.LIST_PRICE));
-          ds = map.get(Mapping.Field.LIST_PRICE);
+          context.assertNotNull(map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC));
+          ds = map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC);
           context.assertEquals("//ListPrice/Amount", ds.from);
           context.assertEquals("0", ds.defValue);
           try {
@@ -350,7 +350,7 @@ public class PostGobiOrdersHelperTest {
 
           context.assertNotNull((map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE)));
           ds = map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE);
-          context.assertEquals("//ListPrice/Amount", ds.from);
+          context.assertEquals("//ListPrice/Amount|//Quantity", ds.from);
           context.assertNotNull(ds.defValue);
           DataSourceResolver defVal = (DataSourceResolver) ds.defValue;
           context.assertEquals("//NetPrice/Amount|//Quantity", defVal.from);

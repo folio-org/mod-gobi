@@ -92,7 +92,7 @@
           }
         },
         {
-          "field": "LIST_PRICE",
+          "field": "LIST_UNIT_PRICE_ELECTRONIC",
           "dataSource": {
             "from": "//ListPrice/Amount",
             "default": "0",
@@ -148,12 +148,13 @@
         {
           "field": "PO_LINE_ESTIMATED_PRICE",
           "dataSource": {
-            "from": "//ListPrice/Amount",
+            "from": "//ListPrice/Amount|//Quantity",
+            "combinator": "multiply",
             "defaultMapping": {
               "dataSource": {
                 "from": "//NetPrice/Amount|//Quantity",
                 "combinator": "multiply",
-                "fromOtherField": "LIST_PRICE",
+                "fromOtherField": "LIST_UNIT_PRICE_ELECTRONIC",
                 "translation": "toDouble"
               }
             },
