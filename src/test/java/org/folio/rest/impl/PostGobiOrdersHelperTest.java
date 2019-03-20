@@ -348,13 +348,6 @@ public class PostGobiOrdersHelperTest {
             logger.error("Failed to execute translation LIST_PRICE", e);
           }
 
-          context.assertNotNull((map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE)));
-          ds = map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE);
-          context.assertEquals("//ListPrice/Amount|//Quantity", ds.from);
-          context.assertNotNull(ds.defValue);
-          DataSourceResolver defVal = (DataSourceResolver) ds.defValue;
-          context.assertEquals("//NetPrice/Amount|//Quantity", defVal.from);
-
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });

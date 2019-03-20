@@ -111,22 +111,6 @@
           }
         },
         {
-          "field": "PO_LINE_ESTIMATED_PRICE",
-          "dataSource": {
-            "from": "//ListPrice/Amount|//Quantity",
-            "combinator": "multiply",
-            "defaultMapping": {
-              "dataSource": {
-                "from": "//NetPrice/Amount|//Quantity",
-                "combinator": "multiply",
-                "fromOtherField": "LIST_UNIT_PRICE_ELECTRONIC",
-                "translation": "toDouble"
-              }
-            },
-            "translation": "toDouble"
-          }
-        },
-        {
           "field": "PO_LINE_ORDER_FORMAT",
           "dataSource": {
             "default": "Physical Resource"
