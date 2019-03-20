@@ -324,6 +324,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertThat(ppo.getCompositePoLines().get(0).getCost().getListUnitPriceElectronic(), nullValue());
     assertThat(ppo.getCompositePoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
+    assertThat(ppo.getCompositePoLines().get(0).getCost().getPoLineEstimatedPrice(), equalTo(29.90));
 
     asyncLocal.complete();
 
