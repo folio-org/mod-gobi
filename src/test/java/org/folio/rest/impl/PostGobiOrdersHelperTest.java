@@ -275,8 +275,8 @@ public class PostGobiOrdersHelperTest {
           context.assertEquals("//ListPrice/Currency", ds.from);
           context.assertEquals("USD", ds.defValue);
 
-          context.assertNotNull(map.get(Mapping.Field.LIST_PRICE));
-          ds = map.get(Mapping.Field.LIST_PRICE);
+          context.assertNotNull(map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC));
+          ds = map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC);
           context.assertEquals("//ListPrice/Amount", ds.from);
           context.assertEquals("0", ds.defValue);
           try {
@@ -337,8 +337,8 @@ public class PostGobiOrdersHelperTest {
           context.assertEquals("//ListPrice/Currency", ds.from);
           context.assertEquals("USD", ds.defValue);
 
-          context.assertNotNull(map.get(Mapping.Field.LIST_PRICE));
-          ds = map.get(Mapping.Field.LIST_PRICE);
+          context.assertNotNull(map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC));
+          ds = map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC);
           context.assertEquals("//ListPrice/Amount", ds.from);
           context.assertEquals("0", ds.defValue);
           try {
@@ -347,13 +347,6 @@ public class PostGobiOrdersHelperTest {
           } catch (Exception e) {
             logger.error("Failed to execute translation LIST_PRICE", e);
           }
-
-          context.assertNotNull((map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE)));
-          ds = map.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE);
-          context.assertEquals("//ListPrice/Amount", ds.from);
-          context.assertNotNull(ds.defValue);
-          DataSourceResolver defVal = (DataSourceResolver) ds.defValue;
-          context.assertEquals("//NetPrice/Amount|//Quantity", defVal.from);
 
           vertx.close(context.asyncAssertSuccess());
           async.complete();

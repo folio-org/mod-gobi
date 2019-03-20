@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import org.folio.rest.acq.model.*;
+import org.folio.rest.acq.model.Cost.DiscountType;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -45,7 +46,6 @@ public class Mapper {
       Renewal renewal = new Renewal();
       ProductId productId = new ProductId();
       Physical physical = new Physical();
-      Adjustment adjustment = new Adjustment();
       Source source = new Source();
       Contributor contributor = new Contributor();
       ReportingCode reportingCode = new ReportingCode();
@@ -64,7 +64,6 @@ public class Mapper {
       mapClaims(futures, claim, doc);
       mapRenewal(futures, renewal, doc);
       mapPhysical(futures, physical, doc);
-      mapAdjustment(futures, adjustment, doc);
       mapSource(futures, source, doc);
       mapContributor(futures, contributor, doc);
       mapReportingCodes(futures, reportingCode, doc);
@@ -75,7 +74,6 @@ public class Mapper {
         .thenAccept(v -> {
           compPO.setTotalItems(location.getQuantity());
 
-          setObjectIfPresent(adjustment, o -> compPO.setAdjustment((Adjustment) o));
           setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
           setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
           setObjectIfPresent(license, o -> eresource.setLicense((License) o));
@@ -212,48 +210,6 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.SOURCE_DESCRIPTION))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> source.setDescription((String) o))
-        .exceptionally(Mapper::logException)));
-  }
-
-  private void mapAdjustment(List<CompletableFuture<?>> futures, Adjustment adjustment, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.CREDIT))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> adjustment.setCredit((Double) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.DISCOUNT))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> adjustment.setDiscount((Double) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.INSURANCE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> adjustment.setInsurance((Double) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.OVERHEAD))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> adjustment.setOverhead((Double) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.SHIPMENT))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> adjustment.setShipment((Double) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.TAX_1))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> adjustment.setTax1((Double) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.TAX_2))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> adjustment.setTax2((Double) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.USE_PRORATE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> adjustment.setUseProRate((Boolean) o))
         .exceptionally(Mapper::logException)));
   }
 
@@ -493,9 +449,14 @@ public class Mapper {
         .thenAccept(o -> cost.setCurrency((String) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.LIST_PRICE))
+    Optional.ofNullable(mappings.get(Mapping.Field.LIST_UNIT_PRICE))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> cost.setListPrice((Double) o))
+        .thenAccept(o -> cost.setListUnitPrice((Double) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> cost.setListUnitPriceElectronic((Double) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_ESTIMATED_PRICE))
@@ -511,6 +472,21 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_PHYSICAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> cost.setQuantityPhysical((Integer) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.DISCOUNT))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> cost.setDiscount((Double) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.DISCOUNT_TYPE))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> cost.setDiscountType(DiscountType.fromValue((String) o)))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.ADDITIONAL_COST))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> cost.setAdditionalCost((Double) o))
         .exceptionally(Mapper::logException)));
   }
 

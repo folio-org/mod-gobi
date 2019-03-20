@@ -55,7 +55,7 @@
           }
         },
         {
-          "field": "LIST_PRICE",
+          "field": "LIST_UNIT_PRICE",
           "dataSource": {
             "default" : "0",
             "translation": "toDouble",
