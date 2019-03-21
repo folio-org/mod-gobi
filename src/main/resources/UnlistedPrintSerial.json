@@ -32,6 +32,12 @@
           }
         },
         {
+          "field": "CURRENCY",
+          "dataSource": {
+            "default": "USD"
+          }
+        },
+        {
           "field": "DATE_ORDERED",
           "dataSource": {
             "from": "//OrderPlaced",
