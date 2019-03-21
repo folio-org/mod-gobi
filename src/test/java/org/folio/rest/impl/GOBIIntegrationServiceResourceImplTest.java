@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import org.apache.commons.io.IOUtils;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
@@ -284,7 +283,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertEquals("Description from Custom Mapping", ppo.getCompositePoLines().get(0).getPoLineDescription());
-    assertThat(ppo.getCompositePoLines().get(0).getCost().getPoLineEstimatedPrice(), equalTo(0.0));
+    // verify if the currency specified in the request is used
+    assertEquals("GBP", ppo.getCompositePoLines().get(0).getCost().getCurrency());
 
     asyncLocal.complete();
 
@@ -359,6 +359,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertEquals(4, column.size());
 
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    // verify if default currency is used
+    assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed print serial");
@@ -426,8 +431,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertEquals(4, column.size());
-    asyncLocal.complete();
 
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
+
+    asyncLocal.complete();
     logger.info("End: Testing for 201 - posted order unlisted print serial");
   }
 
