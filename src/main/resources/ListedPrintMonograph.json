@@ -76,7 +76,7 @@
           }
         },
         {
-          "field": "LIST_PRICE",
+          "field": "LIST_UNIT_PRICE",
           "dataSource": {
             "from": "//ListPrice/Amount",
             "default": "0",
@@ -121,21 +121,6 @@
           "dataSource": {
             "from": "//BaseAccount",
             "default": "Main"
-          }
-        },
-        {
-          "field": "PO_LINE_ESTIMATED_PRICE",
-          "dataSource": {
-            "from": "//ListPrice/Amount",
-            "defaultMapping": {
-              "dataSource": {
-                "from": "//NetPrice/Amount|//Quantity",
-                "combinator": "multiply",
-                "fromOtherField": "LIST_PRICE",
-                "translation": "toDouble"
-              }
-            },
-            "translation": "toDouble"
           }
         },
         {

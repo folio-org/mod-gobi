@@ -23,6 +23,14 @@
           }
         },
         {
+          "field": "ADDITIONAL_COST",
+          "dataSource": {
+            "default": "0",
+            "translation": "toDouble",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "APPROVED",
           "dataSource": {
             "default": "true",
@@ -43,15 +51,6 @@
           "dataSource": {
             "default": "false",
             "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "CREDIT",
-          "dataSource": {
-            "from": "//ListPrice/Amount",
-            "default": "0",
-            "translation": "toDouble",
             "translateDefault": true
           }
         },
@@ -94,12 +93,9 @@
           }
         },
         {
-          "field": "INSURANCE",
+          "field": "DISCOUNT_TYPE",
           "dataSource": {
-            "from": "//ListPrice/Amount",
-            "default": "0",
-            "translation": "toDouble",
-            "translateDefault": true
+            "default": "Amount"
           }
         },
         {
@@ -126,7 +122,7 @@
           }
         },
         {
-          "field": "LIST_PRICE",
+          "field": "LIST_UNIT_PRICE_ELECTRONIC",
           "dataSource": {
             "from": "//ListPrice/Amount",
             "default": "0",
@@ -170,12 +166,13 @@
         {
           "field": "PO_LINE_ESTIMATED_PRICE",
           "dataSource": {
-            "from": "//ListPrice/Amount",
+            "from": "//ListPrice/Amount|//Quantity",
+            "combinator": "multiply",
             "defaultMapping": {
               "dataSource": {
                 "from": "//NetPrice/Amount|//Quantity",
                 "combinator": "multiply",
-                "fromOtherField": "LIST_PRICE",
+                "fromOtherField": "LIST_UNIT_PRICE_ELECTRONIC",
                 "translation": "toDouble"
               }
             },
@@ -352,22 +349,6 @@
           "field": "CONTRIBUTOR_TYPE",
           "dataSource": {
             "default": "3e12234b-26ad-4003-b1a4-2259f45f1afb"
-          }
-        },
-        {
-          "field": "OVERHEAD",
-          "dataSource": {
-            "default": "0",
-            "translation": "toDouble",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "SHIPMENT",
-          "dataSource": {
-            "default": "0",
-            "translation": "toDouble",
-            "translateDefault": true
           }
         },
         {
