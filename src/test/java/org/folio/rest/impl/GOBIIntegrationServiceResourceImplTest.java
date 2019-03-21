@@ -283,6 +283,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertEquals("Description from Custom Mapping", ppo.getCompositePoLines().get(0).getPoLineDescription());
+    // verify if the currency specified in the request is used
+    assertEquals("GBP", ppo.getCompositePoLines().get(0).getCost().getCurrency());
 
     asyncLocal.complete();
 
@@ -359,6 +361,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    // verify if default currency is used
     assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
 
     asyncLocal.complete();
