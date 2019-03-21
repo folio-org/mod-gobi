@@ -5,12 +5,15 @@
 [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.2.1...v1.3.0)
  
 ### Stories
+ * [MODGOBI-59](https://issues.folio.org/browse/MODGOBI-59) - Remove Adjustments and add new fields from Cost
  * [MODGOBI-57](https://issues.folio.org/browse/MODGOBI-57) - Add a default material-type "unspecified" if the request doesnot provide one
  * [MODGOBI-55](https://issues.folio.org/browse/MODGOBI-55) - Refactor the code to align with new composite_purchase_order schema
 
 ### Bugs
+ * [MODGOBI-60](https://issues.folio.org/browse/MODGOBI-60) - Default Currency to USD if one is not specified
  * [MODGOBI-54](https://issues.folio.org/browse/MODGOBI-54) - Use the location specified in the request
  * [MODGOBI-52](https://issues.folio.org/browse/MODGOBI-52) - Add workflow_status mapping for ListedElectronicMonograph
+ 
 
 
 ## 1.2.1 Released
