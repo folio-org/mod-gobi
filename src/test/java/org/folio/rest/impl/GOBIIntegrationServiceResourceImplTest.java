@@ -434,7 +434,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
 
     asyncLocal.complete();
-
     logger.info("End: Testing for 201 - posted order unlisted print serial");
   }
 
