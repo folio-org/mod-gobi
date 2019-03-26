@@ -555,11 +555,6 @@ public class Mapper {
         .thenAccept(o -> eresource.setActivated((Boolean) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.CREATE_INVENTORY))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> eresource.setCreateInventory((Boolean) o))
-        .exceptionally(Mapper::logException)));
-
     Optional.ofNullable(mappings.get(Mapping.Field.TRIAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> eresource.setTrial((Boolean) o))
