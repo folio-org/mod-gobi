@@ -232,6 +232,11 @@ public class Mapper {
           physical.setVolumes(volumes);
         })
         .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.CREATE_INVENTORY))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> physical.setCreateInventory((Physical.CreateInventory) o))
+        .exceptionally(Mapper::logException)));
   }
 
   private void mapRenewal(List<CompletableFuture<?>> futures, Renewal renewal, Document doc) {
@@ -553,6 +558,11 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.ACTIVATED))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> eresource.setActivated((Boolean) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.CREATE_INVENTORY))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> eresource.setCreateInventory((Eresource.CreateInventory) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.TRIAL))

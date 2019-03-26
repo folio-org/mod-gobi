@@ -23,6 +23,7 @@
         "COLLECTION",
         "CONTRIBUTOR",
         "CONTRIBUTOR_TYPE",
+        "CREATE_INVENTORY",
         "CURRENCY",
         "DATE_ORDERED",
         "DESCRIPTION",
