@@ -186,7 +186,6 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    // MODGOBI-61 mapper file 'ListedElectronicMonograph.json' will be used from 'src\test\resources\' for the test
     final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
 
     RestAssured
@@ -216,7 +215,6 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    // MODGOBI-61 mapper file 'ListedElectronicMonograph.json' will be used from 'src\test\resources\' for the test
     final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
 
     final GobiResponse order = RestAssured
@@ -238,12 +236,6 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertEquals(4, column.size());
-
-    // MODGOBI-61 - check createInventory populated for eresource only
-    Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
-    CompositePurchaseOrder compPO = postOrder.get("PURCHASEORDER").get(0).mapTo(CompositePurchaseOrder.class);
-    assertNotNull(compPO.getCompositePoLines().get(0).getEresource().getCreateInventory());
-    assertNull(compPO.getCompositePoLines().get(0).getPhysical());
 
     asyncLocal.complete();
 
@@ -291,6 +283,12 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals("Description from Custom Mapping", ppo.getCompositePoLines().get(0).getPoLineDescription());
     // verify if the currency specified in the request is used
     assertEquals("GBP", ppo.getCompositePoLines().get(0).getCost().getCurrency());
+
+    // MODGOBI-61 - check createInventory populated for eresource only
+    Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
+    CompositePurchaseOrder compPO = postOrder.get("PURCHASEORDER").get(0).mapTo(CompositePurchaseOrder.class);
+    assertNotNull(compPO.getCompositePoLines().get(0).getEresource().getCreateInventory());
+    assertNull(compPO.getCompositePoLines().get(0).getPhysical());
 
     asyncLocal.complete();
 
