@@ -186,6 +186,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
+    // MODGOBI-61 mapper file 'ListedElectronicMonograph.json' will be used from 'src\test\resources\' for the test
     final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
 
     RestAssured
@@ -204,7 +205,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertEquals(4, column.size());
 
-    verifyResourceCreateInventoryNotMapped();
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - XML content");
@@ -216,6 +216,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
+    // MODGOBI-61 mapper file 'ListedElectronicMonograph.json' will be used from 'src\test\resources\' for the test
     final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
 
     final GobiResponse order = RestAssured
@@ -238,7 +239,12 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertEquals(4, column.size());
 
-    verifyResourceCreateInventoryNotMapped();
+    // MODGOBI-61 - check createInventory populated for eresource only
+    Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
+    CompositePurchaseOrder compPO = postOrder.get("PURCHASEORDER").get(0).mapTo(CompositePurchaseOrder.class);
+    assertNotNull(compPO.getCompositePoLines().get(0).getEresource().getCreateInventory());
+    assertNull(compPO.getCompositePoLines().get(0).getPhysical());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic monograph");
@@ -397,6 +403,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertEquals(4, column.size());
+
     verifyResourceCreateInventoryNotMapped();
 
     asyncLocal.complete();
@@ -436,8 +443,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
-
-    verifyResourceCreateInventoryNotMapped();
 
     asyncLocal.complete();
     logger.info("End: Testing for 201 - posted order unlisted print serial");
