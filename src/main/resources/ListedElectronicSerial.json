@@ -47,14 +47,6 @@
           }
         },
         {
-          "field": "CREATE_INVENTORY",
-          "dataSource": {
-            "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "CURRENCY",
           "dataSource": {
             "from": "//ListPrice/Currency",

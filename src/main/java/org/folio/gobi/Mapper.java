@@ -77,10 +77,14 @@ public class Mapper {
           setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
           setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
           setObjectIfPresent(license, o -> eresource.setLicense((License) o));
-          setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
+          if (pol.getOrderFormat() == CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE) {
+            setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
+          }
           setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
           setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
-          setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
+          if (pol.getOrderFormat() == CompositePoLine.OrderFormat.PHYSICAL_RESOURCE) {
+            setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
+          }
           setObjectIfPresent(source, o -> pol.setSource((Source) o));
 
           setObjectIfPresent(location, o -> {
@@ -231,6 +235,11 @@ public class Mapper {
           volumes.add((String) o);
           physical.setVolumes(volumes);
         })
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.CREATE_INVENTORY))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> physical.setCreateInventory(Physical.CreateInventory.fromValue((String) o)))
         .exceptionally(Mapper::logException)));
   }
 
@@ -557,7 +566,7 @@ public class Mapper {
 
     Optional.ofNullable(mappings.get(Mapping.Field.CREATE_INVENTORY))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> eresource.setCreateInventory((Boolean) o))
+        .thenAccept(o -> eresource.setCreateInventory(Eresource.CreateInventory.fromValue((String) o)))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.TRIAL))

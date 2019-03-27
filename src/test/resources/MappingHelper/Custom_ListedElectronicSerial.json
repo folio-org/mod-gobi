@@ -39,6 +39,12 @@
           }
         },
         {
+          "field": "CREATE_INVENTORY",
+          "dataSource": {
+            "default": "None"
+          }
+        },
+        {
           "field": "CLAIMED",
           "dataSource": {
             "default": "true",
@@ -48,14 +54,6 @@
         },
         {
           "field": "COLLECTION",
-          "dataSource": {
-            "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "CREATE_INVENTORY",
           "dataSource": {
             "default": "false",
             "translation": "toBoolean",

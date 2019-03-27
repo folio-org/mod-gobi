@@ -42,12 +42,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.*;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -286,6 +284,12 @@ public class GOBIIntegrationServiceResourceImplTest {
     // verify if the currency specified in the request is used
     assertEquals("GBP", ppo.getCompositePoLines().get(0).getCost().getCurrency());
 
+    // MODGOBI-61 - check createInventory populated for eresource only
+    Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
+    CompositePurchaseOrder compPO = postOrder.get("PURCHASEORDER").get(0).mapTo(CompositePurchaseOrder.class);
+    assertNotNull(compPO.getCompositePoLines().get(0).getEresource().getCreateInventory());
+    assertNull(compPO.getCompositePoLines().get(0).getPhysical());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic serial");
@@ -397,6 +401,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertEquals(4, column.size());
+
+    verifyResourceCreateInventoryNotMapped();
 
     asyncLocal.complete();
 
@@ -582,6 +588,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     asyncLocal.complete();
 
     logger.info("End: Testing for falling back to tthe first location id, if a non existent code is sent");
+  }
+
+  // MODGOBI-61 check createInventory field not mapped
+  private void verifyResourceCreateInventoryNotMapped() {
+    Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
+    CompositePurchaseOrder compPO = postOrder.get("PURCHASEORDER").get(0).mapTo(CompositePurchaseOrder.class);
+    compPO.getCompositePoLines().stream()
+      .filter(line -> line.getEresource() != null)
+      .forEach(line -> assertNull(line.getEresource().getCreateInventory()));
+    compPO.getCompositePoLines().stream()
+      .filter(line -> line.getPhysical() != null)
+      .forEach(line -> assertNull(line.getPhysical().getCreateInventory()));
   }
 
   public static class MockServer {
