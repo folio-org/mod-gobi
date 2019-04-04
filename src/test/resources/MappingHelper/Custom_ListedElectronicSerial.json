@@ -93,7 +93,7 @@
         {
           "field": "DISCOUNT_TYPE",
           "dataSource": {
-            "default": "Amount"
+            "default": "amount"
           }
         },
         {

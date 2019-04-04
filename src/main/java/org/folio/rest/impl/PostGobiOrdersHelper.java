@@ -192,13 +192,13 @@ public class PostGobiOrdersHelper {
    *
    * @param materialTypeCode
    */
-  public CompletableFuture<List<String>> lookupMaterialTypeId(String materialTypeCode) {
+  public CompletableFuture<String> lookupMaterialTypeId(String materialTypeCode) {
     String query = HelperUtils.encodeValue(String.format("name==%s", materialTypeCode), logger);
     String endpoint = String.format(MATERIAL_TYPES_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenCompose(materialTypes -> {
-        List<String> materialType = HelperUtils.extractMaterialTypeId(materialTypes);
-        if (materialType.isEmpty() || materialType.contains(null)) {
+        String materialType = HelperUtils.extractMaterialTypeId(materialTypes);
+        if (StringUtils.isEmpty(materialType)) {
           if (StringUtils.equalsIgnoreCase(materialTypeCode, UNSPECIFIED_MATERIAL_NAME)) {
             return lookupMaterialTypeId(DEFAULT_LOOKUP_CODE);
           } else {

@@ -548,7 +548,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
     CompositePurchaseOrder po = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    assertEquals(UNSPECIFIED_MATERIAL_TYPE_ID, po.getCompositePoLines().get(0).getDetails().getMaterialTypes().get(0));
+    assertEquals(UNSPECIFIED_MATERIAL_TYPE_ID, po.getCompositePoLines().get(0).getEresource().getMaterialType());
 
     asyncLocal.complete();
 
