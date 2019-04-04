@@ -38,7 +38,7 @@ public class Mapper {
     mapPurchaseOrderLine(purchaseOrderfutures, pol, doc);
     mapPurchaseOrderLineStrings(purchaseOrderfutures, pol, doc);
 
-    CompletableFuture.allOf(purchaseOrderfutures.toArray(new CompletableFuture<?>[purchaseOrderfutures.size()]))
+    CompletableFuture.allOf(purchaseOrderfutures.toArray(new CompletableFuture<?>[0]))
       .thenApply(v -> compPO.getCompositePoLines().add(pol))
       .thenCompose(v -> mapCompositePOLine(doc, compPO))
       .thenAccept(future::complete)
@@ -92,7 +92,7 @@ public class Mapper {
       mapPhysical(futures, physical, doc);
     }
 
-    CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0]))
       .thenAccept(v -> {
         compPO.setTotalItems(location.getQuantity());
 
