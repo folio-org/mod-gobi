@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-
 import scala.math.BigDecimal;
 
 public class Mapper {
@@ -31,97 +30,121 @@ public class Mapper {
   public CompletableFuture<CompositePurchaseOrder> map(Document doc) {
     CompletableFuture<CompositePurchaseOrder> future = new CompletableFuture<>();
 
-    try {
-      CompositePoLine pol = new CompositePoLine();
-      List<CompositePoLine> poLines = new ArrayList<>();
-      CompositePurchaseOrder compPO = new CompositePurchaseOrder();
+    CompositePoLine pol = new CompositePoLine();
+    CompositePurchaseOrder compPO = new CompositePurchaseOrder();
 
-      Details detail = new Details();
-      Cost cost = new Cost();
-      Location location = new Location();
-      Eresource eresource = new Eresource();
-      FundDistribution fundDistribution = new FundDistribution();
-      VendorDetail vendorDetail = new VendorDetail();
-      Claim claim = new Claim();
-      Renewal renewal = new Renewal();
-      ProductId productId = new ProductId();
-      Physical physical = new Physical();
-      Source source = new Source();
-      Contributor contributor = new Contributor();
-      ReportingCode reportingCode = new ReportingCode();
-      License license = new License();
+    List<CompletableFuture<?>> purchaseOrderfutures = new ArrayList<>();
+    mapPurchaseOrder(purchaseOrderfutures, compPO, doc);
+    mapPurchaseOrderLine(purchaseOrderfutures, pol, doc);
+    mapPurchaseOrderLineStrings(purchaseOrderfutures, pol, doc);
 
-      List<CompletableFuture<?>> futures = new ArrayList<>();
-      mapPurchaseOrder(futures, compPO, doc);
-      mapPurchaseOrderLine(futures, pol, doc);
-      mapPurchaseOrderLineStrings(futures, pol, doc);
-      mapCost(futures, cost, doc);
-      mapDetail(futures, detail, productId, doc);
-      mapEresource(futures, eresource, doc);
-      mapFundDistibution(futures, fundDistribution, doc);
-      mapLocation(futures, location, doc);
-      mapVendorDetail(futures, vendorDetail, doc);
-      mapClaims(futures, claim, doc);
-      mapRenewal(futures, renewal, doc);
-      mapPhysical(futures, physical, doc);
-      mapSource(futures, source, doc);
-      mapContributor(futures, contributor, doc);
-      mapReportingCodes(futures, reportingCode, doc);
-      mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
-      mapLicense(futures, license, doc);
-
-      CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
-        .thenAccept(v -> {
-          compPO.setTotalItems(location.getQuantity());
-
-          setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
-          setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
-          setObjectIfPresent(license, o -> eresource.setLicense((License) o));
-          if (pol.getOrderFormat() == CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE) {
-            setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
-          }
-          setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
-          setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
-          if (pol.getOrderFormat() == CompositePoLine.OrderFormat.PHYSICAL_RESOURCE) {
-            setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
-          }
-          setObjectIfPresent(source, o -> pol.setSource((Source) o));
-
-          setObjectIfPresent(location, o -> {
-            List<Location> locations = new ArrayList<>();
-            locations.add(location);
-            pol.setLocations(locations);
-          });
-          setObjectIfPresent(contributor, o -> {
-            List<Contributor> contributors = new ArrayList<>();
-            contributors.add(contributor);
-            pol.setContributors(contributors);
-          });
-          setObjectIfPresent(reportingCode, o -> {
-            List<ReportingCode> reportingCodes = new ArrayList<>();
-            reportingCodes.add(reportingCode);
-            pol.setReportingCodes(reportingCodes);
-          });
-          setObjectIfPresent(claim, o -> {
-            List<Claim> claims = new ArrayList<>();
-            claims.add(claim);
-            pol.setClaims(claims);
-          });
-          setObjectIfPresent(fundDistribution, o -> {
-            List<FundDistribution> fundDistributions = new ArrayList<>();
-            fundDistributions.add(fundDistribution);
-            pol.setFundDistribution(fundDistributions);
-          });
-          poLines.add(pol);
-
-          compPO.setCompositePoLines(poLines);
-          future.complete(compPO);
-        });
-    } catch (Exception e) {
-      throw new CompletionException(e);
-    }
+    CompletableFuture.allOf(purchaseOrderfutures.toArray(new CompletableFuture<?>[0]))
+      .thenApply(v -> compPO.getCompositePoLines().add(pol))
+      .thenCompose(v -> mapCompositePOLine(doc, compPO))
+      .thenAccept(future::complete)
+      .exceptionally(t -> {
+        logger.error("Exception Mapping Composite PO Line fields", t);
+        future.completeExceptionally(t);
+        return null;
+      });
 
     return future;
+  }
+
+  private CompletableFuture<CompositePurchaseOrder> mapCompositePOLine(Document doc, CompositePurchaseOrder compPO) {
+    CompletableFuture<CompositePurchaseOrder> future = new CompletableFuture<>();
+
+    Details detail = new Details();
+    Cost cost = new Cost();
+    Location location = new Location();
+    Eresource eresource = new Eresource();
+    FundDistribution fundDistribution = new FundDistribution();
+    VendorDetail vendorDetail = new VendorDetail();
+    Claim claim = new Claim();
+    Renewal renewal = new Renewal();
+    ProductId productId = new ProductId();
+    Physical physical = new Physical();
+    Source source = new Source();
+    Contributor contributor = new Contributor();
+    ReportingCode reportingCode = new ReportingCode();
+    License license = new License();
+
+    List<CompletableFuture<?>> futures = new ArrayList<>();
+
+    mapCost(futures, cost, doc);
+    mapDetail(futures, detail, productId, doc);
+    mapFundDistibution(futures, fundDistribution, doc);
+    mapLocation(futures, location, doc);
+    mapVendorDetail(futures, vendorDetail, doc);
+    mapClaims(futures, claim, doc);
+    mapRenewal(futures, renewal, doc);
+    mapSource(futures, source, doc);
+    mapContributor(futures, contributor, doc);
+    mapReportingCodes(futures, reportingCode, doc);
+    mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
+    mapLicense(futures, license, doc);
+
+    CompositePoLine pol = compPO.getCompositePoLines().get(0);
+
+    if (pol.getOrderFormat().equals(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE)) {
+      mapEresource(futures, eresource, doc);
+    } else {
+      mapPhysical(futures, physical, doc);
+    }
+
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0]))
+      .thenAccept(v -> {
+        compPO.setTotalItems(location.getQuantity());
+
+        setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
+        setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
+        setObjectIfPresent(license, o -> eresource.setLicense((License) o));
+        if (pol.getOrderFormat().equals(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE)) {
+          setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
+        } else {
+          setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
+        }
+        setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
+        setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
+
+        setObjectIfPresent(source, o -> pol.setSource((Source) o));
+
+        setObjectIfPresent(location, o -> {
+          List<Location> locations = new ArrayList<>();
+          locations.add(location);
+          pol.setLocations(locations);
+        });
+        setObjectIfPresent(contributor, o -> {
+          List<Contributor> contributors = new ArrayList<>();
+          contributors.add(contributor);
+          pol.setContributors(contributors);
+        });
+        setObjectIfPresent(reportingCode, o -> {
+          List<ReportingCode> reportingCodes = new ArrayList<>();
+          reportingCodes.add(reportingCode);
+          pol.setReportingCodes(reportingCodes);
+        });
+        setObjectIfPresent(claim, o -> {
+          List<Claim> claims = new ArrayList<>();
+          claims.add(claim);
+          pol.setClaims(claims);
+        });
+        setObjectIfPresent(fundDistribution, o -> {
+          List<FundDistribution> fundDistributions = new ArrayList<>();
+          fundDistributions.add(fundDistribution);
+          pol.setFundDistribution(fundDistributions);
+        });
+
+        future.complete(compPO);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception creating Composite PO", t);
+        future.completeExceptionally(t);
+        return null;
+      });
+
+    return future;
+
   }
 
   /**
@@ -163,6 +186,23 @@ public class Mapper {
                   }
                 })
                 .exceptionally(Mapper::logException));
+
+            if (compPo.getCompositePoLines()
+              .get(0)
+              .getOrderFormat()
+              .equals(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE)) {
+              Optional.ofNullable(vendor.getExpectedActivationInterval())
+                .ifPresent(activationDue -> {
+                  eresource.setActivationDue(activationDue);
+                  eresource.setExpectedActivation(Date.from(dt.plusDays(activationDue)
+                    .toInstant(ZoneOffset.UTC)));
+                });
+            } else {
+              Optional.ofNullable(vendor.getExpectedReceiptInterval())
+                .ifPresent(expectedReceiptInterval -> physical
+                  .setExpectedReceiptDate(Date.from(dt.plusDays(expectedReceiptInterval)
+                    .toInstant(ZoneOffset.UTC))));
+            }
 
             claim.setGrace(vendor.getClaimingInterval());
             Optional.ofNullable(mappings.get(Mapping.Field.CLAIM_GRACE))
@@ -241,6 +281,11 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> physical.setCreateInventory(Physical.CreateInventory.fromValue((String) o)))
         .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.MATERIAL_TYPE))
+    .ifPresent(field -> futures.add(field.resolve(doc)
+      .thenAccept(o -> physical.setMaterialType((String) o))
+      .exceptionally(Mapper::logException)));
   }
 
   private void mapRenewal(List<CompletableFuture<?>> futures, Renewal renewal, Document doc) {
@@ -500,11 +545,6 @@ public class Mapper {
   }
 
   private void mapDetail(List<CompletableFuture<?>> futures, Details detail, ProductId productId, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.MATERIAL_TYPE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> detail.setMaterialTypes((List<String>) o))
-        .exceptionally(Mapper::logException)));
-
     // Adding a new entry to product id only if the product ID and product id
     // type are present
     // as both of them are together are mandatory to create an inventory
@@ -573,6 +613,11 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> eresource.setTrial((Boolean) o))
         .exceptionally(Mapper::logException)));
+System.err.println("))))))))))"+mappings.get(Mapping.Field.MATERIAL_TYPE));
+    Optional.ofNullable(mappings.get(Mapping.Field.MATERIAL_TYPE))
+    .ifPresent(field -> futures.add(field.resolve(doc)
+      .thenAccept(o -> eresource.setMaterialType((String) o))
+      .exceptionally(Mapper::logException)));
   }
 
   private void mapLicense(List<CompletableFuture<?>> futures, License license, Document doc) {
