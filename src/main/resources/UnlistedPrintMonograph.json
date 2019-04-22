@@ -104,6 +104,12 @@
           }
         },
         {
+          "field": "ORDER_TYPE",
+          "dataSource": {
+            "default": "One-Time"
+          }
+        },
+        {
           "field": "OWNER",
           "dataSource": {
             "from": "//BaseAccount",
