@@ -214,7 +214,7 @@ public class PostGobiOrdersHelper {
       });
   }
 
-  public CompletableFuture<Organization> lookupVendorId(String vendorCode) {
+  public CompletableFuture<Organization> lookupOrganization(String vendorCode) {
     System.err.println("calling vendor");
       String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode), logger);
       String endpoint = String.format(GET_ORGANIZATION_ENDPOINT+QUERY, query);

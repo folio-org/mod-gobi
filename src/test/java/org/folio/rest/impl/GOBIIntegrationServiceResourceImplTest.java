@@ -90,7 +90,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final String POUNLISTEDPRINTSERIALPATH = MOCKDATAROOTPATH + "/po_unlisted_print_serial.xml";
   private final String POLISTEDELECTRONICMONOGRAPHBADDATAPATH = MOCKDATAROOTPATH + "/po_listed_electronic_monograph_bad_data.xml";
   private static final String CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING = "MappingHelper/Custom_ListedElectronicSerial.json";
-  private static final  String VENDOR_MOCK_DATA =  "GOBIIntegrationServiceResourceImpl/vendor.json";
+  private static final  String VENDOR_MOCK_DATA =  "MockData/GOBI_organization.json";
   private static final String LOCATION = "LOCATION";
   private static final String MATERIAL_TYPES = "MATERIAL-TYPES";
   private static final String VENDOR = "VENDOR";

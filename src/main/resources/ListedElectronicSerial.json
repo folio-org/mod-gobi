@@ -5,7 +5,7 @@
           "field": "ACCESS_PROVIDER",
           "dataSource": {
             "from": "//PurchaseOption/VendorPOCode",
-            "translation": "lookupVendorId"
+            "translation": "lookupOrganization"
           }
         },
         {
@@ -206,7 +206,7 @@
           "field": "VENDOR",
           "dataSource": {
             "default": "GOBI",
-            "translation": "lookupVendorId",
+            "translation": "lookupOrganization",
             "translateDefault": true
           }
         },

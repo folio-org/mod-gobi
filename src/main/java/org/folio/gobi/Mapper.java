@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import org.folio.rest.acq.model.*;
 import org.folio.rest.acq.model.Cost.DiscountType;
