@@ -147,8 +147,9 @@ public class Mapper {
   }
 
   /**
-   * This method handles all the different fields that are dependent on Vendor
-   * record to be fetched from the vendors-storage
+   * This method handles all the different fields that are dependent on
+   * Organization that is a vendor record to be fetched from the
+   * organizations-storage
    *
    * @param futures
    * @param eresource

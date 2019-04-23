@@ -272,7 +272,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(configEntries);
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    // 4 calls one each to configurations,vendors,material types and location
+    // 4 calls one each to configurations,organizations,material types and location
     assertEquals(4, column.size());
 
     // Make sure the mappings from custom configuration were used
@@ -634,7 +634,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       router.route().handler(BodyHandler.create());
       router.route(HttpMethod.POST, PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
-      router.get(PostGobiOrdersHelper.GET_ORGANIZATION_ENDPOINT).handler(this::handleGetVendor);
+      router.get(PostGobiOrdersHelper.GET_ORGANIZATION_ENDPOINT).handler(this::handleGetOrganization);
       router.get(PostGobiOrdersHelper.MATERIAL_TYPES_ENDPOINT).handler(this::handleGetMaterialType);
       router.get(PostGobiOrdersHelper.LOCATIONS_ENDPOINT).handler(this::handleGetLocation);
       router.get(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
@@ -681,7 +681,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .end(compPO.encodePrettily());
     }
 
-    private void handleGetVendor(RoutingContext ctx) {
+    private void handleGetOrganization(RoutingContext ctx) {
       logger.info("got vendor request: {}", ctx.request().query());
 
       try {
