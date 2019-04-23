@@ -120,7 +120,7 @@ public class MappingHelper {
           case LOOKUP_MATERIAL_TYPE_ID:
             translatedValue = postGobiOrdersHelper.lookupMaterialTypeId(data);
             break;
-          case LOOKUP_VENDOR_ID:
+          case LOOKUP_ORGANIZATION:
             translatedValue = postGobiOrdersHelper.lookupOrganization(data);
             break;
           case TO_DATE:
