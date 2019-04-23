@@ -162,7 +162,7 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           if (null != o) {
-            Vendor vendor = (Vendor) o;
+            Organization vendor = (Organization) o;
             compPo.setVendor(vendor.getId());
             // Map Receipt dates based on the order format type
             LocalDateTime dt = LocalDateTime.from(new Date().toInstant()
@@ -591,7 +591,7 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.ACCESS_PROVIDER))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> Optional.ofNullable(o)
-          .ifPresent(vendor -> eresource.setAccessProvider(((Vendor) o).getId())))
+          .ifPresent(vendor -> eresource.setAccessProvider(((Organization) o).getId())))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.USER_LIMIT))
@@ -613,7 +613,7 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> eresource.setTrial((Boolean) o))
         .exceptionally(Mapper::logException)));
-System.err.println("))))))))))"+mappings.get(Mapping.Field.MATERIAL_TYPE));
+
     Optional.ofNullable(mappings.get(Mapping.Field.MATERIAL_TYPE))
     .ifPresent(field -> futures.add(field.resolve(doc)
       .thenAccept(o -> eresource.setMaterialType((String) o))

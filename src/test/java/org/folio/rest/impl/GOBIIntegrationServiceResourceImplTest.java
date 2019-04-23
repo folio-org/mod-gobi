@@ -634,7 +634,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       router.route().handler(BodyHandler.create());
       router.route(HttpMethod.POST, PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
-      router.get(PostGobiOrdersHelper.GET_VENDORS_ENDPOINT).handler(this::handleGetVendor);
+      router.get(PostGobiOrdersHelper.GET_ORGANIZATION_ENDPOINT).handler(this::handleGetVendor);
       router.get(PostGobiOrdersHelper.MATERIAL_TYPES_ENDPOINT).handler(this::handleGetMaterialType);
       router.get(PostGobiOrdersHelper.LOCATIONS_ENDPOINT).handler(this::handleGetLocation);
       router.get(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);

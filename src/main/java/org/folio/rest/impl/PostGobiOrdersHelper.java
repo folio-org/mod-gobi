@@ -25,7 +25,7 @@ import org.folio.gobi.OrderMappingCache;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
-import org.folio.rest.acq.model.Vendor;
+import org.folio.rest.acq.model.Organization;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.mappings.model.Mapping;
@@ -48,7 +48,7 @@ public class PostGobiOrdersHelper {
   static final String LOCATIONS_ENDPOINT = "/locations";
   static final String MATERIAL_TYPES_ENDPOINT = "/material-types";
   static final String PAYMENT_STATUS_ENDPOINT = "/payment_status";
-  static final String GET_VENDORS_ENDPOINT = "/vendor-storage/vendors";
+  static final String GET_ORGANIZATION_ENDPOINT = "/organizations-storage/organizations";
   static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
   static final String ORDERS_ENDPOINT = "/orders/composite-orders";
   private static final String QUERY = "?query=%s";
@@ -64,6 +64,7 @@ public class PostGobiOrdersHelper {
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
   private static final String DEFAULT_LOOKUP_CODE = "*";
   private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
+  private static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -213,14 +214,16 @@ public class PostGobiOrdersHelper {
       });
   }
 
-  public CompletableFuture<Vendor> lookupVendorId(String vendorCode) {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, vendorCode), logger);
-      String endpoint = String.format(GET_VENDORS_ENDPOINT+QUERY, query);
+  public CompletableFuture<Organization> lookupVendorId(String vendorCode) {
+    System.err.println("calling vendor");
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode), logger);
+      String endpoint = String.format(GET_ORGANIZATION_ENDPOINT+QUERY, query);
+      System.err.println("calling vendor"+endpoint);
       return handleGetRequest(endpoint)
         .thenApply(resp ->
-          Optional.ofNullable(resp.getJsonArray("vendors"))
+          Optional.ofNullable(resp.getJsonArray("organizations"))
           .flatMap(vendors -> vendors.stream().findFirst())
-          .map(vendor -> ((JsonObject) vendor).mapTo(Vendor.class))
+          .map(vendor -> ((JsonObject) vendor).mapTo(Organization.class))
           .orElse(null))
         .exceptionally(t -> {
           logger.error("Exception looking up vendor id", t);

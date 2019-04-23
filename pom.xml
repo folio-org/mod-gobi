@@ -513,7 +513,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <sourceDirectory>${basedir}/ramls/acq-models/mod-vendors/schemas/vendor.json</sourceDirectory>
+              <sourceDirectory>${basedir}/ramls/acq-models/mod-orgs/schemas/organization.json</sourceDirectory>
               <targetPackage>org.folio.rest.acq.model</targetPackage>
             </configuration>
           </execution>
