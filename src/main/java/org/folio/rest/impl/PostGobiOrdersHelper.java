@@ -221,11 +221,11 @@ public class PostGobiOrdersHelper {
       return handleGetRequest(endpoint)
         .thenApply(resp ->
           Optional.ofNullable(resp.getJsonArray("organizations"))
-          .flatMap(vendors -> vendors.stream().findFirst())
-          .map(vendor -> ((JsonObject) vendor).mapTo(Organization.class))
+          .flatMap(organizations -> organizations.stream().findFirst())
+          .map(organization -> ((JsonObject) organization).mapTo(Organization.class))
           .orElse(null))
         .exceptionally(t -> {
-          logger.error("Exception looking up vendor id", t);
+          logger.error("Exception looking up Organization which is a vendor with code:"+vendorCode, t);
           return null;
         });
   }

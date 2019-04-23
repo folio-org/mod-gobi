@@ -162,8 +162,8 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           if (null != o) {
-            Organization vendor = (Organization) o;
-            compPo.setVendor(vendor.getId());
+            Organization organization = (Organization) o;
+            compPo.setVendor(organization.getId());
             // Map Receipt dates based on the order format type
             LocalDateTime dt = LocalDateTime.from(new Date().toInstant()
               .atOffset(ZoneOffset.UTC));
@@ -172,14 +172,14 @@ public class Mapper {
                 .thenAccept(format -> {
                   if ((format.toString())
                     .equalsIgnoreCase(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE.toString())) {
-                    Optional.ofNullable(vendor.getExpectedActivationInterval())
+                    Optional.ofNullable(organization.getExpectedActivationInterval())
                       .ifPresent(activationDue -> {
                         eresource.setActivationDue(activationDue);
                         eresource.setExpectedActivation(Date.from(dt.plusDays(activationDue)
                           .toInstant(ZoneOffset.UTC)));
                       });
                   } else {
-                    Optional.ofNullable(vendor.getExpectedReceiptInterval())
+                    Optional.ofNullable(organization.getExpectedReceiptInterval())
                       .ifPresent(expectedReceiptInterval -> physical
                         .setExpectedReceiptDate(Date.from(dt.plusDays(expectedReceiptInterval)
                           .toInstant(ZoneOffset.UTC))));
@@ -191,20 +191,20 @@ public class Mapper {
               .get(0)
               .getOrderFormat()
               .equals(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE)) {
-              Optional.ofNullable(vendor.getExpectedActivationInterval())
+              Optional.ofNullable(organization.getExpectedActivationInterval())
                 .ifPresent(activationDue -> {
                   eresource.setActivationDue(activationDue);
                   eresource.setExpectedActivation(Date.from(dt.plusDays(activationDue)
                     .toInstant(ZoneOffset.UTC)));
                 });
             } else {
-              Optional.ofNullable(vendor.getExpectedReceiptInterval())
+              Optional.ofNullable(organization.getExpectedReceiptInterval())
                 .ifPresent(expectedReceiptInterval -> physical
                   .setExpectedReceiptDate(Date.from(dt.plusDays(expectedReceiptInterval)
                     .toInstant(ZoneOffset.UTC))));
             }
 
-            claim.setGrace(vendor.getClaimingInterval());
+            claim.setGrace(organization.getClaimingInterval());
             Optional.ofNullable(mappings.get(Mapping.Field.CLAIM_GRACE))
               .ifPresent(grace -> futures.add(grace.resolve(doc)
                 .thenAccept(claimgrace -> claim.setGrace((Integer) claimgrace))
@@ -591,7 +591,7 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.ACCESS_PROVIDER))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> Optional.ofNullable(o)
-          .ifPresent(vendor -> eresource.setAccessProvider(((Organization) o).getId())))
+          .ifPresent(organization -> eresource.setAccessProvider(((Organization) o).getId())))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.USER_LIMIT))
