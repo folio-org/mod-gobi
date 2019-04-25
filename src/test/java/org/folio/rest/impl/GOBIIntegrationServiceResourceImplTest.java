@@ -722,7 +722,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handleGetOrganization(RoutingContext ctx) {
-      logger.info("got vendor request: {}", ctx.request().query());
+      logger.info("got request for Organization that is a vendor: {}", ctx.request().query());
 
       try {
         JsonObject vendors = new JsonObject(getMockData(VENDOR_MOCK_DATA));
