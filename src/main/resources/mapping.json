@@ -108,7 +108,7 @@
             "lookupLocationId",
             "lookupMaterialTypeId",
             "lookupMock",
-            "lookupVendorId",
+            "lookupOrganization",
             "toBoolean",
             "toDate",
             "toDouble",

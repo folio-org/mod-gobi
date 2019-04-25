@@ -154,7 +154,7 @@
           "field": "VENDOR",
           "dataSource": {
             "default": "GOBI",
-            "translation": "lookupVendorId",
+            "translation": "lookupOrganization",
             "translateDefault": true
           }
         },

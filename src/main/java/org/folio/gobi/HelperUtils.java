@@ -3,8 +3,6 @@ package org.folio.gobi;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletionException;
 import org.folio.gobi.exceptions.HttpException;
 import io.vertx.core.json.JsonArray;
@@ -40,10 +38,6 @@ public class HelperUtils {
 
   public static String extractMaterialTypeId(JsonObject obj) {
     return extractIdOfFirst(obj, "mtypes");
-  }
-
-  public static String extractVendorId(JsonObject obj) {
-    return extractIdOfFirst(obj, "vendors");
   }
 
   public static String extractIdOfFirst(JsonObject obj, String arrField) {

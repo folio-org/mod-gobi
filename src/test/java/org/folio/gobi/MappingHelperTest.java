@@ -45,7 +45,7 @@ public class MappingHelperTest {
     expectedListedPrintMonographJsonObj.put("mappings",
         new JsonArray().add(new JsonObject().put("field", "ACCESS_PROVIDER")
           .put("dataSource",
-              new JsonObject().put("from", "//PurchaseOption/VendorPOCode").put("translation", "lookupVendorId"))));
+              new JsonObject().put("from", "//PurchaseOption/VendorPOCode").put("translation", "lookupOrganization"))));
 
     String expectedListedPrintMonographJson = expectedListedPrintMonographJsonObj.toString();
 

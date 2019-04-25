@@ -5,7 +5,7 @@
           "field": "ACCESS_PROVIDER",
           "dataSource": {
             "from": "//PurchaseOption/VendorPOCode",
-            "translation": "lookupVendorId"
+            "translation": "lookupOrganization"
           }
         }
       ]
