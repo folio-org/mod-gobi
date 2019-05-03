@@ -1,3 +1,17 @@
+## 1.5.0 Unreleased
+
+## 1.4.0 Released
+ Changes in this release include increasing flexibility with inventory interaction by including flags for CreateInventory, specifying inidividual material 
+ types for physical and eresources and switching to mod-organization-storage from mod-vendors
+ 
+ [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.3.0...v1.4.0)
+ 
+### Stories
+ * [MODGOBI-69](https://issues.folio.org/browse/MODGOBI-69) - Adjusting required fields according to CompositePurchase Order schema
+ * [MODGOBI-67](https://issues.folio.org/browse/MODGOBI-67) - Switch to mod-organizations-storage
+ * [MODGOBI-63](https://issues.folio.org/browse/MODGOBI-63) - Ability to specifiy material type for physical and resource
+ * [MODGOBI-61](https://issues.folio.org/browse/MODGOBI-61) - Increased flexibility in inventory integration- adding createInventory flag
+
 ## 1.3.0 Released
  Major changes in this release deal with aligning the code with new schema changes to acq-models and handling mandatory fields like material-types
  and locations which are required creating orders with inventory interaction.
