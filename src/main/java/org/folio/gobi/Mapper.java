@@ -376,6 +376,11 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> compPo.setDateOrdered((Date) o))
         .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.OWNER))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> compPo.setOwner((String) o))
+        .exceptionally(Mapper::logException)));
   }
 
   private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
@@ -402,11 +407,6 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.DONOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> pol.setDonor((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.OWNER))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setOwner((String) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.SELECTOR))
