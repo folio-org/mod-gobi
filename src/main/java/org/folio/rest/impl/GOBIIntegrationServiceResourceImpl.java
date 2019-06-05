@@ -1,8 +1,13 @@
 package org.folio.rest.impl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.gobi.model.GobiResponse;
@@ -11,13 +16,6 @@ import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.TenantTool;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.json.Json;
 
 public class GOBIIntegrationServiceResourceImpl implements Gobi {
 
@@ -41,22 +39,24 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext) {
 
     HttpClientInterface httpClient = getHttpClient(okapiHeaders);
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders,
-        vertxContext);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders, vertxContext);
 
     logger.info("Parsing Request...");
-    helper.parse(entity).thenAccept(gobiPO -> {
-      logger.info("Mapping Request...");
-      helper.mapToPurchaseOrder(gobiPO).thenAccept(compPO -> {
-        logger.info("Calling mod-orders with order {}",Json.encodePrettily(compPO));
-        helper.placeOrder(compPO).thenAccept(poLineNumber -> {
-          GobiResponse gobiResponse = new GobiResponse();
-          gobiResponse.setPoLineNumber(poLineNumber);
-          BinaryOutStream binaryOutStream = GobiResponseWriter.getWriter().write(gobiResponse);
-          asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(binaryOutStream)));
-        }).exceptionally(helper::handleError);
-      }).exceptionally(helper::handleError);
-    }).exceptionally(helper::handleError);
+    helper.parse(entity)
+      .thenCompose(gobiPO -> {
+        logger.info("Mapping Request...");
+        return helper.mapToPurchaseOrder(gobiPO);
+      })
+      .thenCompose(helper::getOrPlaceOrder)
+      .thenAccept(poLineNumber -> {
+        GobiResponse gobiResponse = new GobiResponse();
+        gobiResponse.setPoLineNumber(poLineNumber);
+        BinaryOutStream binaryOutStream = GobiResponseWriter.getWriter()
+          .write(gobiResponse);
+        asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(binaryOutStream)));
+      })
+      .exceptionally(helper::handleError);
+
   }
 
   public static HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {

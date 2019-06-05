@@ -1,0 +1,89 @@
+{
+  "id" : "22dd4cfb-3e46-41cb-a9bf-f4b2bfa0b991",
+  "poNumber" : "PO_6733180275",
+  "approved" : true,
+  "assignedTo" : "5980020f-6c3a-41e1-a16c-f449f0d8af71",
+  "dateOrdered" : "2015-10-21T20:00:02.000+0000",
+  "manualPo" : false,
+  "notes" : [ "v.2 | Test Note to Ybp" ],
+  "orderType" : "Ongoing",
+  "totalItems" : 1,
+  "vendor" : "588b5c42-8634-4af7-bc9b-5e0116ed96b6",
+  "workflowStatus" : "Open",
+  "compositePoLines" : [ {
+    "id" : "0fe2ce39-1011-4316-bd2c-490ac57c78bf",
+    "poLineNumber" : "PO_6733180275-1",
+    "purchaseOrderId" : "22dd4cfb-3e46-41cb-a9bf-f4b2bfa0b991",
+    "checkinItems" : false,
+    "acquisitionMethod" : "Purchase At Vendor System",
+    "alerts" : [ {
+      "alert" : "Test Data"
+    } ],
+    "cancellationRestrictionNote" : "Test Data",
+    "claims" : [ {
+      "claimed" : true,
+      "grace" : 30
+    } ],
+    "collection" : false,
+    "contributors" : [ {
+      "contributorType" : "3e12234b-26ad-4003-b1a4-2259f45f1afb"
+    } ],
+    "cost" : {
+      "listUnitPriceElectronic" : 0.0,
+      "currency" : "GBP",
+      "additionalCost" : 0.0,
+      "discount" : 0.0,
+      "discountType" : "amount",
+      "quantityElectronic" : 1
+    },
+    "description" : "BRANDS AND THEIR COMPANIES. (EBOOK VERSION)",
+    "details" : {
+      "productIds" : [ ]
+    },
+    "donor" : "Test Data",
+    "eresource" : {
+      "activated" : false,
+      "activationDue" : 1,
+      "createInventory" : "None",
+      "trial" : false,
+      "expectedActivation" : "2019-06-06T18:47:40.328+0000",
+      "accessProvider" : "588b5c42-8634-4af7-bc9b-5e0116ed96b6",
+      "license" : {
+        "code" : "Test Data"
+      },
+      "materialType" : "be44c321-ab73-43c4-a114-70f82fa13f17"
+    },
+    "fundDistribution" : [ {
+      "code" : "f5f1c495-7f7a-477a-b2e9-10eb043e37f4",
+      "percentage" : 100.0
+    } ],
+    "locations" : [ {
+      "locationId" : "130d8c13-3377-45c2-a420-9920b771d229",
+      "quantity" : 1,
+      "quantityElectronic" : 1
+    } ],
+    "orderFormat" : "Electronic Resource",
+    "owner" : "Test Data",
+    "paymentStatus" : "Awaiting Payment",
+    "poLineDescription" : "Description from Custom Mapping",
+    "publisher" : "GALE ONLINE",
+    "receiptStatus" : "Receipt Not Required",
+    "reportingCodes" : [ {
+      "code" : "TestReportingCode",
+      "description" : "Test Data"
+    } ],
+    "selector" : "Test Data",
+    "source" : {
+      "code" : "mod-gobi",
+      "description" : "An order placed from GOBI Interface"
+    },
+    "tags" : [ "Test Data" ],
+    "title" : "BRANDS AND THEIR COMPANIES. (EBOOK VERSION)",
+    "vendorDetail" : {
+      "instructions" : "v.2 | Test Note to Ybp",
+      "noteFromVendor" : "GALEA",
+      "refNumber" : "99962603521",
+      "refNumberType" : "Supplier's unique order line reference number"
+    }
+  } ]
+}

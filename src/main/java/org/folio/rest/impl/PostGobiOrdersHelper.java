@@ -2,19 +2,28 @@ package org.folio.rest.impl;
 
 import static java.util.Objects.nonNull;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
-import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
-
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import org.apache.commons.lang.StringUtils;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
+import org.apache.commons.lang.StringUtils;
 import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
@@ -34,14 +43,6 @@ import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
-
 public class PostGobiOrdersHelper {
   private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelper.class);
 
@@ -51,6 +52,7 @@ public class PostGobiOrdersHelper {
   static final String GET_ORGANIZATION_ENDPOINT = "/organizations-storage/organizations";
   static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
   static final String ORDERS_ENDPOINT = "/orders/composite-orders";
+  static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
   private static final String QUERY = "?query=%s";
 
   private static final String CONFIGURATION_MODULE = "GOBI";
@@ -160,6 +162,38 @@ public class PostGobiOrdersHelper {
       }
       return future;
     }
+
+  /**
+   * A common method to update an entry
+   *
+   * @param recordData json to use for update operation
+   * @param endpoint endpoint
+   */
+  public static CompletableFuture<Void> handlePutRequest(String endpoint, JsonObject recordData, HttpClientInterface httpClient,
+                                                         Context ctx, Map<String, String> okapiHeaders, Logger logger) {
+    CompletableFuture<Void> future = new VertxCompletableFuture<>(ctx);
+    try {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Sending 'PUT {}' with body: {}", endpoint, recordData.encodePrettily());
+      }
+      httpClient
+        .request(HttpMethod.PUT, recordData.toBuffer(), endpoint, okapiHeaders)
+        .thenApply(HelperUtils::verifyAndExtractBody)
+        .thenAccept(response -> {
+          logger.debug("'PUT {}' request successfully processed", endpoint);
+          future.complete(null);
+        })
+        .exceptionally(e -> {
+          future.completeExceptionally(e);
+          logger.error("'PUT {}' request failed. Request body: {}", e, endpoint, recordData.encodePrettily());
+          return null;
+        });
+    } catch (Exception e) {
+      future.completeExceptionally(e);
+    }
+
+    return future;
+  }
 
   /**
    * Use the provided location code. if one isn't provided, or the specified
@@ -302,7 +336,7 @@ public class PostGobiOrdersHelper {
 
   }
 
-  public CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
+  private CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
     VertxCompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
     try {
       httpClient.request(HttpMethod.POST, compPO, ORDERS_ENDPOINT, okapiHeaders)
@@ -322,6 +356,76 @@ public class PostGobiOrdersHelper {
     return future;
   }
 
+
+  public CompletableFuture<String> getOrPlaceOrder(CompositePurchaseOrder compPO) {
+    return checkExistingOrder(compPO).thenCompose(isExisting -> {
+      if (isExisting) {
+        logger.info("Order already exists, retrieving the PO Line Number", Json.encodePrettily(compPO));
+        return getExistingOrderById(compPO);
+      }
+      return CompletableFuture.completedFuture(compPO);
+    })
+      .thenCompose(compositePO -> {
+        String poLineNumber = compositePO.getCompositePoLines()
+          .get(0)
+          .getPoLineNumber();
+        if (StringUtils.isEmpty(poLineNumber)) {
+          return placeOrder(compositePO);
+        }
+        return CompletableFuture.completedFuture(poLineNumber);
+      });
+  }
+
+  private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO){
+    String vendorRefNumber = compPO.getCompositePoLines().get(0).getVendorDetail().getRefNumber();
+    logger.info("Looking for exisiting order with Vendor Reference Number", vendorRefNumber);
+    String query = HelperUtils.encodeValue(String.format("vendorDetail.refNumber=%s", vendorRefNumber), logger);
+    String endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenCompose(purchaseOrders -> {
+        String orderId = HelperUtils.extractOrderId(purchaseOrders);
+        if (StringUtils.isEmpty(orderId)) {
+          return completedFuture(false);
+        }
+        CompositePurchaseOrder purchaseOrder = purchaseOrders.getJsonArray("purchaseOrders").getJsonObject(0).mapTo(CompositePurchaseOrder.class);
+        compPO.setId(purchaseOrder.getId());
+        //try to Open the Order,doing it asynchronously because irrespective of the result return the existing Order to GOBI
+        if (purchaseOrder.getWorkflowStatus()
+          .equals(CompositePurchaseOrder.WorkflowStatus.PENDING)) {
+          purchaseOrder.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.OPEN);
+          handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder), httpClient, ctx, okapiHeaders,
+              logger).exceptionally(e -> {
+                logger.error("Retry to OPEN existing Order failed", e);
+                return null;
+              });
+        }
+        return completedFuture(true);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up for existing Order", t);
+        return false;
+      });
+  }
+
+  private CompletableFuture<CompositePurchaseOrder> getExistingOrderById(CompositePurchaseOrder compositePurchaseOrder) {
+    logger.info("Retrieving existing Order with ID ", compositePurchaseOrder.getId());
+    String endpoint = String.format(ORDERS_BY_ID_ENDPOINT, compositePurchaseOrder.getId());
+    return handleGetRequest(endpoint)
+      .thenCompose(order -> {
+        CompositePurchaseOrder compPO = order.mapTo(CompositePurchaseOrder.class);
+        String poLineNumber = compPO.getCompositePoLines().get(0).getPoLineNumber();
+        if (StringUtils.isEmpty(poLineNumber)) {
+          return completedFuture(compositePurchaseOrder);
+        }
+        compositePurchaseOrder.getCompositePoLines().get(0).setPoLineNumber(poLineNumber);
+        return completedFuture(compositePurchaseOrder);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up for existing PO Line Number", t);
+        return compositePurchaseOrder;
+      });
+
+  }
   public Void handleError(Throwable throwable) {
     final javax.ws.rs.core.Response result;
 
@@ -362,5 +466,4 @@ public class PostGobiOrdersHelper {
     asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
-
 }
