@@ -22,6 +22,9 @@
           "permissionsRequired": ["gobi.item.post"],
           "modulePermissions": [
             "orders.item.post",
+            "orders.collection.get",
+            "orders.item.get",
+            "orders.item.put",
             "inventory-storage.material-types.collection.get",
             "inventory-storage.locations.collection.get",
             "organizations-storage.organizations.collection.get",
