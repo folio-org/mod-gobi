@@ -250,7 +250,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -304,9 +303,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNull(ppo.getCompositePoLines().get(0).getPhysical());
 
     verifyRequiredFieldsAreMapped(ppo);
-    // As for MockServer returns empty response on FundCode==HUM  verify that fundId has not been populated
-    assertNull(ppo.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
-
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic serial");
@@ -390,8 +386,6 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     verifyRequiredFieldsAreMapped(ppo);
 
-    assertNotNull(ppo.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
-
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed print serial");
@@ -431,7 +425,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -472,7 +465,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
 
     verifyRequiredFieldsAreMapped(ppo);
-    assertNotNull(ppo.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
     logger.info("End: Testing for 201 - posted order unlisted print serial");
@@ -626,8 +618,45 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    // As for MockServer returns empty response on FundCode==HUM  verify that fundId has not been populated
-    assertNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing for falling back to tthe first location id, if a non existent code is sent");
+  }
+
+  @Test
+  public final void testPostGobiOrdersFallBackFundDistribution(TestContext context) throws Exception {
+    logger.info("Begin: Testing for falling back to the first fund id, if a non existent code is sent");
+
+    final Async asyncLocal = context.async();
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
+      .body(body)
+      .when()
+      .post(ORDERS_PATH)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+          .body()
+          .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    context.assertNotNull(order.getPoLineNumber());
+
+    List<JsonObject> configEntries = MockServer.serverRqRs.get(FUNDS, HttpMethod.GET);
+    // 2 calls must be made to funds endpoint
+    assertEquals(2, configEntries.size());
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    verifyRequiredFieldsAreMapped(compPO);
 
     asyncLocal.complete();
 
@@ -660,6 +689,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(poLine.getOrderFormat());
     assertNotNull(poLine.getSource());
     assertNotNull(poLine.getTitle());
+    assertNotNull(poLine.getFundDistribution().get(0).getFundId());
   }
 
   public static class MockServer {
@@ -817,14 +847,13 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handleGetFund(RoutingContext ctx) {
-      logger.info("got location request: {}", ctx.request().query());
+      logger.info("got location request: {}", ctx.request()
+        .query());
 
       JsonObject funds = new JsonObject();
-     if (ctx.request().query().contains("HUM")) {
+      if (ctx.request().query().contains("HUM")) {
         funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);
-      }
-      else
-        {
+      } else {
         funds.put("funds", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID().toString())
           .put("code", ctx.queryParam("query").get(0).split("==")[1])))
           .put(TOTAL_RECORDS, 1);
