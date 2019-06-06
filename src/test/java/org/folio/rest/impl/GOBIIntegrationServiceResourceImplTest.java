@@ -3,7 +3,11 @@ package org.folio.rest.impl;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -31,10 +35,15 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.io.IOUtils;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePoLine;
@@ -51,7 +60,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
-
   static {
     System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, "io.vertx.core.logging.Log4j2LogDelegateFactory");
   }
@@ -59,37 +67,42 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   private static final String APPLICATION_JSON = "application/json";
   private static final String CONFIGS = "configs";
-  private static final String PURCHASEORDER = "PURCHASEORDER";
+  private static final String PURCHASE_ORDER = "PURCHASE_ORDER";
   private static final String CONFIGURATION = "CONFIGURATION";
 
-  private static final int OKAPIPORT = NetworkUtils.nextFreePort();
-  private static final int MOCKPORT = NetworkUtils.nextFreePort();
+  private static final int OKAPI_PORT = NetworkUtils.nextFreePort();
+  private static final int MOCK_PORT = NetworkUtils.nextFreePort();
 
-  private final Header TENANTHEADER = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
-  private final Header TOKENHEADER = new Header("X-Okapi-Token",
+
+  // private final int serverPort = NetworkUtils.nextFreePort();
+  private final Header TENANT_HEADER = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
+  private final Header TOKEN_HEADER = new Header("X-Okapi-Token",
       "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
-  private final Header URLHEADER = new Header("X-Okapi-Url", "http://localhost:" + MOCKPORT);
-  private final Header CONTENTTYPEHEADERXML = new Header("Content-Type", "application/xml");
+  private final Header URL_HEADER = new Header("X-Okapi-Url", "http://localhost:" + MOCK_PORT);
+  private final Header CONTENT_TYPE_HEADER_XML = new Header("Content-Type", "application/xml");
 
   // API paths
-  private final String ROOTPATH = "/gobi";
-  private final String VALIDATEPATH = ROOTPATH + "/validate";
-  private final String ORDERSPATH = ROOTPATH + "/orders";
+  private final String ROOT_PATH = "/gobi";
+  private final String VALIDATE_PATH = ROOT_PATH + "/validate";
+  private final String ORDERS_PATH = ROOT_PATH + "/orders";
 
   // Mock data paths
-  private final String MOCKDATAROOTPATH = "GOBIIntegrationServiceResourceImpl";
-  private final String POLISTEDELECTRONICMONOGRAPHPATH = MOCKDATAROOTPATH + "/po_listed_electronic_monograph.xml";
-  private final String POLISTEDELECTRONICSERIALPATH = MOCKDATAROOTPATH + "/po_listed_electronic_serial.xml";
-  private final String POLISTEDPRINTMONOGRAPHPATH = MOCKDATAROOTPATH + "/po_listed_print_monograph.xml";
-  private final String POLISTEDPRINTSERIALPATH = MOCKDATAROOTPATH + "/po_listed_print_serial.xml";
-  private final String POUNLISTEDPRINTMONOGRAPHPATH = MOCKDATAROOTPATH + "/po_unlisted_print_monograph.xml";
-  private final String POUNLISTEDPRINTSERIALPATH = MOCKDATAROOTPATH + "/po_unlisted_print_serial.xml";
-  private final String POLISTEDELECTRONICMONOGRAPHBADDATAPATH = MOCKDATAROOTPATH + "/po_listed_electronic_monograph_bad_data.xml";
+  private final String MOCK_DATA_ROOT_PATH = "GOBIIntegrationServiceResourceImpl";
+  private final String PO_LISTED_ELECTRONIC_MONOGRAPH_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_monograph.xml";
+  private final String PO_LISTED_ELECTRONIC_SERIAL_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_serial.xml";
+  private final String PO_LISTED_PRINT_MONOGRAPH_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_print_monograph.xml";
+  private final String PO_LISTED_PRINT_SERIAL_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_print_serial.xml";
+  private final String PO_UNLISTED_PRINT_MONOGRAPHPATH = MOCK_DATA_ROOT_PATH + "/po_unlisted_print_monograph.xml";
+  private final String PO_UNLISTED_PRINT_SERIAL_PATH = MOCK_DATA_ROOT_PATH + "/po_unlisted_print_serial.xml";
+  private final String PO_LISTED_ELECTRONIC_MONOGRAPH_BAD_DATA_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_monograph_bad_data.xml";
+
   private static final String CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING = "MappingHelper/Custom_ListedElectronicSerial.json";
   private static final  String VENDOR_MOCK_DATA =  "MockData/GOBI_organization.json";
   private static final  String ORDER_MOCK_DATA =  "MockData/purchaseOrders.json";
   private static final  String COMPOSITE_ORDER_MOCK_DATA =  "MockData/compositePurchaseOrder.json";
+
   private static final String LOCATION = "LOCATION";
+  private static final String FUNDS = "FUNDS";
   private static final String MATERIAL_TYPES = "MATERIAL-TYPES";
   private static final String VENDOR = "VENDOR";
   private static final String COMPOSITE_PURCHASE_ORDER = "COMPOSITE_PURCHASE_ORDER";
@@ -111,7 +124,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   public static void setUpOnce(TestContext context) throws Exception {
     vertx = Vertx.vertx();
 
-    mockServer = new MockServer(MOCKPORT);
+    mockServer = new MockServer(MOCK_PORT);
     mockServer.start(context);
 
     String moduleName = PomReader.INSTANCE.getModuleName().replaceAll("_", "-");
@@ -120,13 +133,13 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("Test setup starting for {}", moduleId);
 
     final JsonObject conf = new JsonObject();
-    conf.put("http.port", OKAPIPORT);
+    conf.put("http.port", OKAPI_PORT);
 
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
     vertx.deployVerticle(RestVerticle.class.getName(), opt, context.asyncAssertSuccess());
-    RestAssured.port = OKAPIPORT;
+    RestAssured.port = OKAPI_PORT;
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    logger.info("GOBI Integration Service Test Setup Done using port {}", OKAPIPORT);
+    logger.info("GOBI Integration Service Test Setup Done using port {}", OKAPI_PORT);
   }
 
   @AfterClass
@@ -153,11 +166,11 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     RestAssured
       .given()
-        .header(TENANTHEADER)
-        .header(TOKENHEADER)
-        .header(URLHEADER)
+        .header(TENANT_HEADER)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
       .when()
-        .get(VALIDATEPATH)
+        .get(VALIDATE_PATH)
       .then()
         .statusCode(200).content(Matchers.equalTo("<test>GET - OK</test>"));
 
@@ -174,11 +187,11 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     RestAssured
       .given()
-        .header(TENANTHEADER)
-        .header(TOKENHEADER)
-        .header(URLHEADER)
+        .header(TENANT_HEADER)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
       .when()
-        .post(VALIDATEPATH)
+        .post(VALIDATE_PATH)
       .then()
         .contentType("application/xml")
         .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>"));
@@ -194,23 +207,23 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
     RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType("application/xml");
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(4, column.size());
+    assertEquals(5, column.size());
 
     asyncLocal.complete();
 
@@ -223,17 +236,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDELECTRONICMONOGRAPHPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -243,9 +256,9 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(4, column.size());
+    assertEquals(5, column.size());
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
 
@@ -260,17 +273,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -285,12 +298,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // 4 calls one each to configurations,organizations,material types and location
-    assertEquals(4, column.size());
+    assertEquals(5, column.size());
 
     // Make sure the mappings from custom configuration were used
     assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertEquals("Description from Custom Mapping", ppo.getCompositePoLines().get(0).getPoLineDescription());
     // verify if the currency specified in the request is used
@@ -301,7 +314,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNull(ppo.getCompositePoLines().get(0).getPhysical());
 
     verifyRequiredFieldsAreMapped(ppo);
-
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic serial");
@@ -313,17 +325,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDPRINTMONOGRAPHPATH);
+    final String body = getMockData(PO_LISTED_PRINT_MONOGRAPH_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -334,12 +346,13 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(4, column.size());
+    assertEquals(5, column.size());
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertThat(ppo.getCompositePoLines().get(0).getCost().getListUnitPriceElectronic(), nullValue());
     assertThat(ppo.getCompositePoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
+    assertNotNull(ppo.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     verifyRequiredFieldsAreMapped(ppo);
 
@@ -354,17 +367,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDPRINTSERIALPATH);
+    final String body = getMockData(PO_LISTED_PRINT_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -375,9 +388,9 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(4, column.size());
+    assertEquals(5, column.size());
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     // verify if default currency is used
     assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
@@ -395,17 +408,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POUNLISTEDPRINTMONOGRAPHPATH);
+    final String body = getMockData(PO_UNLISTED_PRINT_MONOGRAPHPATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -416,11 +429,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(4, column.size());
+    assertEquals(5, column.size());
 
     verifyResourceCreateInventoryNotMapped();
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
 
@@ -435,17 +448,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POUNLISTEDPRINTSERIALPATH);
+    final String body = getMockData(PO_UNLISTED_PRINT_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(TENANTHEADER)
-        .header(URLHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(TENANT_HEADER)
+        .header(URL_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -456,13 +469,14 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(4, column.size());
+    assertEquals(5, column.size());
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
 
     verifyRequiredFieldsAreMapped(ppo);
+
     asyncLocal.complete();
     logger.info("End: Testing for 201 - posted order unlisted print serial");
   }
@@ -473,17 +487,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDELECTRONICMONOGRAPHBADDATAPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_BAD_DATA_PATH);
 
     final GobiResponse error = RestAssured
       .given()
-        .header(TENANTHEADER)
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TENANT_HEADER)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(400)
         .contentType(ContentType.XML)
@@ -509,17 +523,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDPRINTMONOGRAPHPATH);
+    final String body = getMockData(PO_LISTED_PRINT_MONOGRAPH_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -530,9 +544,9 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(4, column.size());
+    assertEquals(5, column.size());
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
 
@@ -547,17 +561,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-       .header(TOKENHEADER)
-       .header(URLHEADER)
-       .header(TENANTHEADER)
-       .header(CONTENTTYPEHEADERXML)
+       .header(TOKEN_HEADER)
+       .header(URL_HEADER)
+       .header(TENANT_HEADER)
+       .header(CONTENT_TYPE_HEADER_XML)
       .body(body)
       .when()
-      .post(ORDERSPATH)
+      .post(ORDERS_PATH)
        .then()
          .statusCode(201)
          .contentType(ContentType.XML)
@@ -571,7 +585,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     //2 calls must be made to material types end point, once for non existent and other for unspecified
     assertEquals(2, configEntries.size());
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder po = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertEquals(UNSPECIFIED_MATERIAL_TYPE_ID, po.getCompositePoLines().get(0).getEresource().getMaterialType());
 
@@ -588,17 +602,17 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-       .header(TOKENHEADER)
-       .header(URLHEADER)
-       .header(TENANTHEADER)
-       .header(CONTENTTYPEHEADERXML)
+       .header(TOKEN_HEADER)
+       .header(URL_HEADER)
+       .header(TENANT_HEADER)
+       .header(CONTENT_TYPE_HEADER_XML)
       .body(body)
       .when()
-      .post(ORDERSPATH)
+      .post(ORDERS_PATH)
        .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -612,7 +626,46 @@ public class GOBIIntegrationServiceResourceImplTest {
     // 2 calls must be made to location end point
     assertEquals(2, configEntries.size());
 
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    verifyRequiredFieldsAreMapped(compPO);
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing for falling back to tthe first location id, if a non existent code is sent");
+  }
+
+  @Test
+  public final void testPostGobiOrdersFallBackFundDistribution(TestContext context) throws Exception {
+    logger.info("Begin: Testing for falling back to the first fund id, if a non existent code is sent");
+
+    final Async asyncLocal = context.async();
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
+      .body(body)
+      .when()
+      .post(ORDERS_PATH)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+          .body()
+          .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    context.assertNotNull(order.getPoLineNumber());
+
+    List<JsonObject> configEntries = MockServer.serverRqRs.get(FUNDS, HttpMethod.GET);
+    // 2 calls must be made to funds endpoint
+    assertEquals(2, configEntries.size());
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
 
@@ -627,18 +680,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("Begin: Testing for 201 - posted order returns existing Order if present");
 
 
-    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -647,11 +700,11 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     //should try to fetch the order in Open status
-    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.GET);
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrder.size());
 
     //Should not try to create an order if present
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertNull(postedOrder);
 
     //Returned order is Open, should not retry to Open
@@ -669,18 +722,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("Begin: Testing for 201 - Create new Order if retrieving existing Order fails");
 
 
-    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_FAIL_ORDER))
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -690,11 +743,11 @@ public class GOBIIntegrationServiceResourceImplTest {
 
 
     //should try to fetch the order, and gets 500
-    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.GET);
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertNull(getOrder);
 
     //should create an order if the call to fetch existing order fails
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertEquals(1, postedOrder.size());
 
     //should not call PUT to open order
@@ -711,19 +764,19 @@ public class GOBIIntegrationServiceResourceImplTest {
   public final void testPostGobiOrdersRetryToOpenOrderFails() throws Exception {
     logger.info("Begin: Testing for 201 - Return existing Order even if it is pending, and retry to Open Fails");
 
-    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
         .header(new Header(MOCK_OKAPI_PUT_ORDER_HEADER, MOCK_INSTRUCTION_PUT_FAIL))
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -732,7 +785,7 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     //should fetch existing order which is in Pending state
-    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.GET);
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrder.size());
 
     //should try to Open, the existing Pending Order, which fails
@@ -744,7 +797,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals(1, getOrderById.size());
 
     //should not try to create a new Order
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertNull(postedOrder);
 
     //return the existing Order in Pending State
@@ -759,18 +812,18 @@ public class GOBIIntegrationServiceResourceImplTest {
   public final void testPostGobiOrdersRetryToOpenOrderSuccess() throws Exception {
     logger.info("Begin: Testing for 201 - Return existing Order even if it is pending, and retry to Open succeeds");
 
-    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -779,7 +832,7 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     //should fetch existing order which is in Pending state
-    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.GET);
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrder.size());
 
     //should try to Open, the existing Pending Order, which succeds
@@ -787,7 +840,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals(1, putOrder.size());
 
     //should not try to create a new Order
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertNull(postedOrder);
 
     //return the existing PO Line Number
@@ -801,19 +854,19 @@ public class GOBIIntegrationServiceResourceImplTest {
   public final void testPostGobiOrdersGetExistingPOLineNumberFails() throws Exception {
     logger.info("Begin: Testing for 201 - Create new Order , if fetching existing PO Line Number Fails");
 
-    final String body = getMockData(POLISTEDELECTRONICSERIALPATH);
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = RestAssured
       .given()
-        .header(TOKENHEADER)
-        .header(URLHEADER)
-        .header(TENANTHEADER)
-        .header(CONTENTTYPEHEADERXML)
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
         .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
         .header(new Header(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER, MOCK_INSTRUCTION_GET_BYID_FAIL))
         .body(body)
       .when()
-        .post(ORDERSPATH)
+        .post(ORDERS_PATH)
       .then()
         .statusCode(201)
         .contentType(ContentType.XML)
@@ -822,7 +875,7 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     //should fetch existing order which is in Open state
-    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.GET);
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrder.size());
 
     //should not retry to Open
@@ -830,7 +883,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNull(putOrder);
 
     //should try to create a new Order
-    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASEORDER, HttpMethod.POST);
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertEquals(1,postedOrder.size());
     assertNotNull(order.getPoLineNumber());
 
@@ -841,7 +894,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   // MODGOBI-61 check createInventory field not mapped
   private void verifyResourceCreateInventoryNotMapped() {
     Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
-    CompositePurchaseOrder compPO = postOrder.get("PURCHASEORDER").get(0).mapTo(CompositePurchaseOrder.class);
+    CompositePurchaseOrder compPO = postOrder.get(PURCHASE_ORDER).get(0).mapTo(CompositePurchaseOrder.class);
     compPO.getCompositePoLines().stream()
       .filter(line -> line.getEresource() != null)
       .forEach(line -> assertNull(line.getEresource().getCreateInventory()));
@@ -864,6 +917,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(poLine.getOrderFormat());
     assertNotNull(poLine.getSource());
     assertNotNull(poLine.getTitle());
+    assertNotNull(poLine.getFundDistribution().get(0).getFundId());
   }
 
   public static class MockServer {
@@ -901,6 +955,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       router.get(PostGobiOrdersHelper.GET_ORGANIZATION_ENDPOINT).handler(this::handleGetOrganization);
       router.get(PostGobiOrdersHelper.MATERIAL_TYPES_ENDPOINT).handler(this::handleGetMaterialType);
       router.get(PostGobiOrdersHelper.LOCATIONS_ENDPOINT).handler(this::handleGetLocation);
+      router.get(PostGobiOrdersHelper.FUNDS_ENDPOINT).handler(this::handleGetFund);
       router.get(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
       router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handleGetOrders);
       router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handleGetOrderById);
@@ -940,7 +995,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         poLine.put("purchaseOrderId", compPO.getString(ID));
       });
 
-      addServerRqRsData(HttpMethod.POST, PURCHASEORDER, compPO);
+      addServerRqRsData(HttpMethod.POST, PURCHASE_ORDER, compPO);
 
       ctx.response()
         .setStatusCode(201)
@@ -1022,6 +1077,27 @@ public class GOBIIntegrationServiceResourceImplTest {
         .end(locations.encodePrettily());
     }
 
+    private void handleGetFund(RoutingContext ctx) {
+      logger.info("got location request: {}", ctx.request()
+        .query());
+
+      JsonObject funds = new JsonObject();
+      if (ctx.request().query().contains("HUM")) {
+        funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);
+      } else {
+        funds.put("funds", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID().toString())
+          .put("code", ctx.queryParam("query").get(0).split("==")[1])))
+          .put(TOTAL_RECORDS, 1);
+      }
+
+      addServerRqRsData(HttpMethod.GET, FUNDS, funds);
+
+      ctx.response()
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(funds.encodePrettily());
+    }
+
     private void handleGetConfigurationsEntries(RoutingContext ctx) {
 
       logger.info("got configurations entries request: {}", ctx.request()
@@ -1077,7 +1153,7 @@ public class GOBIIntegrationServiceResourceImplTest {
             purchaseOrders = new JsonObject().put("purchaseOrders", new JsonArray());
           }
 
-          addServerRqRsData(HttpMethod.GET, PURCHASEORDER, purchaseOrders);
+          addServerRqRsData(HttpMethod.GET, PURCHASE_ORDER, purchaseOrders);
 
           ctx.response()
             .setStatusCode(200)
