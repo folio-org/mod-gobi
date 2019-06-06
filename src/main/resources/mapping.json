@@ -34,6 +34,7 @@
         "ENCUMBERANCE",
         "EXPECTED_ACTIVATION",
         "EXPECTED_RECEIPT_DATE",
+        "FUND_ID",
         "FUND_CODE",
         "FUND_PERCENTAGE",
         "LICENSE_CODE",
@@ -107,6 +108,7 @@
           "enum": [
             "lookupLocationId",
             "lookupMaterialTypeId",
+            "lookupFundId",
             "lookupMock",
             "lookupOrganization",
             "toBoolean",

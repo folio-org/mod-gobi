@@ -68,11 +68,18 @@
           }
         },
         {
-          "field": "FUND_CODE",
+          "field": "FUND_ID",
           "dataSource": {
             "from": "//FundCode",
-            "default": "0",
-            "translation": "lookupMock"
+            "default": "*",
+            "translation": "lookupFundId",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "FUND_CODE",
+          "dataSource": {
+            "from": "//FundCode"
           }
         },
         {
