@@ -51,6 +51,10 @@
     {
       "id": "organizations-storage.organizations",
       "version": "1.0"
+    },
+    {
+      "id": "finance-storage.funds",
+      "version": "1.0"
     }
   ],
   "permissionSets": [

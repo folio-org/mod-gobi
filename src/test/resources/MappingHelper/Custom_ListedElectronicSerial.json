@@ -97,6 +97,13 @@
           }
         },
         {
+          "field": "FUND_ID",
+          "dataSource": {
+            "from": "//FundCode",
+            "translation": "lookupFundId"
+          }
+        },
+        {
           "field": "FUND_CODE",
           "dataSource": {
             "from": "//FundCode",

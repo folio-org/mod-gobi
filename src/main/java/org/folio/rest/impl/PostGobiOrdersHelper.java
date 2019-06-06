@@ -51,6 +51,7 @@ public class PostGobiOrdersHelper {
   static final String GET_ORGANIZATION_ENDPOINT = "/organizations-storage/organizations";
   static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
   static final String ORDERS_ENDPOINT = "/orders/composite-orders";
+  static final String FUNDS_ENDPOINT = "/finance-storage/funds";
   private static final String QUERY = "?query=%s";
 
   private static final String CONFIGURATION_MODULE = "GOBI";
@@ -228,6 +229,23 @@ public class PostGobiOrdersHelper {
           logger.error("Exception looking up Organization which is a vendor with code:"+vendorCode, t);
           return null;
         });
+  }
+
+  public CompletableFuture<String> lookupFundId(String fundCode) {
+    String query = HelperUtils.encodeValue(String.format("code==%s", fundCode), logger);
+    String endpoint = String.format(FUNDS_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenCompose(funds -> {
+        String fundId = HelperUtils.extractIdOfFirst(funds, "funds");
+        if (StringUtils.isEmpty(fundId)) {
+            return completedFuture(null);
+        }
+        return completedFuture(fundId);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up fund id", t);
+        return null;
+      });
   }
 
   public CompletableFuture<String> lookupMock(String data) {
