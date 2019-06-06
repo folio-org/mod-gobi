@@ -699,19 +699,19 @@ public class GOBIIntegrationServiceResourceImplTest {
           .body()
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
-    //should try to fetch the order in Open status
+    // should try to fetch the order in Open status
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrder.size());
 
-    //Should not try to create an order if present
+    // Should not try to create an order if present
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertNull(postedOrder);
 
-    //Returned order is Open, should not retry to Open
+    // Returned order is Open, should not retry to Open
     List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
     assertNull(putOrder);
 
-    //return the existing PO Line Number
+    // return the existing PO Line Number
     assertNotNull(order.getPoLineNumber());
 
     logger.info("End: Testing for 201 - posted order returns existing Order if present");
@@ -742,19 +742,19 @@ public class GOBIIntegrationServiceResourceImplTest {
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
 
-    //should try to fetch the order, and gets 500
+    // should try to fetch the order, and gets 500
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertNull(getOrder);
 
-    //should create an order if the call to fetch existing order fails
+    // should create an order if the call to fetch existing order fails
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertEquals(1, postedOrder.size());
 
-    //should not call PUT to open order
+    // should not call PUT to open order
     List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
     assertNull(putOrder);
 
-    //return the created PO Line Number
+    // return the created PO Line Number
     assertNotNull(order.getPoLineNumber());
 
     logger.info("End: Testing for 201 - Create new Order if retrieving existing Order fails");
@@ -784,25 +784,24 @@ public class GOBIIntegrationServiceResourceImplTest {
           .body()
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
-    //should fetch existing order which is in Pending state
+    // should fetch existing order which is in Pending state
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrder.size());
 
-    //should try to Open, the existing Pending Order, which fails
+    // should try to Open, the existing Pending Order, which fails
     List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
     assertEquals(1, putOrder.size());
 
-    //should get the existing Order Line Number
+    // should get the existing Pending Order Line Number
     List<JsonObject> getOrderById = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrderById.size());
 
-    //should not try to create a new Order
+    // should not try to create a new Order
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertNull(postedOrder);
 
-    //return the existing Order in Pending State
+    // return the existing Order in Pending State
     assertNotNull(order.getPoLineNumber());
-
 
     logger.info("End: Testing for 201 - Return existing Order even if it is pending, and retry to Open Fails");
   }
@@ -831,28 +830,27 @@ public class GOBIIntegrationServiceResourceImplTest {
           .body()
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
-    //should fetch existing order which is in Pending state
+    // should fetch existing order which is in Pending state
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrder.size());
 
-    //should try to Open, the existing Pending Order, which succeds
+    // should try to Open, the existing Pending Order, which succeds
     List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
     assertEquals(1, putOrder.size());
 
-    //should not try to create a new Order
+    // should not try to create a new Order
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     assertNull(postedOrder);
 
-    //return the existing PO Line Number
+    // return the existing PO Line Number
     assertNotNull(order.getPoLineNumber());
 
-
-    logger.info("End: Testing for 201 - Return existing Order even if it is pending, and retry to Open suceeds");
+    logger.info("End: Testing for 201 - Return existing Order even if it is pending, and retry to Open succeeds");
   }
 
   @Test
   public final void testPostGobiOrdersGetExistingPOLineNumberFails() throws Exception {
-    logger.info("Begin: Testing for 201 - Create new Order , if fetching existing PO Line Number Fails");
+    logger.info("Begin: Testing for 201 - Create new Order, if fetching existing PO Line Number Fails");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
@@ -874,21 +872,20 @@ public class GOBIIntegrationServiceResourceImplTest {
           .body()
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
-    //should fetch existing order which is in Open state
+    // should fetch existing order which is in Open state
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
     assertEquals(1, getOrder.size());
 
-    //should not retry to Open
+    // should not retry to Open
     List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
     assertNull(putOrder);
 
-    //should try to create a new Order
+    // should try to create a new Order
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    assertEquals(1,postedOrder.size());
+    assertEquals(1, postedOrder.size());
     assertNotNull(order.getPoLineNumber());
 
-
-    logger.info("End: Testing for 201 - Create new Order , if fetching existing PO Line Number Fails");
+    logger.info("End: Testing for 201 - Create new Order, if fetching existing PO Line Number Fails");
   }
 
   // MODGOBI-61 check createInventory field not mapped
