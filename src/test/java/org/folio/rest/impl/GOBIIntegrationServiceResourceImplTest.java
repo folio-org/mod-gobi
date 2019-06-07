@@ -714,7 +714,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals(2, identifierTypes.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    CompositePurchaseOrder compPO = postedOrder.get(0)
+      .mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
 
     asyncLocal.complete();
@@ -1270,8 +1271,11 @@ public class GOBIIntegrationServiceResourceImplTest {
       JsonObject productTypes = new JsonObject();
       addServerRqRsData(HttpMethod.GET, IDENTIFIER_TYPES, productTypes);
 
-      if (MOCK_INSTRUCTION_FAIL_PRODUCTYPE.equals(getByIdInstruction) && ctx.request().query().contains("ISBN")) {
-        productTypes.put("identifierTypes",new JsonArray()).put(TOTAL_RECORDS, 0);
+      if (MOCK_INSTRUCTION_FAIL_PRODUCTYPE.equals(getByIdInstruction) && ctx.request()
+        .query()
+        .contains("ISBN")) {
+        productTypes.put("identifierTypes", new JsonArray())
+          .put(TOTAL_RECORDS, 0);
       } else {
         productTypes.put("identifierTypes", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID()
           .toString())
@@ -1281,9 +1285,9 @@ public class GOBIIntegrationServiceResourceImplTest {
           .put(TOTAL_RECORDS, 1);
       }
       ctx.response()
-      .setStatusCode(200)
-      .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-      .end(productTypes.encodePrettily());
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(productTypes.encodePrettily());
     }
 
     private String randomDigits(int len) {
