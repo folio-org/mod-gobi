@@ -109,7 +109,10 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String IDENTIFIER_TYPES = "IDENTIFIER_TYPES";
   private static final String UNSPECIFIED_MATERIAL_TYPE_ID = "be44c321-ab73-43c4-a114-70f82fa13f17";
 
-  private static final String MOCK_OKAPI_INSTRUCTION_HEADER = "X-Okapi-MockInstruction";
+  private static final String MOCK_OKAPI_GET_ORDER_BY_ID_HEADER = "X-Okapi-MockGetOrderById";
+  private static final String MOCK_OKAPI_PUT_ORDER_HEADER = "X-Okapi-MockPutOrder";
+  private static final String MOCK_OKAPI_GET_ORDER_HEADER = "X-Okapi-MockGetOrder";
+  private static final String MOCK_OKAPI_GET_IDENTIFIER_HEADER = "X-Okapi-MockGetOrder";
   private static final String MOCK_INSTRUCTION_GET_BYID_FAIL = "GetOrderFail";
   private static final String MOCK_INSTRUCTION_PUT_FAIL = "PutFail";
   private static final String MOCK_INSTRUCTION_GET_PENDING_ORDER = "GetPendingOrder";
@@ -692,7 +695,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(TOKEN_HEADER)
         .header(URL_HEADER)
         .header(TENANT_HEADER)
-        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER,MOCK_INSTRUCTION_FAIL_PRODUCTYPE))
+        .header(new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER,MOCK_INSTRUCTION_FAIL_PRODUCTYPE))
         .header(CONTENT_TYPE_HEADER_XML)
       .body(body)
       .when()
@@ -733,7 +736,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -775,7 +778,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_FAIL_ORDER))
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_FAIL_ORDER))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -817,8 +820,8 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
-        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_PUT_FAIL))
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
+        .header(new Header(MOCK_OKAPI_PUT_ORDER_HEADER, MOCK_INSTRUCTION_PUT_FAIL))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -864,7 +867,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -905,8 +908,8 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
-        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_BYID_FAIL))
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
+        .header(new Header(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER, MOCK_INSTRUCTION_GET_BYID_FAIL))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -1174,7 +1177,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got Orders request: {}", ctx.request()
         .query());
       String getInstruction = ctx.request()
-        .getHeader(MOCK_OKAPI_INSTRUCTION_HEADER);
+        .getHeader(MOCK_OKAPI_GET_ORDER_HEADER);
 
       JsonObject purchaseOrders;
       try {
@@ -1213,7 +1216,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got {}", ctx.request()
         .path());
       String getByIdInstruction = ctx.request()
-        .getHeader(MOCK_OKAPI_INSTRUCTION_HEADER);
+        .getHeader(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER);
 
       try {
         if (MOCK_INSTRUCTION_GET_BYID_FAIL.equals(getByIdInstruction)) {
@@ -1242,7 +1245,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got {}", ctx.request()
         .path());
       String putInstruction = ctx.request()
-        .getHeader(MOCK_OKAPI_INSTRUCTION_HEADER);
+        .getHeader(MOCK_OKAPI_PUT_ORDER_HEADER);
       addServerRqRsData(HttpMethod.PUT, COMPOSITE_PURCHASE_ORDER, ctx.getBodyAsJson());
 
       if (putInstruction.equals(MOCK_INSTRUCTION_PUT_FAIL)) {
@@ -1262,12 +1265,12 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got productTypes request: {}", ctx.request()
         .query());
       String getByIdInstruction = ctx.request()
-        .getHeader(MOCK_OKAPI_INSTRUCTION_HEADER);
+        .getHeader(MOCK_OKAPI_GET_IDENTIFIER_HEADER);
 
       JsonObject productTypes = new JsonObject();
       addServerRqRsData(HttpMethod.GET, IDENTIFIER_TYPES, productTypes);
 
-      if (MOCK_INSTRUCTION_FAIL_PRODUCTYPE.equals(getByIdInstruction) && ctx.request().query().contains("ISBN") ) {
+      if (MOCK_INSTRUCTION_FAIL_PRODUCTYPE.equals(getByIdInstruction) && ctx.request().query().contains("ISBN")) {
         productTypes.put("identifierTypes",new JsonArray()).put(TOTAL_RECORDS, 0);
       } else {
         productTypes.put("identifierTypes", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID()
