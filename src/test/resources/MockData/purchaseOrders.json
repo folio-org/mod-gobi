@@ -1,0 +1,20 @@
+{
+ "purchaseOrders": [
+      {
+         "id": "22dd4cfb-3e46-41cb-a9bf-f4b2bfa0b991",
+         "poNumber": "PO_6733180275",
+         "approved": true,
+         "assignedTo": "5980020f-6c3a-41e1-a16c-f449f0d8af71",
+         "dateOrdered": "2015-10-21T20:00:02.000+0000",
+         "manualPo": false,
+         "notes": [
+            "v.2 | Test Note to Ybp"
+         ],
+         "orderType": "Ongoing",
+         "totalItems": 1,
+         "vendor": "588b5c42-8634-4af7-bc9b-5e0116ed96b6",
+         "workflowStatus": "Open"
+       }
+     ],
+ "totalRecords": 1
+}

@@ -9,36 +9,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.io.IOUtils;
-import org.folio.rest.RestVerticle;
-import org.folio.rest.acq.model.CompositePoLine;
-import org.folio.rest.acq.model.CompositePurchaseOrder;
-import org.folio.rest.gobi.model.GobiResponse;
-import org.folio.rest.tools.PomReader;
-import org.folio.rest.tools.utils.NetworkUtils;
-import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
@@ -58,24 +30,49 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.io.IOUtils;
+import org.folio.rest.RestVerticle;
+import org.folio.rest.acq.model.CompositePoLine;
+import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.gobi.model.GobiResponse;
+import org.folio.rest.tools.PomReader;
+import org.folio.rest.tools.utils.NetworkUtils;
+import org.hamcrest.Matchers;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
-  private static final String CONFIGS = "configs";
-
-  private static final String PURCHASE_ORDER = "PURCHASE_ORDER";
-
-  private static final String CONFIGURATION = "CONFIGURATION";
-
   static {
     System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, "io.vertx.core.logging.Log4j2LogDelegateFactory");
   }
   private static final Logger logger = LoggerFactory.getLogger(GOBIIntegrationServiceResourceImplTest.class);
 
   private static final String APPLICATION_JSON = "application/json";
+  private static final String CONFIGS = "configs";
+  private static final String PURCHASE_ORDER = "PURCHASE_ORDER";
+  private static final String CONFIGURATION = "CONFIGURATION";
 
   private static final int OKAPI_PORT = NetworkUtils.nextFreePort();
   private static final int MOCK_PORT = NetworkUtils.nextFreePort();
+
 
   // private final int serverPort = NetworkUtils.nextFreePort();
   private final Header TENANT_HEADER = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
@@ -98,13 +95,27 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final String PO_UNLISTED_PRINT_MONOGRAPHPATH = MOCK_DATA_ROOT_PATH + "/po_unlisted_print_monograph.xml";
   private final String PO_UNLISTED_PRINT_SERIAL_PATH = MOCK_DATA_ROOT_PATH + "/po_unlisted_print_serial.xml";
   private final String PO_LISTED_ELECTRONIC_MONOGRAPH_BAD_DATA_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_monograph_bad_data.xml";
+
   private static final String CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING = "MappingHelper/Custom_ListedElectronicSerial.json";
-  private static final String VENDOR_MOCK_DATA =  "MockData/GOBI_organization.json";
+  private static final  String VENDOR_MOCK_DATA =  "MockData/GOBI_organization.json";
+  private static final  String ORDER_MOCK_DATA =  "MockData/purchaseOrders.json";
+  private static final  String COMPOSITE_ORDER_MOCK_DATA =  "MockData/compositePurchaseOrder.json";
+
   private static final String LOCATION = "LOCATION";
   private static final String FUNDS = "FUNDS";
   private static final String MATERIAL_TYPES = "MATERIAL-TYPES";
   private static final String VENDOR = "VENDOR";
+  private static final String COMPOSITE_PURCHASE_ORDER = "COMPOSITE_PURCHASE_ORDER";
   private static final String UNSPECIFIED_MATERIAL_TYPE_ID = "be44c321-ab73-43c4-a114-70f82fa13f17";
+
+  private static final String MOCK_OKAPI_GET_ORDER_BY_ID_HEADER = "X-Okapi-MockGetOrderById";
+  private static final String MOCK_OKAPI_PUT_ORDER_HEADER = "X-Okapi-MockPutOrder";
+  private static final String MOCK_OKAPI_GET_ORDER_HEADER = "X-Okapi-MockGetOrder";
+  private static final String MOCK_INSTRUCTION_GET_BYID_FAIL = "GetOrderFail";
+  private static final String MOCK_INSTRUCTION_PUT_FAIL = "PutFail";
+  private static final String MOCK_INSTRUCTION_GET_PENDING_ORDER = "GetPendingOrder";
+  private static final String MOCK_INSTRUCTION_GET_OPEN_ORDER = "GetOpenOrder";
+  private static final String MOCK_INSTRUCTION_FAIL_ORDER = "FailOrder";
 
   private static Vertx vertx;
   private static MockServer mockServer;
@@ -663,6 +674,220 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("End: Testing for falling back to tthe first location id, if a non existent code is sent");
   }
 
+
+  @Test
+  public final void testPostGobiOrdersExistingOrder() throws Exception {
+    logger.info("Begin: Testing for 201 - posted order returns existing Order if present");
+
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
+        .body(body)
+      .when()
+        .post(ORDERS_PATH)
+      .then()
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    // should try to fetch the order in Open status
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
+    assertEquals(1, getOrder.size());
+
+    // Should not try to create an order if present
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    assertNull(postedOrder);
+
+    // Returned order is Open, should not retry to Open
+    List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
+    assertNull(putOrder);
+
+    // return the existing PO Line Number
+    assertNotNull(order.getPoLineNumber());
+
+    logger.info("End: Testing for 201 - posted order returns existing Order if present");
+  }
+
+  @Test
+  public final void testPostGobiOrdersFailedToRetrieveExistingOrder() throws Exception {
+    logger.info("Begin: Testing for 201 - Create new Order if retrieving existing Order fails");
+
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_FAIL_ORDER))
+        .body(body)
+      .when()
+        .post(ORDERS_PATH)
+      .then()
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+
+    // should try to fetch the order, and gets 500
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
+    assertNull(getOrder);
+
+    // should create an order if the call to fetch existing order fails
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    assertEquals(1, postedOrder.size());
+
+    // should not call PUT to open order
+    List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
+    assertNull(putOrder);
+
+    // return the created PO Line Number
+    assertNotNull(order.getPoLineNumber());
+
+    logger.info("End: Testing for 201 - Create new Order if retrieving existing Order fails");
+  }
+
+  @Test
+  public final void testPostGobiOrdersRetryToOpenOrderFails() throws Exception {
+    logger.info("Begin: Testing for 201 - Return existing Order even if it is pending, and retry to Open Fails");
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
+        .header(new Header(MOCK_OKAPI_PUT_ORDER_HEADER, MOCK_INSTRUCTION_PUT_FAIL))
+        .body(body)
+      .when()
+        .post(ORDERS_PATH)
+      .then()
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    // should fetch existing order which is in Pending state
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
+    assertEquals(1, getOrder.size());
+
+    // should try to Open, the existing Pending Order, which fails
+    List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
+    assertEquals(1, putOrder.size());
+
+    // should get the existing Pending Order Line Number
+    List<JsonObject> getOrderById = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.GET);
+    assertEquals(1, getOrderById.size());
+
+    // should not try to create a new Order
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    assertNull(postedOrder);
+
+    // return the existing Order in Pending State
+    assertNotNull(order.getPoLineNumber());
+
+    logger.info("End: Testing for 201 - Return existing Order even if it is pending, and retry to Open Fails");
+  }
+
+
+  @Test
+  public final void testPostGobiOrdersRetryToOpenOrderSuccess() throws Exception {
+    logger.info("Begin: Testing for 201 - Return existing Order even if it is pending, and retry to Open succeeds");
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
+        .body(body)
+      .when()
+        .post(ORDERS_PATH)
+      .then()
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    // should fetch existing order which is in Pending state
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
+    assertEquals(1, getOrder.size());
+
+    // should try to Open, the existing Pending Order, which succeds
+    List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
+    assertEquals(1, putOrder.size());
+
+    // should not try to create a new Order
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    assertNull(postedOrder);
+
+    // return the existing PO Line Number
+    assertNotNull(order.getPoLineNumber());
+
+    logger.info("End: Testing for 201 - Return existing Order even if it is pending, and retry to Open succeeds");
+  }
+
+  @Test
+  public final void testPostGobiOrdersGetExistingPOLineNumberFails() throws Exception {
+    logger.info("Begin: Testing for 201 - Create new Order, if fetching existing PO Line Number Fails");
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(CONTENT_TYPE_HEADER_XML)
+        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
+        .header(new Header(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER, MOCK_INSTRUCTION_GET_BYID_FAIL))
+        .body(body)
+      .when()
+        .post(ORDERS_PATH)
+      .then()
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    // should fetch existing order which is in Open state
+    List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
+    assertEquals(1, getOrder.size());
+
+    // should not retry to Open
+    List<JsonObject> putOrder = MockServer.serverRqRs.get(COMPOSITE_PURCHASE_ORDER, HttpMethod.PUT);
+    assertNull(putOrder);
+
+    // should try to create a new Order
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    assertEquals(1, postedOrder.size());
+    assertNotNull(order.getPoLineNumber());
+
+    logger.info("End: Testing for 201 - Create new Order, if fetching existing PO Line Number Fails");
+  }
+
   // MODGOBI-61 check createInventory field not mapped
   private void verifyResourceCreateInventoryNotMapped() {
     Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
@@ -729,6 +954,9 @@ public class GOBIIntegrationServiceResourceImplTest {
       router.get(PostGobiOrdersHelper.LOCATIONS_ENDPOINT).handler(this::handleGetLocation);
       router.get(PostGobiOrdersHelper.FUNDS_ENDPOINT).handler(this::handleGetFund);
       router.get(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
+      router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handleGetOrders);
+      router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handleGetOrderById);
+      router.put(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handlePutOrderById);
 
       return router;
     }
@@ -894,6 +1122,96 @@ public class GOBIIntegrationServiceResourceImplTest {
         .setStatusCode(500)
         .end();
        }
+    }
+
+    private void handleGetOrders(RoutingContext ctx) {
+
+      logger.info("got Orders request: {}", ctx.request()
+        .query());
+      String getInstruction = ctx.request()
+        .getHeader(MOCK_OKAPI_GET_ORDER_HEADER);
+
+      JsonObject purchaseOrders;
+      try {
+        if (getInstruction.equals(MOCK_INSTRUCTION_FAIL_ORDER)) {
+          ctx.response()
+            .setStatusCode(500)
+            .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+            .end(Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
+        } else {
+          if (getInstruction.equals(MOCK_INSTRUCTION_GET_OPEN_ORDER)) {
+            purchaseOrders = new JsonObject(getMockData(ORDER_MOCK_DATA));
+          } else if (getInstruction.equals(MOCK_INSTRUCTION_GET_PENDING_ORDER)) {
+            purchaseOrders = new JsonObject(getMockData(ORDER_MOCK_DATA));
+            purchaseOrders.getJsonArray("purchaseOrders")
+              .getJsonObject(0)
+              .put("workflowStatus", "Pending");
+          } else {
+            purchaseOrders = new JsonObject().put("purchaseOrders", new JsonArray());
+          }
+
+          addServerRqRsData(HttpMethod.GET, PURCHASE_ORDER, purchaseOrders);
+
+          ctx.response()
+            .setStatusCode(200)
+            .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+            .end(purchaseOrders.encodePrettily());
+        }
+      } catch (IOException e) {
+        ctx.response()
+          .setStatusCode(404)
+          .end();
+      }
+    }
+
+    private void handleGetOrderById(RoutingContext ctx) {
+      logger.info("got {}", ctx.request()
+        .path());
+      String getByIdInstruction = ctx.request()
+        .getHeader(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER);
+
+      try {
+        if (MOCK_INSTRUCTION_GET_BYID_FAIL.equals(getByIdInstruction)) {
+          ctx.response()
+            .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(500)
+            .end();
+        } else {
+          JsonObject compPO = new JsonObject(getMockData(COMPOSITE_ORDER_MOCK_DATA));
+
+          addServerRqRsData(HttpMethod.GET, COMPOSITE_PURCHASE_ORDER, compPO);
+
+          ctx.response()
+            .setStatusCode(200)
+            .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+            .end(compPO.encodePrettily());
+        }
+      } catch (IOException e) {
+        ctx.response()
+          .setStatusCode(404)
+          .end();
+      }
+    }
+
+    private void handlePutOrderById(RoutingContext ctx) {
+      logger.info("got {}", ctx.request()
+        .path());
+      String putInstruction = ctx.request()
+        .getHeader(MOCK_OKAPI_PUT_ORDER_HEADER);
+      addServerRqRsData(HttpMethod.PUT, COMPOSITE_PURCHASE_ORDER, ctx.getBodyAsJson());
+
+      if (putInstruction.equals(MOCK_INSTRUCTION_PUT_FAIL)) {
+        ctx.response()
+          .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(500)
+          .end();
+      } else {
+        ctx.response()
+          .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(204)
+          .end();
+      }
+
     }
 
     private String randomDigits(int len) {

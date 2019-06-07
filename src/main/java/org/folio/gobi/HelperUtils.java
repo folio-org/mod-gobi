@@ -40,6 +40,10 @@ public class HelperUtils {
     return extractIdOfFirst(obj, "mtypes");
   }
 
+  public static String extractOrderId(JsonObject obj) {
+    return extractIdOfFirst(obj, "purchaseOrders");
+  }
+
   public static String extractIdOfFirst(JsonObject obj, String arrField) {
     if (obj == null || arrField == null || arrField.isEmpty()) {
       return null;
