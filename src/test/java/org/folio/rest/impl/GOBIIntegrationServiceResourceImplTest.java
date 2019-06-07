@@ -226,7 +226,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .contentType("application/xml");
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    //  // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
+    // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
     assertEquals(6, column.size());
 
     asyncLocal.complete();

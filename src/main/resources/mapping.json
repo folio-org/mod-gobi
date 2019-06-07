@@ -111,7 +111,7 @@
             "lookupFundId",
             "lookupMock",
             "lookupOrganization",
-            "lookupProductTypeId",
+            "lookupProductIdType",
             "toBoolean",
             "toDate",
             "toDouble",

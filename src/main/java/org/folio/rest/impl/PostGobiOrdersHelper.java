@@ -202,7 +202,7 @@ public class PostGobiOrdersHelper {
    * type can't be found, fallback using the first one listed
    *
    * @param location
-   * @return
+   * @return UUID of the location
    */
   public CompletableFuture<String> lookupLocationId(String location) {
     logger.info("Received location is {}", location);
@@ -287,21 +287,21 @@ public class PostGobiOrdersHelper {
    * Use the provided product type.If the specified type can't be found, fallback using the first one listed
    *
    * @param productType
-   * @return
+   * @return UUID of the productId Type
    */
-  public CompletableFuture<String> lookupProductTypeId(String productType) {
+  public CompletableFuture<String> lookupProductIdType(String productType) {
     logger.info("Received ProductType is {}", productType);
     String query = HelperUtils.encodeValue(String.format("name==%s", productType), logger);
     String endpoint = String.format(IDENTIFIERS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint).thenCompose(productTypes -> {
       String productTypeId = HelperUtils.extractProductTypeId(productTypes);
       if (StringUtils.isEmpty(productTypeId)) {
-        return lookupProductTypeId(DEFAULT_LOOKUP_CODE);
+        return lookupProductIdType(DEFAULT_LOOKUP_CODE);
       }
       return completedFuture(productTypeId);
     })
       .exceptionally(t -> {
-        logger.error("Exception looking up product type id", t);
+        logger.error("Exception looking up productId type UUID", t);
         return null;
       });
   }

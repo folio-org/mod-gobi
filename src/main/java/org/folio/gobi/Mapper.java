@@ -554,7 +554,7 @@ public class Mapper {
         .thenAccept(o -> {
           productId.setProductId(o.toString());
           Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
-            .ifPresent(prodTypeId -> prodTypeId.resolve(doc)
+            .ifPresent(prodIdType -> prodIdType.resolve(doc)
               .thenAccept(
                   typeId -> {
                     productId.setProductIdType((String) typeId);
