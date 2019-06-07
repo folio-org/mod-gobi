@@ -54,6 +54,7 @@ public class PostGobiOrdersHelper {
   static final String ORDERS_ENDPOINT = "/orders/composite-orders";
   static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
   static final String FUNDS_ENDPOINT = "/finance-storage/funds";
+  static final String IDENTIFIERS_ENDPOINT = "/identifier-types";
   private static final String QUERY = "?query=%s";
 
   private static final String CONFIGURATION_MODULE = "GOBI";
@@ -201,7 +202,7 @@ public class PostGobiOrdersHelper {
    * type can't be found, fallback using the first one listed
    *
    * @param location
-   * @return
+   * @return UUID of the location
    */
   public CompletableFuture<String> lookupLocationId(String location) {
     logger.info("Received location is {}", location);
@@ -278,6 +279,29 @@ public class PostGobiOrdersHelper {
       })
       .exceptionally(t -> {
         logger.error("Exception looking up fund id", t);
+        return null;
+      });
+  }
+
+  /**
+   * Use the provided product type.If the specified type can't be found, fallback using the first one listed
+   *
+   * @param productType
+   * @return UUID of the productId Type
+   */
+  public CompletableFuture<String> lookupProductIdType(String productType) {
+    logger.info("Received ProductType is {}", productType);
+    String query = HelperUtils.encodeValue(String.format("name==%s", productType), logger);
+    String endpoint = String.format(IDENTIFIERS_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint).thenCompose(productTypes -> {
+      String productTypeId = HelperUtils.extractProductTypeId(productTypes);
+      if (StringUtils.isEmpty(productTypeId)) {
+        return lookupProductIdType(DEFAULT_LOOKUP_CODE);
+      }
+      return completedFuture(productTypeId);
+    })
+      .exceptionally(t -> {
+        logger.error("Exception looking up productId type UUID", t);
         return null;
       });
   }

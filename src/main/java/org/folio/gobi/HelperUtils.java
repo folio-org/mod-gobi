@@ -44,6 +44,10 @@ public class HelperUtils {
     return extractIdOfFirst(obj, "purchaseOrders");
   }
 
+  public static String extractProductTypeId(JsonObject obj) {
+    return extractIdOfFirst(obj, "identifierTypes");
+  }
+
   public static String extractIdOfFirst(JsonObject obj, String arrField) {
     if (obj == null || arrField == null || arrField.isEmpty()) {
       return null;
