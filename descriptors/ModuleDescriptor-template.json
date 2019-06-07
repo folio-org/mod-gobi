@@ -27,6 +27,7 @@
             "orders.item.put",
             "inventory-storage.material-types.collection.get",
             "inventory-storage.locations.collection.get",
+            "inventory-storage.identifier-types.collection.get",
             "organizations-storage.organizations.collection.get",
             "configuration.entries.collection.get",
             "finance-storage.funds.collection.get"
@@ -59,6 +60,10 @@
     {
       "id": "finance-storage.funds",
       "version": "1.0"
+    },
+    {
+      "id": "identifier-types",
+      "version": "1.1"
     }
   ],
   "permissionSets": [

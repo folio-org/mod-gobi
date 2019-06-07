@@ -171,7 +171,9 @@
         {
           "field": "PRODUCT_ID_TYPE",
           "dataSource": {
-            "default": "ISBN"
+            "default": "ISBN",
+            "translation": "lookupProductTypeId",
+            "translateDefault": true
           }
         },
         {

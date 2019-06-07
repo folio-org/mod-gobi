@@ -106,16 +106,16 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String MATERIAL_TYPES = "MATERIAL-TYPES";
   private static final String VENDOR = "VENDOR";
   private static final String COMPOSITE_PURCHASE_ORDER = "COMPOSITE_PURCHASE_ORDER";
+  private static final String IDENTIFIER_TYPES = "IDENTIFIER_TYPES";
   private static final String UNSPECIFIED_MATERIAL_TYPE_ID = "be44c321-ab73-43c4-a114-70f82fa13f17";
 
-  private static final String MOCK_OKAPI_GET_ORDER_BY_ID_HEADER = "X-Okapi-MockGetOrderById";
-  private static final String MOCK_OKAPI_PUT_ORDER_HEADER = "X-Okapi-MockPutOrder";
-  private static final String MOCK_OKAPI_GET_ORDER_HEADER = "X-Okapi-MockGetOrder";
+  private static final String MOCK_OKAPI_INSTRUCTION_HEADER = "X-Okapi-MockInstruction";
   private static final String MOCK_INSTRUCTION_GET_BYID_FAIL = "GetOrderFail";
   private static final String MOCK_INSTRUCTION_PUT_FAIL = "PutFail";
   private static final String MOCK_INSTRUCTION_GET_PENDING_ORDER = "GetPendingOrder";
   private static final String MOCK_INSTRUCTION_GET_OPEN_ORDER = "GetOpenOrder";
   private static final String MOCK_INSTRUCTION_FAIL_ORDER = "FailOrder";
+  private static final String MOCK_INSTRUCTION_FAIL_PRODUCTYPE = "Fail";
 
   private static Vertx vertx;
   private static MockServer mockServer;
@@ -223,7 +223,8 @@ public class GOBIIntegrationServiceResourceImplTest {
         .contentType("application/xml");
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(5, column.size());
+    //  // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
+    assertEquals(6, column.size());
 
     asyncLocal.complete();
 
@@ -256,7 +257,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(5, column.size());
+    // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
+    assertEquals(6, column.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -346,7 +348,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(5, column.size());
+    // Listed Print Monograph has to get the Product type ID so there will be an additional call made
+    assertEquals(6, column.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -544,7 +547,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(5, column.size());
+    //Listed Print Monograph has Product Id type so there will be an additional call made
+    assertEquals(6, column.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -671,7 +675,48 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     asyncLocal.complete();
 
-    logger.info("End: Testing for falling back to tthe first location id, if a non existent code is sent");
+    logger.info("End: Testing for falling back to the first location id, if a non existent code is sent");
+  }
+
+
+  @Test
+  public final void testPostGobiOrdersFallBackProductType(TestContext context) throws Exception {
+    logger.info("Begin: Testing for falling back to the first product id, if a non existent code is sent");
+
+    final Async asyncLocal = context.async();
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER,MOCK_INSTRUCTION_FAIL_PRODUCTYPE))
+        .header(CONTENT_TYPE_HEADER_XML)
+      .body(body)
+      .when()
+      .post(ORDERS_PATH)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+          .body()
+          .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    context.assertNotNull(order.getPoLineNumber());
+
+    List<JsonObject> identifierTypes = MockServer.serverRqRs.get(IDENTIFIER_TYPES, HttpMethod.GET);
+    // 2 calls must be made to identifiers endpoint
+    assertEquals(2, identifierTypes.size());
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    verifyRequiredFieldsAreMapped(compPO);
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing for falling back to the first product id, if a non existent code is sent");
   }
 
 
@@ -688,7 +733,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
+        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -730,7 +775,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_FAIL_ORDER))
+        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_FAIL_ORDER))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -772,8 +817,8 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
-        .header(new Header(MOCK_OKAPI_PUT_ORDER_HEADER, MOCK_INSTRUCTION_PUT_FAIL))
+        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
+        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_PUT_FAIL))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -819,7 +864,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
+        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -860,8 +905,8 @@ public class GOBIIntegrationServiceResourceImplTest {
         .header(URL_HEADER)
         .header(TENANT_HEADER)
         .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
-        .header(new Header(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER, MOCK_INSTRUCTION_GET_BYID_FAIL))
+        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
+        .header(new Header(MOCK_OKAPI_INSTRUCTION_HEADER, MOCK_INSTRUCTION_GET_BYID_FAIL))
         .body(body)
       .when()
         .post(ORDERS_PATH)
@@ -954,6 +999,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       router.get(PostGobiOrdersHelper.LOCATIONS_ENDPOINT).handler(this::handleGetLocation);
       router.get(PostGobiOrdersHelper.FUNDS_ENDPOINT).handler(this::handleGetFund);
       router.get(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
+      router.get(PostGobiOrdersHelper.IDENTIFIERS_ENDPOINT).handler(this::handleGetProductTypes);
       router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handleGetOrders);
       router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handleGetOrderById);
       router.put(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handlePutOrderById);
@@ -1050,7 +1096,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handleGetLocation(RoutingContext ctx) {
-
       logger.info("got location request: {}", ctx.request().query());
 
       JsonObject locations = new JsonObject();
@@ -1129,7 +1174,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got Orders request: {}", ctx.request()
         .query());
       String getInstruction = ctx.request()
-        .getHeader(MOCK_OKAPI_GET_ORDER_HEADER);
+        .getHeader(MOCK_OKAPI_INSTRUCTION_HEADER);
 
       JsonObject purchaseOrders;
       try {
@@ -1168,7 +1213,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got {}", ctx.request()
         .path());
       String getByIdInstruction = ctx.request()
-        .getHeader(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER);
+        .getHeader(MOCK_OKAPI_INSTRUCTION_HEADER);
 
       try {
         if (MOCK_INSTRUCTION_GET_BYID_FAIL.equals(getByIdInstruction)) {
@@ -1197,7 +1242,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got {}", ctx.request()
         .path());
       String putInstruction = ctx.request()
-        .getHeader(MOCK_OKAPI_PUT_ORDER_HEADER);
+        .getHeader(MOCK_OKAPI_INSTRUCTION_HEADER);
       addServerRqRsData(HttpMethod.PUT, COMPOSITE_PURCHASE_ORDER, ctx.getBodyAsJson());
 
       if (putInstruction.equals(MOCK_INSTRUCTION_PUT_FAIL)) {
@@ -1211,7 +1256,31 @@ public class GOBIIntegrationServiceResourceImplTest {
           .setStatusCode(204)
           .end();
       }
+    }
 
+    private void handleGetProductTypes(RoutingContext ctx) {
+      logger.info("got productTypes request: {}", ctx.request()
+        .query());
+      String getByIdInstruction = ctx.request()
+        .getHeader(MOCK_OKAPI_INSTRUCTION_HEADER);
+
+      JsonObject productTypes = new JsonObject();
+      addServerRqRsData(HttpMethod.GET, IDENTIFIER_TYPES, productTypes);
+
+      if (MOCK_INSTRUCTION_FAIL_PRODUCTYPE.equals(getByIdInstruction) && ctx.request().query().contains("ISBN") ) {
+        productTypes.put("identifierTypes",new JsonArray()).put(TOTAL_RECORDS, 0);
+      } else {
+        productTypes.put("identifierTypes", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID()
+          .toString())
+          .put("code", ctx.queryParam("query")
+            .get(0)
+            .split("=")[1])))
+          .put(TOTAL_RECORDS, 1);
+      }
+      ctx.response()
+      .setStatusCode(200)
+      .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+      .end(productTypes.encodePrettily());
     }
 
     private String randomDigits(int len) {
