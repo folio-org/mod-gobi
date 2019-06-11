@@ -1,4 +1,16 @@
-## 1.5.0 Unreleased
+## 1.6.0 Unreleased
+
+## 1.5.0 Released
+   Major changes in this release include aligning code with latest schema changes related to looking up UUID for productID type, fund type.Also handled 
+   prevetion of duplicate orders by looking for unique YBP  Order number
+
+  [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.4.0...v1.5.0)
+
+### Stories
+ * [MODGOBI-74](https://issues.folio.org/browse/MODGOBI-74) - acq-model updates
+ * [MODGOBI-73](https://issues.folio.org/browse/MODGOBI-73) - PO Line: product id type is uuid
+ * [MODGOBI-72](https://issues.folio.org/browse/MODGOBI-72) - Prevent duplicate orders
+ * [MODGOBI-71](https://issues.folio.org/browse/MODGOBI-71) - "Owner" field is on PO level
 
 ## 1.4.0 Released
  Changes in this release include increasing flexibility with inventory interaction by including flags for CreateInventory, specifying inidividual material 
