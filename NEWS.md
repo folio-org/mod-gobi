@@ -1,8 +1,8 @@
 ## 1.6.0 Unreleased
 
 ## 1.5.0 Released
-   Major changes in this release include aligning code with latest schema changes related to looking up UUID for productID type, fund type.Also handled 
-   prevetion of duplicate orders by looking for unique YBP  Order number
+   Major changes in this release include aligning code with latest schema changes related to looking up UUID for productID type, fund type. 
+   Also handled prevention of duplicate orders by looking for unique YBP  Order number before placing an order
 
   [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.4.0...v1.5.0)
 
