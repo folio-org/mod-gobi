@@ -273,7 +273,7 @@ public class PostGobiOrdersHelper {
       .thenCompose(funds -> {
         String fundId = HelperUtils.extractIdOfFirst(funds, "funds");
         if (StringUtils.isEmpty(fundId)) {
-          return lookupFundId(DEFAULT_LOOKUP_CODE);
+          return completedFuture(null);
         }
         return completedFuture(fundId);
       })
