@@ -119,6 +119,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String MOCK_INSTRUCTION_GET_OPEN_ORDER = "GetOpenOrder";
   private static final String MOCK_INSTRUCTION_FAIL_ORDER = "FailOrder";
   private static final String MOCK_INSTRUCTION_FAIL_PRODUCTYPE = "Fail";
+  private static final String MOCK_INSTRUCTION_NO_PRODUCTYPE = "NoProductType";
 
   private static Vertx vertx;
   private static MockServer mockServer;
@@ -723,6 +724,48 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("End: Testing for falling back to the first product id, if a non existent code is sent");
   }
 
+  @Test
+  public final void testPostGobiOrdersNoProductIdTypes() throws Exception {
+    logger.info("Begin: Testing for checking if productId is set if there are no productIdTypes in the environment");
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
+
+    final GobiResponse order = RestAssured
+      .given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER,MOCK_INSTRUCTION_NO_PRODUCTYPE))
+        .header(CONTENT_TYPE_HEADER_XML)
+      .body(body)
+      .when()
+      .post(ORDERS_PATH)
+        .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+          .extract()
+          .body()
+          .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
+
+    List<JsonObject> identifierTypes = MockServer.serverRqRs.get(IDENTIFIER_TYPES, HttpMethod.GET);
+    // 2 calls must be made to identifiers endpoint
+    assertEquals(2, identifierTypes.size());
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    CompositePurchaseOrder compPO = postedOrder.get(0)
+      .mapTo(CompositePurchaseOrder.class);
+    // assert that the productId is mapped, so that if the order is created in Pending state even though
+    // there is no ProductIdType
+    assertNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductIdType());
+    assertNotNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
+    verifyRequiredFieldsAreMapped(compPO);
+
+    logger.info("End: Testing for checking if productId is set if there are no productIdTypes in the environment");
+  }
+
 
   @Test
   public final void testPostGobiOrdersExistingOrder() throws Exception {
@@ -1274,6 +1317,9 @@ public class GOBIIntegrationServiceResourceImplTest {
       if (MOCK_INSTRUCTION_FAIL_PRODUCTYPE.equals(getByIdInstruction) && ctx.request()
         .query()
         .contains("ISBN")) {
+        productTypes.put("identifierTypes", new JsonArray())
+          .put(TOTAL_RECORDS, 0);
+      } else if (MOCK_INSTRUCTION_NO_PRODUCTYPE.equals(getByIdInstruction)) {
         productTypes.put("identifierTypes", new JsonArray())
           .put(TOTAL_RECORDS, 0);
       } else {
