@@ -273,7 +273,7 @@ public class PostGobiOrdersHelper {
       .thenCompose(funds -> {
         String fundId = HelperUtils.extractIdOfFirst(funds, "funds");
         if (StringUtils.isEmpty(fundId)) {
-          return lookupFundId(DEFAULT_LOOKUP_CODE);
+          return completedFuture(null);
         }
         return completedFuture(fundId);
       })
@@ -284,7 +284,7 @@ public class PostGobiOrdersHelper {
   }
 
   /**
-   * Use the provided product type.If the specified type can't be found, fallback using the first one listed
+   * Use the product type specified in mappings.If the specified type can't be found, fallback using the first one listed
    *
    * @param productType
    * @return UUID of the productId Type
@@ -296,7 +296,8 @@ public class PostGobiOrdersHelper {
     return handleGetRequest(endpoint).thenCompose(productTypes -> {
       String productTypeId = HelperUtils.extractProductTypeId(productTypes);
       if (StringUtils.isEmpty(productTypeId)) {
-        return lookupProductIdType(DEFAULT_LOOKUP_CODE);
+        // the productType is already a default value in the mappings, so fallback to first one
+        return DEFAULT_LOOKUP_CODE.equals(productType) ? completedFuture(null) : lookupProductIdType(DEFAULT_LOOKUP_CODE);
       }
       return completedFuture(productTypeId);
     })
