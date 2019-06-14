@@ -9,8 +9,38 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.io.IOUtils;
+import org.folio.rest.RestVerticle;
+import org.folio.rest.acq.model.CompositePoLine;
+import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.gobi.model.GobiResponse;
+import org.folio.rest.tools.PomReader;
+import org.folio.rest.tools.utils.NetworkUtils;
+import org.hamcrest.Matchers;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
@@ -30,33 +60,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.io.IOUtils;
-import org.folio.rest.RestVerticle;
-import org.folio.rest.acq.model.CompositePoLine;
-import org.folio.rest.acq.model.CompositePurchaseOrder;
-import org.folio.rest.gobi.model.GobiResponse;
-import org.folio.rest.tools.PomReader;
-import org.folio.rest.tools.utils.NetworkUtils;
-import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
@@ -120,6 +123,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String MOCK_INSTRUCTION_FAIL_ORDER = "FailOrder";
   private static final String MOCK_INSTRUCTION_FAIL_PRODUCTYPE = "Fail";
   private static final String MOCK_INSTRUCTION_NO_PRODUCTYPE = "NoProductType";
+  private static final String MOCK_INSTRUCTION_FUNDS_NOT_EXIST = "FundsNotExist";
 
   private static Vertx vertx;
   private static MockServer mockServer;
@@ -267,6 +271,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -310,16 +315,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    assertEquals("Description from Custom Mapping", ppo.getCompositePoLines().get(0).getPoLineDescription());
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    assertEquals("Description from Custom Mapping", compPO.getCompositePoLines().get(0).getPoLineDescription());
     // verify if the currency specified in the request is used
-    assertEquals("GBP", ppo.getCompositePoLines().get(0).getCost().getCurrency());
+    assertEquals("GBP", compPO.getCompositePoLines().get(0).getCost().getCurrency());
 
     // MODGOBI-61 - check createInventory populated for eresource only
-    assertNotNull(ppo.getCompositePoLines().get(0).getEresource().getCreateInventory());
-    assertNull(ppo.getCompositePoLines().get(0).getPhysical());
+    assertNotNull(compPO.getCompositePoLines().get(0).getEresource().getCreateInventory());
+    assertNull(compPO.getCompositePoLines().get(0).getPhysical());
 
-    verifyRequiredFieldsAreMapped(ppo);
+    verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic serial");
@@ -356,12 +363,13 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals(6, column.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    assertThat(ppo.getCompositePoLines().get(0).getCost().getListUnitPriceElectronic(), nullValue());
-    assertThat(ppo.getCompositePoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
-    assertNotNull(ppo.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPriceElectronic(), nullValue());
+    assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
-    verifyRequiredFieldsAreMapped(ppo);
+    verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -398,11 +406,12 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals(5, column.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     // verify if default currency is used
-    assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
+    assertEquals("USD", compPO.getCompositePoLines().get(0).getCost().getCurrency());
 
-    verifyRequiredFieldsAreMapped(ppo);
+    verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -443,6 +452,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -479,10 +489,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals(5, column.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    CompositePurchaseOrder ppo = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    assertEquals("USD", ppo.getCompositePoLines().get(0).getCost().getCurrency());
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    assertEquals("USD", compPO.getCompositePoLines().get(0).getCost().getCurrency());
 
-    verifyRequiredFieldsAreMapped(ppo);
+    verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
     logger.info("End: Testing for 201 - posted order unlisted print serial");
@@ -557,6 +568,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -594,10 +606,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertEquals(2, configEntries.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    CompositePurchaseOrder po = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    assertEquals(UNSPECIFIED_MATERIAL_TYPE_ID, po.getCompositePoLines().get(0).getEresource().getMaterialType());
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    assertEquals(UNSPECIFIED_MATERIAL_TYPE_ID, compPO.getCompositePoLines().get(0).getEresource().getMaterialType());
 
-    verifyRequiredFieldsAreMapped(po);
+    verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -676,6 +689,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -718,6 +732,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     CompositePurchaseOrder compPO = postedOrder.get(0)
       .mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
 
@@ -748,7 +763,6 @@ public class GOBIIntegrationServiceResourceImplTest {
           .as(GobiResponse.class, ObjectMapperType.JAXB);
 
     assertNotNull(order.getPoLineNumber());
-    assertNotNull(order.getPoLineNumber());
 
     List<JsonObject> identifierTypes = MockServer.serverRqRs.get(IDENTIFIER_TYPES, HttpMethod.GET);
     // 2 calls must be made to identifiers endpoint
@@ -762,10 +776,49 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductIdType());
     assertNotNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
     verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for checking if productId is set if there are no productIdTypes in the environment");
   }
 
+
+  @Test
+  public final void testPostGobiOrdersNoFundsExist() throws Exception {
+    logger.info("Begin: Testing for checking if productId is set if there are no productIdTypes in the environment");
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
+
+    final GobiResponse order = RestAssured.given()
+        .header(TOKEN_HEADER)
+        .header(URL_HEADER)
+        .header(TENANT_HEADER)
+        .header(new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER, MOCK_INSTRUCTION_FUNDS_NOT_EXIST))
+        .header(CONTENT_TYPE_HEADER_XML)
+      .body(body)
+      .when()
+        .post(ORDERS_PATH)
+          .then()
+          .statusCode(201)
+          .contentType(ContentType.XML)
+            .extract()
+              .body()
+              .as(GobiResponse.class, ObjectMapperType.JAXB);
+
+    assertNotNull(order.getPoLineNumber());
+
+    List<JsonObject> fundsRequests = MockServer.serverRqRs.get(FUNDS, HttpMethod.GET);
+    // 2 calls must be made to identifiers endpoint
+    assertEquals(2, fundsRequests.size());
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+
+    verifyRequiredFieldsAreMapped(compPO);
+
+    assertNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+
+    logger.info("End: Testing for checking if productId is set if there are no productIdTypes in the environment");
+  }
 
   @Test
   public final void testPostGobiOrdersExistingOrder() throws Exception {
@@ -1006,7 +1059,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(poLine.getOrderFormat());
     assertNotNull(poLine.getSource());
     assertNotNull(poLine.getTitle());
-    assertNotNull(poLine.getFundDistribution().get(0).getFundId());
   }
 
   public static class MockServer {
@@ -1167,12 +1219,22 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handleGetFund(RoutingContext ctx) {
-      logger.info("got location request: {}", ctx.request()
-        .query());
-
+      logger.info("got location request: {}", ctx.request().query());
+      
+      String getByIdInstruction = ctx.request().getHeader(MOCK_OKAPI_GET_IDENTIFIER_HEADER);
+      
       JsonObject funds = new JsonObject();
       if (ctx.request().query().contains("HUM")) {
         funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);
+
+      } else if (MOCK_INSTRUCTION_FUNDS_NOT_EXIST.equals(getByIdInstruction)) {
+        funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);
+
+      } else if (ctx.queryParam("query").get(0).split("==")[1].contains("*")) {
+        funds.put("funds", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID().toString())
+          .put("code", "HUM")))
+          .put(TOTAL_RECORDS, 1);
+
       } else {
         funds.put("funds", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID().toString())
           .put("code", ctx.queryParam("query").get(0).split("==")[1])))
