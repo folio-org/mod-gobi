@@ -1,4 +1,4 @@
-FROM folioci/openjdk8-jre:latest
+FROM folioci/openjdk8-jre-alpine:latest
 
 ENV VERTICLE_FILE mod-gobi-fat.jar
 

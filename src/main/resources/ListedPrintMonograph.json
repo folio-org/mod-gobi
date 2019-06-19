@@ -124,13 +124,6 @@
           }
         },
         {
-          "field": "OWNER",
-          "dataSource": {
-            "from": "//BaseAccount",
-            "default": "Main"
-          }
-        },
-        {
           "field": "PO_LINE_ORDER_FORMAT",
           "dataSource": {
             "default": "Physical Resource"

@@ -49,7 +49,6 @@
         "NOTES",
         "NOTE_FROM_VENDOR",
         "ORDER_TYPE",
-        "OWNER",
         "PO_LINE_DESCRIPTION",
         "PO_LINE_ESTIMATED_PRICE",
         "PO_LINE_ORDER_FORMAT",

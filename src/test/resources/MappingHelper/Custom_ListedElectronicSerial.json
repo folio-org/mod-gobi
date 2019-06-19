@@ -162,13 +162,6 @@
           }
         },
         {
-          "field": "OWNER",
-          "dataSource": {
-            "from": "//BaseAccount",
-            "default": "Main"
-          }
-        },
-        {
           "field": "PO_LINE_ORDER_FORMAT",
           "dataSource": {
             "default": "Electronic Resource"
@@ -279,12 +272,6 @@
         },
         {
           "field": "DONOR",
-          "dataSource": {
-            "default": "Test Data"
-          }
-        },
-        {
-          "field": "OWNER",
           "dataSource": {
             "default": "Test Data"
           }
