@@ -25,6 +25,7 @@
             "orders.collection.get",
             "orders.item.get",
             "orders.item.put",
+            "inventory-storage.contributor-name-types.collection.get",
             "inventory-storage.material-types.collection.get",
             "inventory-storage.locations.collection.get",
             "inventory-storage.identifier-types.collection.get",
@@ -44,6 +45,10 @@
     {
       "id": "configuration",
       "version": "2.0"
+    },
+    {
+      "id": "contributor-name-types",
+      "version": "1.2"
     },
     {
       "id": "material-types",

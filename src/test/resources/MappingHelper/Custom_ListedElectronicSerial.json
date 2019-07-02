@@ -322,9 +322,11 @@
           }
         },
         {
-          "field": "CONTRIBUTOR_TYPE",
+          "field": "CONTRIBUTOR_NAME_TYPE",
           "dataSource": {
-            "default": "3e12234b-26ad-4003-b1a4-2259f45f1afb"
+            "default": "Test Data",
+            "translation": "lookupContributorNameTypeId",
+            "translateDefault": true
           }
         },
         {

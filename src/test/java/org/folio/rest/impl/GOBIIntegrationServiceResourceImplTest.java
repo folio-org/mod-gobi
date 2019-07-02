@@ -1,6 +1,10 @@
 package org.folio.rest.impl;
 
+import static java.util.UUID.randomUUID;
+import static org.folio.gobi.HelperUtils.CONTRIBUTOR_NAME_TYPES;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
+import static org.folio.rest.impl.PostGobiOrdersHelper.DEFAULT_LOOKUP_CODE;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
@@ -18,13 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
@@ -45,6 +49,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.mapper.ObjectMapperType;
+import io.restassured.specification.RequestSpecification;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
@@ -115,7 +120,9 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String MOCK_OKAPI_GET_ORDER_BY_ID_HEADER = "X-Okapi-MockGetOrderById";
   private static final String MOCK_OKAPI_PUT_ORDER_HEADER = "X-Okapi-MockPutOrder";
   private static final String MOCK_OKAPI_GET_ORDER_HEADER = "X-Okapi-MockGetOrder";
-  private static final String MOCK_OKAPI_GET_IDENTIFIER_HEADER = "X-Okapi-MockGetOrder";
+  private static final String MOCK_OKAPI_GET_IDENTIFIER_HEADER = "X-Okapi-MockGetIdentifier";
+  private static final String MOCK_OKAPI_GET_FUND_HEADER = "X-Okapi-MockGetFund";
+  private static final String MOCK_OKAPI_GET_CONTRIBUTOR_NAME_HEADER = "X-Okapi-MockGetContributorName";
   private static final String MOCK_INSTRUCTION_GET_BYID_FAIL = "GetOrderFail";
   private static final String MOCK_INSTRUCTION_PUT_FAIL = "PutFail";
   private static final String MOCK_INSTRUCTION_GET_PENDING_ORDER = "GetPendingOrder";
@@ -123,7 +130,8 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String MOCK_INSTRUCTION_FAIL_ORDER = "FailOrder";
   private static final String MOCK_INSTRUCTION_FAIL_PRODUCTYPE = "Fail";
   private static final String MOCK_INSTRUCTION_NO_PRODUCTYPE = "NoProductType";
-  private static final String MOCK_INSTRUCTION_FUNDS_NOT_EXIST = "FundsNotExist";
+  private static final String MOCK_INSTRUCTION_NOT_EXIST = "NotExist";
+  private static final String MOCK_INSTRUCTION_USE_DEFAULT = "UseDefault";
 
   private static Vertx vertx;
   private static MockServer mockServer;
@@ -217,22 +225,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
-    RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType("application/xml");
+    postOrderSuccess(body);
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
-    assertEquals(6, column.size());
+    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR));
 
     asyncLocal.complete();
 
@@ -247,26 +245,13 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
-    assertEquals(6, column.size());
+    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -286,21 +271,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -308,8 +279,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(configEntries);
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    // 4 calls one each to configurations,organizations,material types and location
-    assertEquals(5, column.size());
+    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER, VENDOR));
 
     // Make sure the mappings from custom configuration were used
     assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
@@ -340,27 +310,14 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_PRINT_MONOGRAPH_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Print Monograph has to get the Product type ID so there will be an additional call made
-    assertEquals(6, column.size());
+    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -384,26 +341,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_PRINT_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(5, column.size());
+    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER, VENDOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -426,26 +369,13 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_UNLISTED_PRINT_MONOGRAPHPATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(5, column.size());
+    assertThat(column.keySet(),
+        containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER, VENDOR));
 
     verifyResourceCreateInventoryNotMapped();
 
@@ -467,26 +397,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_UNLISTED_PRINT_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(TENANT_HEADER)
-        .header(URL_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertEquals(5, column.size());
+    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER, VENDOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -507,13 +423,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_BAD_DATA_PATH);
 
-    final GobiResponse error = RestAssured
-      .given()
-        .header(TENANT_HEADER)
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
+    final GobiResponse error = buildRequest(body)
       .when()
         .post(ORDERS_PATH)
       .then()
@@ -543,27 +453,14 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_PRINT_MONOGRAPH_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     //Listed Print Monograph has Product Id type so there will be an additional call made
-    assertEquals(6, column.size());
+    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -583,21 +480,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-       .header(TOKEN_HEADER)
-       .header(URL_HEADER)
-       .header(TENANT_HEADER)
-       .header(CONTENT_TYPE_HEADER_XML)
-      .body(body)
-      .when()
-      .post(ORDERS_PATH)
-       .then()
-         .statusCode(201)
-         .contentType(ContentType.XML)
-         .extract()
-         .body()
-         .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -625,21 +508,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-       .header(TOKEN_HEADER)
-       .header(URL_HEADER)
-       .header(TENANT_HEADER)
-       .header(CONTENT_TYPE_HEADER_XML)
-      .body(body)
-      .when()
-      .post(ORDERS_PATH)
-       .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-        .body()
-        .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -664,21 +533,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-      .body(body)
-      .when()
-      .post(ORDERS_PATH)
-        .then()
-          .statusCode(201)
-          .contentType(ContentType.XML)
-          .extract()
-          .body()
-          .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body);
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -705,22 +560,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER,MOCK_INSTRUCTION_FAIL_PRODUCTYPE))
-        .header(CONTENT_TYPE_HEADER_XML)
-      .body(body)
-      .when()
-      .post(ORDERS_PATH)
-        .then()
-          .statusCode(201)
-          .contentType(ContentType.XML)
-          .extract()
-          .body()
-          .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER, MOCK_INSTRUCTION_FAIL_PRODUCTYPE));
 
     context.assertNotNull(order.getPoLineNumber());
 
@@ -740,27 +580,61 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
+  public final void testPostGobiOrdersFallBackContributorTypeName() throws Exception {
+    logger.info("Begin: Testing for falling back to the first random contributor name type, if a non existent code is sent");
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
+
+    GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_CONTRIBUTOR_NAME_HEADER, MOCK_INSTRUCTION_USE_DEFAULT));
+
+    assertNotNull(order.getPoLineNumber());
+
+    List<JsonObject> types = MockServer.serverRqRs.get(CONTRIBUTOR_NAME_TYPES, HttpMethod.GET);
+    // 2 calls must be made
+    assertEquals(2, types.size());
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    assertEquals(1, postedOrder.size());
+
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getContributors().get(0).getContributorNameTypeId());
+    assertNotNull(compPO.getCompositePoLines().get(0).getContributors().get(0).getContributor());
+
+    logger.info("End: Testing for falling back to the first random contributor name type, if a non existent code is sent");
+  }
+
+  @Test
+  public final void testPostGobiOrdersContributorNameTypeNotAvailable() throws Exception {
+    logger.info("Begin: Testing contributor is ignored if contributor name type cannot be resolved");
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
+
+    GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_CONTRIBUTOR_NAME_HEADER, MOCK_INSTRUCTION_NOT_EXIST));
+
+    assertNotNull(order.getPoLineNumber());
+
+    List<JsonObject> types = MockServer.serverRqRs.get(CONTRIBUTOR_NAME_TYPES, HttpMethod.GET);
+    // 2 calls must be made
+    assertEquals(2, types.size());
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    assertEquals(1, postedOrder.size());
+
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    verifyRequiredFieldsAreMapped(compPO);
+    assertTrue(compPO.getCompositePoLines().get(0).getContributors().isEmpty());
+
+    logger.info("End: Testing contributor is ignored if contributor name type cannot be resolved");
+  }
+
+  @Test
   public final void testPostGobiOrdersNoProductIdTypes() throws Exception {
     logger.info("Begin: Testing for checking if productId is set if there are no productIdTypes in the environment");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER,MOCK_INSTRUCTION_NO_PRODUCTYPE))
-        .header(CONTENT_TYPE_HEADER_XML)
-      .body(body)
-      .when()
-      .post(ORDERS_PATH)
-        .then()
-          .statusCode(201)
-          .contentType(ContentType.XML)
-          .extract()
-          .body()
-          .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER, MOCK_INSTRUCTION_NO_PRODUCTYPE));
 
     assertNotNull(order.getPoLineNumber());
 
@@ -788,21 +662,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
-    final GobiResponse order = RestAssured.given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER, MOCK_INSTRUCTION_FUNDS_NOT_EXIST))
-        .header(CONTENT_TYPE_HEADER_XML)
-      .body(body)
-      .when()
-        .post(ORDERS_PATH)
-          .then()
-          .statusCode(201)
-          .contentType(ContentType.XML)
-            .extract()
-              .body()
-              .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_FUND_HEADER, MOCK_INSTRUCTION_NOT_EXIST));
 
     assertNotNull(order.getPoLineNumber());
 
@@ -827,22 +687,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER));
 
     // should try to fetch the order in Open status
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
@@ -869,23 +714,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_FAIL_ORDER))
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
-
+    final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_FAIL_ORDER));
 
     // should try to fetch the order, and gets 500
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
@@ -911,23 +740,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
-        .header(new Header(MOCK_OKAPI_PUT_ORDER_HEADER, MOCK_INSTRUCTION_PUT_FAIL))
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER),
+        new Header(MOCK_OKAPI_PUT_ORDER_HEADER, MOCK_INSTRUCTION_PUT_FAIL));
 
     // should fetch existing order which is in Pending state
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
@@ -958,22 +772,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER))
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_PENDING_ORDER));
 
     // should fetch existing order which is in Pending state
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
@@ -999,23 +798,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
-    final GobiResponse order = RestAssured
-      .given()
-        .header(TOKEN_HEADER)
-        .header(URL_HEADER)
-        .header(TENANT_HEADER)
-        .header(CONTENT_TYPE_HEADER_XML)
-        .header(new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER))
-        .header(new Header(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER, MOCK_INSTRUCTION_GET_BYID_FAIL))
-        .body(body)
-      .when()
-        .post(ORDERS_PATH)
-      .then()
-        .statusCode(201)
-        .contentType(ContentType.XML)
-        .extract()
-          .body()
-            .as(GobiResponse.class, ObjectMapperType.JAXB);
+    final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_ORDER_HEADER, MOCK_INSTRUCTION_GET_OPEN_ORDER),
+        new Header(MOCK_OKAPI_GET_ORDER_BY_ID_HEADER, MOCK_INSTRUCTION_GET_BYID_FAIL));
 
     // should fetch existing order which is in Open state
     List<JsonObject> getOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.GET);
@@ -1031,6 +815,33 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(order.getPoLineNumber());
 
     logger.info("End: Testing for 201 - Create new Order, if fetching existing PO Line Number Fails");
+  }
+
+  private RequestSpecification buildRequest(String body, Header... additionalHeaders) {
+    RequestSpecification request = RestAssured.given()
+      .header(TOKEN_HEADER)
+      .header(URL_HEADER)
+      .header(TENANT_HEADER)
+      .header(CONTENT_TYPE_HEADER_XML)
+      .body(body);
+
+    for (Header header : additionalHeaders) {
+      request.header(header);
+    }
+
+    return request;
+  }
+
+  private GobiResponse postOrderSuccess(String body, Header... additionalHeaders) {
+    return buildRequest(body, additionalHeaders)
+      .when()
+        .post(ORDERS_PATH)
+      .then()
+        .statusCode(201)
+        .contentType(ContentType.XML)
+        .extract()
+          .body()
+            .as(GobiResponse.class, ObjectMapperType.JAXB);
   }
 
   // MODGOBI-61 check createInventory field not mapped
@@ -1099,6 +910,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       router.get(PostGobiOrdersHelper.FUNDS_ENDPOINT).handler(this::handleGetFund);
       router.get(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
       router.get(PostGobiOrdersHelper.IDENTIFIERS_ENDPOINT).handler(this::handleGetProductTypes);
+      router.get(PostGobiOrdersHelper.CONTRIBUTOR_NAME_TYPES_ENDPOINT).handler(this::handleGetContributorNameTypes);
       router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handleGetOrders);
       router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handleGetOrderById);
       router.put(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handlePutOrderById);
@@ -1127,12 +939,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       JsonObject compPO = ctx.getBodyAsJson();
 
-      compPO.put(ID, UUID.randomUUID().toString());
+      compPO.put(ID, randomUUID().toString());
       String poNumber = "PO_" + randomDigits(10);
       compPO.put("poNumber", poNumber);
       compPO.getJsonArray("compositePoLines").forEach(line -> {
         JsonObject poLine = (JsonObject) line;
-        poLine.put(ID, UUID.randomUUID().toString());
+        poLine.put(ID, randomUUID().toString());
         poLine.put("poLineNumber", poNumber + "-1");
         poLine.put("purchaseOrderId", compPO.getString(ID));
       });
@@ -1181,7 +993,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       } else {
         mtypes.put("mtypes", new JsonArray()
           .add(new JsonObject()
-            .put(ID, UUID.randomUUID().toString())
+            .put(ID, randomUUID().toString())
             .put(NAME, ctx.queryParam("query").get(0).split("=")[1])))
           .put(TOTAL_RECORDS, 1);
       }
@@ -1205,7 +1017,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       else {
         locations.put("locations", new JsonArray()
           .add(new JsonObject()
-            .put(ID, UUID.randomUUID().toString())
+            .put(ID, randomUUID().toString())
             .put("code", ctx.queryParam("query").get(0).split("=")[1])))
         .put(TOTAL_RECORDS, 1);
       }
@@ -1221,22 +1033,22 @@ public class GOBIIntegrationServiceResourceImplTest {
     private void handleGetFund(RoutingContext ctx) {
       logger.info("got location request: {}", ctx.request().query());
       
-      String getByIdInstruction = ctx.request().getHeader(MOCK_OKAPI_GET_IDENTIFIER_HEADER);
+      String getByIdInstruction = ctx.request().getHeader(MOCK_OKAPI_GET_FUND_HEADER);
       
       JsonObject funds = new JsonObject();
       if (ctx.request().query().contains("HUM")) {
         funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);
 
-      } else if (MOCK_INSTRUCTION_FUNDS_NOT_EXIST.equals(getByIdInstruction)) {
+      } else if (MOCK_INSTRUCTION_NOT_EXIST.equals(getByIdInstruction)) {
         funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);
 
-      } else if (ctx.queryParam("query").get(0).split("==")[1].contains("*")) {
-        funds.put("funds", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID().toString())
+      } else if (ctx.queryParam("query").get(0).split("==")[1].contains(DEFAULT_LOOKUP_CODE)) {
+        funds.put("funds", new JsonArray().add(new JsonObject().put(ID, randomUUID().toString())
           .put("code", "HUM")))
           .put(TOTAL_RECORDS, 1);
 
       } else {
-        funds.put("funds", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID().toString())
+        funds.put("funds", new JsonArray().add(new JsonObject().put(ID, randomUUID().toString())
           .put("code", ctx.queryParam("query").get(0).split("==")[1])))
           .put(TOTAL_RECORDS, 1);
       }
@@ -1282,8 +1094,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       logger.info("got Orders request: {}", ctx.request()
         .query());
-      String getInstruction = ctx.request()
-        .getHeader(MOCK_OKAPI_GET_ORDER_HEADER);
+      String getInstruction = StringUtils.trimToEmpty(ctx.request().getHeader(MOCK_OKAPI_GET_ORDER_HEADER));
 
       JsonObject purchaseOrders;
       try {
@@ -1385,13 +1196,38 @@ public class GOBIIntegrationServiceResourceImplTest {
         productTypes.put("identifierTypes", new JsonArray())
           .put(TOTAL_RECORDS, 0);
       } else {
-        productTypes.put("identifierTypes", new JsonArray().add(new JsonObject().put(ID, UUID.randomUUID()
+        productTypes.put("identifierTypes", new JsonArray().add(new JsonObject().put(ID, randomUUID()
           .toString())
           .put("code", ctx.queryParam("query")
             .get(0)
             .split("=")[1])))
           .put(TOTAL_RECORDS, 1);
       }
+      ctx.response()
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(productTypes.encodePrettily());
+    }
+
+    private void handleGetContributorNameTypes(RoutingContext ctx) {
+      logger.info("got contributorNameTypes request: {}", ctx.request().query());
+      String instruction = ctx.request().getHeader(MOCK_OKAPI_GET_CONTRIBUTOR_NAME_HEADER);
+
+      JsonObject productTypes = new JsonObject();
+      addServerRqRsData(HttpMethod.GET, CONTRIBUTOR_NAME_TYPES, productTypes);
+
+      String name = ctx.queryParam("query").get(0).split("==")[1];
+
+      if (MOCK_INSTRUCTION_NOT_EXIST.equals(instruction)
+          || (MOCK_INSTRUCTION_USE_DEFAULT.equals(instruction) && !DEFAULT_LOOKUP_CODE.equals(name))) {
+        productTypes.put(CONTRIBUTOR_NAME_TYPES, new JsonArray())
+          .put(TOTAL_RECORDS, 0);
+      } else {
+        productTypes.put(CONTRIBUTOR_NAME_TYPES, new JsonArray().add(new JsonObject().put(ID, randomUUID().toString())
+          .put(NAME, name)))
+          .put(TOTAL_RECORDS, 1);
+      }
+
       ctx.response()
         .setStatusCode(200)
         .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)

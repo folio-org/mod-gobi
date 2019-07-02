@@ -39,6 +39,14 @@
           }
         },
         {
+          "field": "CONTRIBUTOR_NAME_TYPE",
+          "dataSource": {
+            "default": "Personal name",
+            "translation": "lookupContributorNameTypeId",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "CURRENCY",
           "dataSource": {
             "from": "//ListPrice/Currency",

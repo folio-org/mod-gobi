@@ -26,7 +26,8 @@
     } ],
     "collection" : false,
     "contributors" : [ {
-      "contributorType" : "3e12234b-26ad-4003-b1a4-2259f45f1afb"
+      "contributor" : "Test",
+      "contributorNameTypeId" : "3e12234b-26ad-4003-b1a4-2259f45f1afb"
     } ],
     "cost" : {
       "listUnitPriceElectronic" : 0.0,
@@ -54,6 +55,7 @@
       "materialType" : "be44c321-ab73-43c4-a114-70f82fa13f17"
     },
     "fundDistribution" : [ {
+      "fundId" : "f5f1c495-7f7a-477a-b2e9-10eb043e37f4",
       "code" : "f5f1c495-7f7a-477a-b2e9-10eb043e37f4",
       "percentage" : 100.0
     } ],

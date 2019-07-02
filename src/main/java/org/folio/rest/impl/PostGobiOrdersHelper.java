@@ -54,8 +54,10 @@ public class PostGobiOrdersHelper {
   static final String ORDERS_ENDPOINT = "/orders/composite-orders";
   static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
   static final String FUNDS_ENDPOINT = "/finance-storage/funds";
+  static final String CONTRIBUTOR_NAME_TYPES_ENDPOINT = "/contributor-name-types";
   static final String IDENTIFIERS_ENDPOINT = "/identifier-types";
   private static final String QUERY = "?query=%s";
+  private static final String LIMIT_1 = "&limit=1";
 
   private static final String CONFIGURATION_MODULE = "GOBI";
   private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
@@ -66,9 +68,10 @@ public class PostGobiOrdersHelper {
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
-  private static final String DEFAULT_LOOKUP_CODE = "*";
+  public static final String DEFAULT_LOOKUP_CODE = "*";
   private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
   private static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
+  private static final String CQL_NAME_CRITERIA = "name==%s";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -230,7 +233,7 @@ public class PostGobiOrdersHelper {
    * @param materialTypeCode
    */
   public CompletableFuture<String> lookupMaterialTypeId(String materialTypeCode) {
-    String query = HelperUtils.encodeValue(String.format("name==%s", materialTypeCode), logger);
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, materialTypeCode), logger);
     String endpoint = String.format(MATERIAL_TYPES_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenCompose(materialTypes -> {
@@ -291,7 +294,7 @@ public class PostGobiOrdersHelper {
    */
   public CompletableFuture<String> lookupProductIdType(String productType) {
     logger.info("Received ProductType is {}", productType);
-    String query = HelperUtils.encodeValue(String.format("name==%s", productType), logger);
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, productType), logger);
     String endpoint = String.format(IDENTIFIERS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint).thenCompose(productTypes -> {
       String productTypeId = HelperUtils.extractProductTypeId(productTypes);
@@ -303,6 +306,34 @@ public class PostGobiOrdersHelper {
     })
       .exceptionally(t -> {
         logger.error("Exception looking up productId type UUID", t);
+        return null;
+      });
+  }
+
+  /**
+   * Use the contributor name type specified in mappings. If the specified type can't be found, fallback using the first one listed
+   *
+   * @param name contributor type name
+   * @return UUID of the contributor name type
+   */
+  public CompletableFuture<String> lookupContributorNameTypeId(String name) {
+    logger.info("Received contributorNameType is {}", name);
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, name), logger);
+    String endpoint = String.format(CONTRIBUTOR_NAME_TYPES_ENDPOINT + QUERY + LIMIT_1, query);
+    return handleGetRequest(endpoint).thenApply(HelperUtils::extractContributorNameTypeId)
+      .thenCompose(typeId -> {
+        if (StringUtils.isEmpty(typeId)) {
+          if (DEFAULT_LOOKUP_CODE.equals(name)) {
+            logger.error("No any contributorNameType available");
+            return completedFuture(null);
+          }
+          // the type is already a default value in the mappings, so fallback to first one
+          return lookupContributorNameTypeId(DEFAULT_LOOKUP_CODE);
+        }
+        return completedFuture(typeId);
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up contributorNameType type UUID", t);
         return null;
       });
   }

@@ -1,11 +1,15 @@
 package org.folio.gobi;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang.StringUtils;
 import org.folio.rest.acq.model.*;
 import org.folio.rest.acq.model.Cost.DiscountType;
 import org.folio.rest.mappings.model.Mapping;
@@ -234,14 +238,25 @@ public class Mapper {
   }
 
   private void mapContributor(List<CompletableFuture<?>> futures, Contributor contributor, Document doc) {
+    // If contributor name is available, resolve contributor name type (required field) and only then populate contributor details
     Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> contributor.setContributor((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR_TYPE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> contributor.setContributorType((String) o))
+        .thenApply(o -> (String) o)
+        .thenCompose(name -> {
+          if (StringUtils.isNotBlank(name)) {
+            return Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR_NAME_TYPE))
+              .map(typeField -> typeField.resolve(doc)
+                .thenAccept(o -> Optional.ofNullable(o)
+                  .map(Object::toString)
+                  .ifPresent(type -> {
+                    contributor.setContributor(name);
+                    contributor.setContributorNameTypeId(type);
+                  }))
+                .exceptionally(Mapper::logException))
+              .orElse(completedFuture(null));
+          }
+          return completedFuture(null);
+        })
         .exceptionally(Mapper::logException)));
   }
 
