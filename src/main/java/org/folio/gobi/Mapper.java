@@ -2,7 +2,6 @@ package org.folio.gobi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -18,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+
+import io.vertx.core.json.JsonObject;
 import scala.math.BigDecimal;
 
 public class Mapper {
@@ -247,10 +248,12 @@ public class Mapper {
           if (StringUtils.isNotBlank(name)) {
             return Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR_NAME_TYPE))
               .map(typeField -> typeField.resolve(doc)
-                .thenAccept(typeId -> {
+                .thenAccept(o -> Optional.ofNullable(o)
+                  .map(Object::toString)
+                  .ifPresent(type -> {
                     contributor.setContributor(name);
-                    contributor.setContributorNameTypeId((String) typeId);
-                  })
+                    contributor.setContributorNameTypeId(type);
+                  }))
                 .exceptionally(Mapper::logException))
               .orElse(completedFuture(null));
           }
@@ -728,19 +731,7 @@ public class Mapper {
   }
 
   public boolean isObjectEmpty(Object instance) {
-    for (Field f : instance.getClass()
-      .getDeclaredFields()) {
-      f.setAccessible(true);
-      try {
-        if (f.get(instance) != null)
-          return false;
-      } catch (IllegalArgumentException e) {
-        logger.error("Unable to determine Object", e);
-      } catch (IllegalAccessException e) {
-        logger.error("Unable to access Object", e);
-      }
-    }
-    return true;
+    return JsonObject.mapFrom(instance).isEmpty();
   }
 
   public static Void logException(Throwable t) {

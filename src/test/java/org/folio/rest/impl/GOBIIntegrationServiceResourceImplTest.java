@@ -623,10 +623,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertEquals(1, compPO.getCompositePoLines().get(0).getContributors().size());
-    // The contributor is mapped and the order is created even though there is no ContributorNameTypeId
-    assertNull(compPO.getCompositePoLines().get(0).getContributors().get(0).getContributorNameTypeId());
-    assertNotNull(compPO.getCompositePoLines().get(0).getContributors().get(0).getContributor());
+    assertTrue(compPO.getCompositePoLines().get(0).getContributors().isEmpty());
 
     logger.info("End: Testing contributor is ignored if contributor name type cannot be resolved");
   }
