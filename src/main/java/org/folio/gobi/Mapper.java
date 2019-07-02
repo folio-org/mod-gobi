@@ -243,15 +243,14 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenApply(o -> (String) o)
         .thenCompose(name -> {
+          // Map contributor name type only if name is available
           if (StringUtils.isNotBlank(name)) {
             return Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR_NAME_TYPE))
               .map(typeField -> typeField.resolve(doc)
-                .thenAccept(o -> Optional.ofNullable(o)
-                  .map(Object::toString)
-                  .ifPresent(type -> {
+                .thenAccept(typeId -> {
                     contributor.setContributor(name);
-                    contributor.setContributorNameTypeId(type);
-                  }))
+                    contributor.setContributorNameTypeId((String) typeId);
+                  })
                 .exceptionally(Mapper::logException))
               .orElse(completedFuture(null));
           }
@@ -561,17 +560,19 @@ public class Mapper {
     // instance
     Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
+        .thenCompose(o -> {
           productId.setProductId(o.toString());
-          Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
-            .ifPresent(prodIdType -> prodIdType.resolve(doc)
+          return Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
+            .map(prodIdType -> prodIdType.resolve(doc)
               .thenAccept(
                   typeId -> {
                     productId.setProductIdType((String) typeId);
                     List<ProductId> ids = new ArrayList<>();
                     ids.add(productId);
                     detail.setProductIds(ids);
-                  }));
+                })
+              .exceptionally(Mapper::logException))
+            .orElse(completedFuture(null));
         })
         .exceptionally(Mapper::logException)));
 
