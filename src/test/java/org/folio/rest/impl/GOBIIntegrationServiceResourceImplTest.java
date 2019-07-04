@@ -870,6 +870,12 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(poLine.getOrderFormat());
     assertNotNull(poLine.getSource());
     assertNotNull(poLine.getTitle());
+    if (!poLine.getContributors().isEmpty()) {
+      poLine.getContributors().forEach(contributor -> {
+        assertNotNull(contributor.getContributor());
+        assertNotNull(contributor.getContributorNameTypeId());
+      });
+    }
   }
 
   public static class MockServer {

@@ -324,7 +324,7 @@ public class PostGobiOrdersHelper {
       .thenCompose(typeId -> {
         if (StringUtils.isEmpty(typeId)) {
           if (DEFAULT_LOOKUP_CODE.equals(name)) {
-            logger.error("No any contributorNameType available");
+            logger.error("No contributorNameTypes are available");
             return completedFuture(null);
           }
           // the type is already a default value in the mappings, so fallback to first one
