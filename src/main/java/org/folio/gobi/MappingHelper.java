@@ -114,6 +114,9 @@ public class MappingHelper {
           case LOOKUP_MOCK:
             translatedValue = postGobiOrdersHelper.lookupMock(data);
             break;
+          case LOOKUP_CONTRIBUTOR_NAME_TYPE_ID:
+            translatedValue = postGobiOrdersHelper.lookupContributorNameTypeId(data);
+            break;
           case LOOKUP_LOCATION_ID:
             translatedValue = postGobiOrdersHelper.lookupLocationId(data);
             break;

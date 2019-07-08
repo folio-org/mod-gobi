@@ -11,6 +11,8 @@ import io.vertx.core.logging.Logger;
 
 public class HelperUtils {
 
+  public static final String CONTRIBUTOR_NAME_TYPES = "contributorNameTypes";
+
   private HelperUtils() {
 
   }
@@ -46,6 +48,9 @@ public class HelperUtils {
 
   public static String extractProductTypeId(JsonObject obj) {
     return extractIdOfFirst(obj, "identifierTypes");
+  }
+  public static String extractContributorNameTypeId(JsonObject obj) {
+    return extractIdOfFirst(obj, CONTRIBUTOR_NAME_TYPES);
   }
 
   public static String extractIdOfFirst(JsonObject obj, String arrField) {

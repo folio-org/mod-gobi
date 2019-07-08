@@ -1,11 +1,14 @@
 package org.folio.gobi;
 
-import java.lang.reflect.Field;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang.StringUtils;
 import org.folio.rest.acq.model.*;
 import org.folio.rest.acq.model.Cost.DiscountType;
 import org.folio.rest.mappings.model.Mapping;
@@ -14,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+
+import io.vertx.core.json.JsonObject;
 import scala.math.BigDecimal;
 
 public class Mapper {
@@ -234,14 +239,26 @@ public class Mapper {
   }
 
   private void mapContributor(List<CompletableFuture<?>> futures, Contributor contributor, Document doc) {
+    // If contributor name is available, resolve contributor name type (required field) and only then populate contributor details
     Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> contributor.setContributor((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR_TYPE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> contributor.setContributorType((String) o))
+        .thenApply(o -> (String) o)
+        .thenCompose(name -> {
+          // Map contributor name type only if name is available
+          if (StringUtils.isNotBlank(name)) {
+            return Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR_NAME_TYPE))
+              .map(typeField -> typeField.resolve(doc)
+                .thenAccept(o -> Optional.ofNullable(o)
+                  .map(Object::toString)
+                  .ifPresent(type -> {
+                    contributor.setContributor(name);
+                    contributor.setContributorNameTypeId(type);
+                  }))
+                .exceptionally(Mapper::logException))
+              .orElse(completedFuture(null));
+          }
+          return completedFuture(null);
+        })
         .exceptionally(Mapper::logException)));
   }
 
@@ -546,17 +563,19 @@ public class Mapper {
     // instance
     Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
+        .thenCompose(o -> {
           productId.setProductId(o.toString());
-          Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
-            .ifPresent(prodIdType -> prodIdType.resolve(doc)
+          return Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
+            .map(prodIdType -> prodIdType.resolve(doc)
               .thenAccept(
                   typeId -> {
                     productId.setProductIdType((String) typeId);
                     List<ProductId> ids = new ArrayList<>();
                     ids.add(productId);
                     detail.setProductIds(ids);
-                  }));
+                })
+              .exceptionally(Mapper::logException))
+            .orElse(completedFuture(null));
         })
         .exceptionally(Mapper::logException)));
 
@@ -712,19 +731,7 @@ public class Mapper {
   }
 
   public boolean isObjectEmpty(Object instance) {
-    for (Field f : instance.getClass()
-      .getDeclaredFields()) {
-      f.setAccessible(true);
-      try {
-        if (f.get(instance) != null)
-          return false;
-      } catch (IllegalArgumentException e) {
-        logger.error("Unable to determine Object", e);
-      } catch (IllegalAccessException e) {
-        logger.error("Unable to access Object", e);
-      }
-    }
-    return true;
+    return JsonObject.mapFrom(instance).isEmpty();
   }
 
   public static Void logException(Throwable t) {
