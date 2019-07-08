@@ -1219,17 +1219,17 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got contributorNameTypes request: {}", ctx.request().query());
       String instruction = ctx.request().getHeader(MOCK_OKAPI_GET_CONTRIBUTOR_NAME_HEADER);
 
-      JsonObject productTypes = new JsonObject();
-      addServerRqRsData(HttpMethod.GET, CONTRIBUTOR_NAME_TYPES, productTypes);
+      JsonObject types = new JsonObject();
+      addServerRqRsData(HttpMethod.GET, CONTRIBUTOR_NAME_TYPES, types);
 
       String name = ctx.queryParam("query").get(0).split("==")[1];
 
       if (MOCK_INSTRUCTION_NOT_EXIST.equals(instruction)
           || (MOCK_INSTRUCTION_USE_DEFAULT.equals(instruction) && !DEFAULT_LOOKUP_CODE.equals(name))) {
-        productTypes.put(CONTRIBUTOR_NAME_TYPES, new JsonArray())
+        types.put(CONTRIBUTOR_NAME_TYPES, new JsonArray())
           .put(TOTAL_RECORDS, 0);
       } else {
-        productTypes.put(CONTRIBUTOR_NAME_TYPES, new JsonArray().add(new JsonObject().put(ID, randomUUID().toString())
+        types.put(CONTRIBUTOR_NAME_TYPES, new JsonArray().add(new JsonObject().put(ID, randomUUID().toString())
           .put(NAME, name)))
           .put(TOTAL_RECORDS, 1);
       }
@@ -1237,7 +1237,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       ctx.response()
         .setStatusCode(200)
         .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-        .end(productTypes.encodePrettily());
+        .end(types.encodePrettily());
     }
 
     private String randomDigits(int len) {
