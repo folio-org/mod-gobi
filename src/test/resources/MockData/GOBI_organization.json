@@ -159,7 +159,11 @@
 					"description": "This is a sample note.",
 					"timestamp": "2008-05-15T03:53:00-07:00"
 				}
-			]
+			],
+      "metadata": {
+        "createdDate": "2019-06-09T00:00:00.000+0000",
+        "createdByUserId": "16d2457c-d137-11e8-a8d5-f2802f1b9fd1"
+      }
 		}
 	],
 	"totalRecords": 1
