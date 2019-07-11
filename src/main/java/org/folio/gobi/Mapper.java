@@ -411,9 +411,9 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.SOURCE))
-    .ifPresent(field -> futures.add(field.resolve(doc)
-      .thenAccept(o -> pol.setSource(CompositePoLine.Source.fromValue((String) o)))
-      .exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setSource(CompositePoLine.Source.fromValue((String) o)))
+        .exceptionally(Mapper::logException)));
   }
 
   private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
