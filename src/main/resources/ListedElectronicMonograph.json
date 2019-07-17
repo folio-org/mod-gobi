@@ -210,15 +210,9 @@
           }
         },
         {
-          "field": "SOURCE_CODE",
+          "field": "SOURCE",
           "dataSource": {
-            "default": "mod-gobi"
-          }
-        },
-        {
-          "field": "SOURCE_DESCRIPTION",
-          "dataSource": {
-            "default": "An order placed from GOBI Interface"
+            "default": "API"
           }
         },
         {

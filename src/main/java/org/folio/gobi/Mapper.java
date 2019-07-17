@@ -68,7 +68,6 @@ public class Mapper {
     Renewal renewal = new Renewal();
     ProductId productId = new ProductId();
     Physical physical = new Physical();
-    Source source = new Source();
     Contributor contributor = new Contributor();
     ReportingCode reportingCode = new ReportingCode();
     License license = new License();
@@ -82,7 +81,6 @@ public class Mapper {
     mapVendorDetail(futures, vendorDetail, doc);
     mapClaims(futures, claim, doc);
     mapRenewal(futures, renewal, doc);
-    mapSource(futures, source, doc);
     mapContributor(futures, contributor, doc);
     mapReportingCodes(futures, reportingCode, doc);
     mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
@@ -110,8 +108,6 @@ public class Mapper {
         }
         setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
         setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
-
-        setObjectIfPresent(source, o -> pol.setSource((Source) o));
 
         setObjectIfPresent(location, o -> {
           List<Location> locations = new ArrayList<>();
@@ -259,18 +255,6 @@ public class Mapper {
           }
           return completedFuture(null);
         })
-        .exceptionally(Mapper::logException)));
-  }
-
-  private void mapSource(List<CompletableFuture<?>> futures, Source source, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.SOURCE_CODE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> source.setCode((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.SOURCE_DESCRIPTION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> source.setDescription((String) o))
         .exceptionally(Mapper::logException)));
   }
 
@@ -425,6 +409,11 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> pol.setSelector((String) o))
         .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.SOURCE))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setSource(CompositePoLine.Source.fromValue((String) o)))
+        .exceptionally(Mapper::logException)));
   }
 
   private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
@@ -497,8 +486,10 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.TAGS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
-          List<String> tags = new ArrayList<>();
-          tags.add((String) o);
+          Tags tags = new Tags();
+          List<String> tagList = new ArrayList<>();
+          tagList.add((String) o);
+          tags.setTagList(tagList);
           pol.setTags(tags);
         })
         .exceptionally(Mapper::logException)));

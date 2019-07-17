@@ -74,11 +74,12 @@
       "description" : "Test Data"
     } ],
     "selector" : "Test Data",
-    "source" : {
-      "code" : "mod-gobi",
-      "description" : "An order placed from GOBI Interface"
+    "source" : "API",
+    "tags": {
+      "tagList": [
+        "Test Data"
+      ]
     },
-    "tags" : [ "Test Data" ],
     "title" : "BRANDS AND THEIR COMPANIES. (EBOOK VERSION)",
     "vendorDetail" : {
       "instructions" : "v.2 | Test Note to Ybp",
