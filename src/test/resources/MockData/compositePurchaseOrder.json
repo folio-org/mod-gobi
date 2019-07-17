@@ -75,7 +75,11 @@
     } ],
     "selector" : "Test Data",
     "source" : "API",
-    "tags" : [ "Test Data" ],
+    "tags": {
+      "tagList": [
+        "Test Data"
+      ]
+    },
     "title" : "BRANDS AND THEIR COMPANIES. (EBOOK VERSION)",
     "vendorDetail" : {
       "instructions" : "v.2 | Test Note to Ybp",

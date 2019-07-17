@@ -486,8 +486,10 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.TAGS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
-          List<String> tags = new ArrayList<>();
-          tags.add((String) o);
+          Tags tags = new Tags();
+          List<String> tagList = new ArrayList<>();
+          tagList.add((String) o);
+          tags.setTagList(tagList);
           pol.setTags(tags);
         })
         .exceptionally(Mapper::logException)));
