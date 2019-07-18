@@ -1,8 +1,8 @@
 ## 1.7.0 Unreleased
 
 ## 1.6.0 Released
- Major changes in this release include aligning code with latest schema changes related to owner being removed and making Source an enum. 
-   Also changing the contributor name type to UUID.
+ Major changes in this release include aligning code with latest schema changes related to owner being removed, making Source an enum and tags. 
+ Also changing the contributor name type to UUID.
 
   [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.5.0...v1.6.0)
 
