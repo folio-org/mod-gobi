@@ -1,4 +1,15 @@
-## 1.6.0 Unreleased
+## 1.7.0 Unreleased
+
+## 1.6.0 Released
+ Major changes in this release include aligning code with latest schema changes related to owner being removed, making Source an enum and tags. 
+ Also changing the contributor name type to UUID.
+
+  [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.5.0...v1.6.0)
+
+### Stories
+ * [MODGOBI-79](https://issues.folio.org/browse/MODGOBI-79) - updates to poLine.source
+ * [MODGOBI-78](https://issues.folio.org/browse/MODGOBI-78) - Orders schema changes: purchase-order.owner is removed
+ * [MODGOBI-77](https://issues.folio.org/browse/MODGOBI-77) - Contributor-name-type is required for contributor added to POL
 
 ## 1.5.0 Released
    Major changes in this release include aligning code with latest schema changes related to looking up UUID for productID type, fund type. 
