@@ -31,7 +31,8 @@
             "inventory-storage.identifier-types.collection.get",
             "organizations-storage.organizations.collection.get",
             "configuration.entries.collection.get",
-            "finance-storage.funds.collection.get"
+            "finance-storage.funds.collection.get",
+            "orders.item.approve"
           ]
         }
       ]
