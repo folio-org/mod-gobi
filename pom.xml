@@ -401,7 +401,7 @@
               <properties>
                 <property>
                   <name>log4j.configuration</name>
-                  <value>${project.baseUri}src/main/resources/log4j.properties</value>
+                  <value>${project.baseUri}src/main/resources/log4j2.properties</value>
                 </property>
               </properties>
             </configuration>
@@ -428,6 +428,20 @@
                   </manifestEntries>
                 </transformer>
               </transformers>
+              <filters>
+                <filter>
+                  <artifact>org.folio:raml-module-builder</artifact>
+                  <excludes>
+                    <exclude>**/log4j2.properties</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>**/log4j.properties</exclude>
+                  </excludes>
+                </filter>
+              </filters>
               <artifactSet />
               <outputFile>${project.build.directory}/${project.artifactId}-fat.jar</outputFile>
             </configuration>
