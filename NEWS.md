@@ -1,5 +1,15 @@
-## 1.7.0 Unreleased
+## 1.8.0 Unreleased
 
+## 1.7.0 Released
+ Major changes in this release include applying the latest schema changes related to funds and acquisitions units.
+
+  [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.6.0...v1.7.0)
+
+### Stories
+ * [MODFISTO-19](https://issues.folio.org/browse/MODFISTO-19) - Update fund schema
+ * [MODORDERS-290](https://issues.folio.org/browse/MODORDERS-290) - Adding approve permission
+ * [MODORDSTOR-103](https://issues.folio.org/browse/MODORDSTOR-103) - Orders schema updates
+ 
 ## 1.6.0 Released
  Major changes in this release include aligning code with latest schema changes related to owner being removed, making Source an enum and tags. 
  Also changing the contributor name type to UUID.

@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "gobi",
-      "version": "1.6",
+      "version": "1.7",
       "handlers": [
         {
           "methods": ["GET"],
@@ -41,7 +41,7 @@
   "requires": [
     {
       "id": "orders",
-      "version": "7.0"
+      "version": "7.1"
     },
     {
       "id": "configuration",
@@ -61,7 +61,7 @@
     },
     {
       "id": "organizations-storage.organizations",
-      "version": "2.0"
+      "version": "2.1"
     },
     {
       "id": "finance-storage.funds",
@@ -69,7 +69,7 @@
     },
     {
       "id": "identifier-types",
-      "version": "1.1"
+      "version": "1.2"
     }
   ],
   "permissionSets": [
