@@ -6,9 +6,9 @@
   [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.6.0...v1.7.0)
 
 ### Stories
- * [MODORDSTOR-103](https://issues.folio.org/browse/MODORDSTOR-103) - Orders schema updates
- * [MODORDERS-290](https://issues.folio.org/browse/MODORDERS-290) - Adding approve permission
  * [MODFISTO-19](https://issues.folio.org/browse/MODFISTO-19) - Update fund schema
+ * [MODORDERS-290](https://issues.folio.org/browse/MODORDERS-290) - Adding approve permission
+ * [MODORDSTOR-103](https://issues.folio.org/browse/MODORDSTOR-103) - Orders schema updates
  
 ## 1.6.0 Released
  Major changes in this release include aligning code with latest schema changes related to owner being removed, making Source an enum and tags. 
