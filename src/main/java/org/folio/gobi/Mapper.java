@@ -655,7 +655,7 @@ public class Mapper {
 
     Optional.ofNullable(mappings.get(Mapping.Field.FUND_PERCENTAGE))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> fundDistribution.setPercentage((Double) o))
+        .thenAccept(o -> fundDistribution.setValue((Double) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.ENCUMBERANCE))

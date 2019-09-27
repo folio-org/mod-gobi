@@ -57,7 +57,8 @@
     "fundDistribution" : [ {
       "fundId" : "65032151-39a5-4cef-8810-5350eb316300",
       "code" : "USHIST",
-      "percentage" : 100.0
+      "distributionType": "percentage",
+      "value" : 100.0
     } ],
     "locations" : [ {
       "locationId" : "130d8c13-3377-45c2-a420-9920b771d229",

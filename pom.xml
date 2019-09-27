@@ -48,7 +48,7 @@
     <jaxb_output_dir>${generated_sources_dir}/jaxb</jaxb_output_dir>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <ramlfiles_util_path>${ramlfiles_path}/raml-util</ramlfiles_util_path>
-    <raml-module-builder.version>26.2.0</raml-module-builder.version>
+    <raml-module-builder.version>27.1.1</raml-module-builder.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -98,7 +98,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-unit</artifactId>
-      <version>3.5.4</version>
+      <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -117,7 +117,7 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <version>2.11.1</version>
-    </dependency>    
+    </dependency>
   </dependencies>
 
   <build>
@@ -548,7 +548,7 @@
           -->
           <useSystemClassLoader>false</useSystemClassLoader>
         </configuration>
-      </plugin>    
+      </plugin>
     </plugins>
   </build>
   <dependencyManagement>

@@ -41,7 +41,7 @@
   "requires": [
     {
       "id": "orders",
-      "version": "7.1"
+      "version": "8.0"
     },
     {
       "id": "configuration",

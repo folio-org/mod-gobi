@@ -931,7 +931,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       HttpServer server = vertx.createHttpServer();
 
       final Async async = context.async();
-      server.requestHandler(defineRoutes()::accept).listen(port, result -> {
+      server.requestHandler(defineRoutes()).listen(port, result -> {
         if (result.failed()) {
           logger.warn("Failure", result.cause());
         }
@@ -1038,9 +1038,9 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     private void handleGetFund(RoutingContext ctx) {
       logger.info("got location request: {}", ctx.request().query());
-      
+
       String getByIdInstruction = ctx.request().getHeader(MOCK_OKAPI_GET_FUND_HEADER);
-      
+
       JsonObject funds = new JsonObject();
       if (ctx.request().query().contains("HUM")) {
         funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);
