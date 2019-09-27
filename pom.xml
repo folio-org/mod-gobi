@@ -430,7 +430,7 @@
               </transformers>
               <filters>
                 <filter>
-                  <artifact>org.folio:raml-module-builder</artifact>
+                  <artifact>org.folio:domain-models*</artifact>
                   <excludes>
                     <exclude>**/log4j2.properties</exclude>
                   </excludes>
