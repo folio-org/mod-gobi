@@ -164,6 +164,18 @@
           }
         },
         {
+          "field": "PRODUCT_QUALIFIER",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='q']",
+            "defaultMapping": {
+               "dataSource": {
+                  "from": "//datafield[@tag='020']/subfield[@code='a']",
+                  "translation": "separateISBNQualifier"
+                }
+            }
+          }
+        },
+        {
           "field": "PUBLICATION_DATE",
           "dataSource": {
             "from": "//datafield[@tag='260']/subfield[@code='c']"

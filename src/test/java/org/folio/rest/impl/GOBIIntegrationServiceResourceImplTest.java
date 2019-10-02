@@ -103,6 +103,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final String PO_UNLISTED_PRINT_MONOGRAPHPATH = MOCK_DATA_ROOT_PATH + "/po_unlisted_print_monograph.xml";
   private final String PO_UNLISTED_PRINT_SERIAL_PATH = MOCK_DATA_ROOT_PATH + "/po_unlisted_print_serial.xml";
   private final String PO_LISTED_ELECTRONIC_MONOGRAPH_BAD_DATA_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_monograph_bad_data.xml";
+  private final String PO_LISTED_ELECTRONIC_MONOGRAPH_QUALIFIER_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_monograph_qualifier.xml";
 
   private static final String CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING = "MappingHelper/Custom_ListedElectronicSerial.json";
   private static final  String VENDOR_MOCK_DATA =  "MockData/GOBI_organization.json";
@@ -258,6 +259,9 @@ public class GOBIIntegrationServiceResourceImplTest {
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
+    //make sure that the qualifier field is mapped, and the product ID doesn't contain qualifer from the input
+    assertNotNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
+    assertEquals("9781410352224",compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic monograph");
@@ -817,6 +821,24 @@ public class GOBIIntegrationServiceResourceImplTest {
     logger.info("End: Testing for 201 - Create new Order, if fetching existing PO Line Number Fails");
   }
 
+  @Test
+  public final void testPostElectronicMonographISBNQualifier(TestContext context) throws Exception {
+    logger.info("Begin: Testing for 201 - XML content");
+
+    final Async asyncLocal = context.async();
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_QUALIFIER_PATH);
+    postOrderSuccess(body);
+
+    Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
+    CompositePurchaseOrder compPO = postOrder.get(PURCHASE_ORDER).get(0).mapTo(CompositePurchaseOrder.class);
+    assertNotNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
+    assertEquals("9781410352224",compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
+    asyncLocal.complete();
+
+    logger.info("End: Testing for 201 - XML content");
+  }
+
   private RequestSpecification buildRequest(String body, Header... additionalHeaders) {
     RequestSpecification request = RestAssured.given()
       .header(TOKEN_HEADER)
@@ -1038,9 +1060,9 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     private void handleGetFund(RoutingContext ctx) {
       logger.info("got location request: {}", ctx.request().query());
-      
+
       String getByIdInstruction = ctx.request().getHeader(MOCK_OKAPI_GET_FUND_HEADER);
-      
+
       JsonObject funds = new JsonObject();
       if (ctx.request().query().contains("HUM")) {
         funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);

@@ -340,7 +340,22 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> lookupMock(String data) {
     logger.info("Mocking the data lookup for: " + data);
-    return CompletableFuture.completedFuture(UUID.randomUUID().toString());
+    return CompletableFuture.completedFuture(UUID.randomUUID()
+      .toString());
+  }
+
+  public CompletableFuture<String> separateISBNQualifier(String data) {
+    if(data.split("\\s+")[1] != null) {
+      return completedFuture(data.split("\\s+")[1]);
+    }
+    return completedFuture(StringUtils.EMPTY);
+  }
+
+  public CompletableFuture<String>  truncateISBNQualifier(String data) {
+    if(data.split("\\s+")[0] != null) {
+      return completedFuture(data.split("\\s+")[0]);
+    }
+    return completedFuture(data);
   }
 
   public CompletableFuture<Map<Mapping.Field, DataSourceResolver>> lookupOrderMappings(OrderMappings.OrderType orderType) {
@@ -540,4 +555,7 @@ public class PostGobiOrdersHelper {
     asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
+
+
+
 }

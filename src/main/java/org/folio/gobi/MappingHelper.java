@@ -132,6 +132,12 @@ public class MappingHelper {
           case LOOKUP_PRODUCT_ID_TYPE:
             translatedValue = postGobiOrdersHelper.lookupProductIdType(data);
             break;
+          case SEPARATE_ISBN_QUALIFIER:
+            translatedValue = postGobiOrdersHelper.separateISBNQualifier(data);
+            break;
+          case TRUNCATE_ISBN_QUALIFIER:
+            translatedValue = postGobiOrdersHelper.truncateISBNQualifier(data);
+            break;
           case TO_DATE:
             translatedValue = Mapper.toDate(data);
             break;
