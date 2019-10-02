@@ -345,14 +345,14 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<String> separateISBNQualifier(String data) {
-    if(data.split("\\s+")[1] != null) {
+    if (data.split("\\s+").length > 1) {
       return completedFuture(data.split("\\s+")[1]);
     }
-    return completedFuture(StringUtils.EMPTY);
+    return completedFuture(null);
   }
 
   public CompletableFuture<String>  truncateISBNQualifier(String data) {
-    if(data.split("\\s+")[0] != null) {
+    if(data.split("\\s+").length > 1) {
       return completedFuture(data.split("\\s+")[0]);
     }
     return completedFuture(data);
