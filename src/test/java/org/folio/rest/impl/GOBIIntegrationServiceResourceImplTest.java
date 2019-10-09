@@ -13,38 +13,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.folio.rest.RestVerticle;
-import org.folio.rest.acq.model.CompositePoLine;
-import org.folio.rest.acq.model.CompositePurchaseOrder;
-import org.folio.rest.gobi.model.GobiResponse;
-import org.folio.rest.tools.PomReader;
-import org.folio.rest.tools.utils.NetworkUtils;
-import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
@@ -65,6 +35,44 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.ws.rs.core.Response;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.folio.rest.RestVerticle;
+import org.folio.rest.acq.model.CompositePoLine;
+import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.gobi.model.GobiResponse;
+import org.folio.rest.tools.PomReader;
+import org.folio.rest.tools.utils.NetworkUtils;
+import org.hamcrest.Matchers;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+import org.w3c.dom.Element;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
@@ -103,7 +111,6 @@ public class GOBIIntegrationServiceResourceImplTest {
   private final String PO_UNLISTED_PRINT_MONOGRAPHPATH = MOCK_DATA_ROOT_PATH + "/po_unlisted_print_monograph.xml";
   private final String PO_UNLISTED_PRINT_SERIAL_PATH = MOCK_DATA_ROOT_PATH + "/po_unlisted_print_serial.xml";
   private final String PO_LISTED_ELECTRONIC_MONOGRAPH_BAD_DATA_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_monograph_bad_data.xml";
-  private final String PO_LISTED_ELECTRONIC_MONOGRAPH_QUALIFIER_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_monograph_qualifier.xml";
 
   private static final String CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING = "MappingHelper/Custom_ListedElectronicSerial.json";
   private static final  String VENDOR_MOCK_DATA =  "MockData/GOBI_organization.json";
@@ -259,8 +266,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
-    //make sure that the qualifier field is mapped, and the product ID doesn't contain qualifer from the input
-    assertNotNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
+    //make sure that the qualifier field is empty
+    assertNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
     assertEquals("9781410352224",compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
     asyncLocal.complete();
 
@@ -822,21 +829,141 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
-  public final void testPostElectronicMonographISBNQualifier(TestContext context) throws Exception {
-    logger.info("Begin: Testing for 201 - XML content");
+  public final void testPostElectronicMonographISBNQualifierSameField(TestContext context) throws Exception {
+    logger.info("Begin: Testing ISBN and Qualifier on same field");
 
     final Async asyncLocal = context.async();
 
-    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_QUALIFIER_PATH);
-    postOrderSuccess(body);
+    Document doc = getDocumentFromXml();
 
+    logger.info("Test: ISBN and qualifier on same field");
+    Element productNode = (Element) doc.getElementsByTagName("datafield").item(0);
+    Node productID = productNode.getElementsByTagName("subfield").item(0).getFirstChild();
+    productID.setNodeValue("9781410352224 (ebook print)");
+
+    postOrderSuccess(toString(doc));
+    validateProductIDAndQualifier("9781410352224","(ebook print)");
+    asyncLocal.complete();
+
+    logger.info("End: Testing ISBN and Qualifier on same field");
+
+  }
+
+  @Test
+  public final void testPostElectronicMonographISBNQualifierWithSpaces(TestContext context) throws Exception {
+    logger.info("Begin: Testing ISBN and qualifier with Trailing and Leading spaces");
+
+    final Async asyncLocal = context.async();
+
+    Document doc = getDocumentFromXml();
+
+
+    //2. Test ISBN and qualifier with Trailing and Leading spaces
+    Element productNode  = (Element) doc.getElementsByTagName("datafield").item(0);
+    Node productID = productNode.getElementsByTagName("subfield").item(0).getFirstChild();
+    productID.setNodeValue(" 9781410352224 (ebook print) ");
+
+    postOrderSuccess(toString(doc));
+
+    validateProductIDAndQualifier("9781410352224","(ebook print)");
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing ISBN and qualifier with Trailing and Leading spaces");
+  }
+
+  @Test
+  public final void testPostElectronicMonographISBNQualifierSeparateField(TestContext context) throws Exception {
+    logger.info("Begin: Testing ISBN and qualifier with Qualifier in a separate field");
+
+    final Async asyncLocal = context.async();
+
+    Document doc = getDocumentFromXml();
+
+
+  //3. Test ISBN and qualifier with Qualifier in a separate field
+    Element productNode  = (Element) doc.getElementsByTagName("datafield").item(0);
+    Node productID = productNode.getElementsByTagName("subfield").item(0).getFirstChild();
+    productID.setNodeValue("9781410352224 (ebook print)");
+    Element qualifier = doc.createElement("subfield");
+    qualifier.setAttribute("code", "q");
+    qualifier.appendChild(doc.createTextNode("(print)"));
+    productNode.appendChild(qualifier);
+
+    postOrderSuccess(toString(doc));
+
+    validateProductIDAndQualifier("9781410352224","(print)");
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing ISBN and qualifier with Qualifier in a separate field");
+  }
+
+  @Test
+  public final void testPostElectronicMonographISBNQualifierBothFields(TestContext context) throws Exception {
+    logger.info("Begin: Testing ISBN and qualifier with Qualifier present in both Fields: Subfield is given precedence");
+
+    final Async asyncLocal = context.async();
+
+    Document doc = getDocumentFromXml();
+   //4. Test ISBN and qualifier with Qualifier present in both places(subfield and along with product ID)
+    // the subfield qualifier must be picked
+    Element productNode  = (Element) doc.getElementsByTagName("datafield").item(0);
+    Node productID = productNode.getElementsByTagName("subfield").item(0).getFirstChild();
+    productID.setNodeValue("9781410352224 (ebook print)");
+    Element qualifier = doc.createElement("subfield");
+    qualifier.setAttribute("code", "q");
+    qualifier.appendChild(doc.createTextNode("(print)"));
+    productNode.appendChild(qualifier);
+
+    postOrderSuccess(toString(doc));
+
+    validateProductIDAndQualifier("9781410352224","(print)");
+
+    asyncLocal.complete();
+
+    logger.info("End: Testing ISBN and qualifier with Qualifier present in both places");
+
+
+  }
+
+  private void validateProductIDAndQualifier(String productID, String qualifier) {
     Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
     CompositePurchaseOrder compPO = postOrder.get(PURCHASE_ORDER).get(0).mapTo(CompositePurchaseOrder.class);
     assertNotNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
-    assertEquals("9781410352224",compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
-    asyncLocal.complete();
+    assertEquals(productID,compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
+    assertEquals(qualifier,compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
+  }
 
-    logger.info("End: Testing for 201 - XML content");
+  /**
+   * Get Document from XML
+   * @throws IOException
+   * @throws SAXException
+   * @throws ParserConfigurationException
+   */
+  private Document getDocumentFromXml() throws IOException, SAXException, ParserConfigurationException {
+    final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
+
+    DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+    final InputStream stream = new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
+    Document doc = docFactory.newDocumentBuilder().parse(stream);
+    return doc;
+  }
+
+  /**
+   * Convert Document object to Sting
+   * @param newDoc
+   * @return
+   * @throws Exception
+   */
+  private static String toString(Document newDoc) throws Exception {
+    DOMSource domSource = new DOMSource(newDoc);
+    Transformer transformer = TransformerFactory.newInstance()
+      .newTransformer();
+    StringWriter sw = new StringWriter();
+    StreamResult sr = new StreamResult(sw);
+    transformer.transform(domSource, sr);
+    return sw.toString();
   }
 
   private RequestSpecification buildRequest(String body, Header... additionalHeaders) {
