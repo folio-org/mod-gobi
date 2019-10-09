@@ -558,13 +558,16 @@ public class Mapper {
           productId.setProductId(o.toString());
           return Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
             .map(prodIdType -> prodIdType.resolve(doc)
-              .thenAccept(
-                  typeId -> {
-                    productId.setProductIdType((String) typeId);
-                    List<ProductId> ids = new ArrayList<>();
-                    ids.add(productId);
-                    detail.setProductIds(ids);
-                })
+              .thenAccept(typeId -> {
+                productId.setProductIdType((String) typeId);
+                Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_QUALIFIER))
+                  .ifPresent(qualifierField -> qualifierField.resolve(doc)
+                    .thenAccept(qualifier -> productId.setQualifier((String) qualifier)));
+
+                List<ProductId> ids = new ArrayList<>();
+                ids.add(productId);
+                detail.setProductIds(ids);
+              })
               .exceptionally(Mapper::logException))
             .orElse(completedFuture(null));
         })
