@@ -152,7 +152,8 @@
         {
           "field": "PRODUCT_ID",
           "dataSource": {
-            "from": "//datafield[@tag='020']/subfield[@code='a']"
+            "from": "//datafield[@tag='020']/subfield[@code='a']",
+            "translation": "truncateISBNQualifier"
           }
         },
         {
@@ -161,6 +162,18 @@
             "default": "ISBN",
             "translation": "lookupProductIdType",
             "translateDefault": true
+          }
+        },
+        {
+          "field": "PRODUCT_QUALIFIER",
+          "dataSource": {
+            "from": "//datafield[@tag='020']/subfield[@code='q']",
+            "defaultMapping": {
+               "dataSource": {
+                  "from": "//datafield[@tag='020']/subfield[@code='a']",
+                  "translation": "separateISBNQualifier"
+                }
+            }
           }
         },
         {
