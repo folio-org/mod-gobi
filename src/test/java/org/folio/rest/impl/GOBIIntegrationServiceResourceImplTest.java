@@ -1080,7 +1080,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       HttpServer server = vertx.createHttpServer();
 
       final Async async = context.async();
-      server.requestHandler(defineRoutes()::accept).listen(port, result -> {
+      server.requestHandler(defineRoutes()).listen(port, result -> {
         if (result.failed()) {
           logger.warn("Failure", result.cause());
         }
