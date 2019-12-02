@@ -40,7 +40,7 @@
   </licenses>
 
   <properties>
-    <aspectj.version>1.8.9</aspectj.version>
+    <aspectj.version>1.9.4</aspectj.version>
     <module_name>mod-gobi</module_name>
     <http.port>8081</http.port>
     <generated_sources_dir>${project.build.directory}/generated-sources</generated_sources_dir>
