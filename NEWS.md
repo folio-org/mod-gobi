@@ -1,4 +1,17 @@
-## 1.8.0 Unreleased
+## 1.9.0 Unreleased
+
+## 1.8.0 Released
+ Major changes in this release related to updating RMB fixing the memory leak and security issues, updating fund 
+ distribution schema. 
+  [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.7.0...v1.8.0)
+  
+### Stories  
+ * [MODGOBI-96](https://issues.folio.org/browse/MODGOBI-96) Update RMB to 29.0.1
+ * [MODGOBI-87](https://issues.folio.org/browse/MODGOBI-87) Fund Distribution schema changes
+ * [MODGOBI-86](https://issues.folio.org/browse/MODGOBI-86) Separate ISBN and qualifier
+ * [FOLIO-2358](https://issues.folio.org/browse/FOLIO-2358) Use JVM features (UseContainerSupport, MaxRAMPercentage) to manage container memory
+ * [FOLIO-2235](https://issues.folio.org/browse/FOLIO-2235) Add LaunchDescriptor settings to each backend non-core module repository
+  
 
 ## 1.7.0 Released
  Major changes in this release include applying the latest schema changes related to funds and acquisitions units.
