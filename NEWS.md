@@ -7,9 +7,9 @@
   
 ### Stories  
  * [MODGOBI-96](https://issues.folio.org/browse/MODGOBI-96) Update RMB to 29.0.1
+ * [MODGOBI-95](https://issues.folio.org/browse/MODGOBI-95) Use JVM features to manage container memory
  * [MODGOBI-87](https://issues.folio.org/browse/MODGOBI-87) Fund Distribution schema changes
  * [MODGOBI-86](https://issues.folio.org/browse/MODGOBI-86) Separate ISBN and qualifier
- * [FOLIO-2358](https://issues.folio.org/browse/FOLIO-2358) Use JVM features (UseContainerSupport, MaxRAMPercentage) to manage container memory
  * [FOLIO-2235](https://issues.folio.org/browse/FOLIO-2235) Add LaunchDescriptor settings to each backend non-core module repository
   
 
