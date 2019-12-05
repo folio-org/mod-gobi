@@ -53,7 +53,7 @@ public class PostGobiOrdersHelper {
   static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
   static final String ORDERS_ENDPOINT = "/orders/composite-orders";
   static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
-  static final String FUNDS_ENDPOINT = "/finance-storage/funds";
+  static final String FUNDS_ENDPOINT = "/finance/funds";
   static final String CONTRIBUTOR_NAME_TYPES_ENDPOINT = "/contributor-name-types";
   static final String IDENTIFIERS_ENDPOINT = "/identifier-types";
   private static final String QUERY = "?query=%s";
