@@ -31,7 +31,7 @@
             "inventory-storage.identifier-types.collection.get",
             "organizations-storage.organizations.collection.get",
             "configuration.entries.collection.get",
-            "finance-storage.funds.collection.get",
+            "finance.funds.collection.get",
             "orders.item.approve"
           ]
         }
@@ -64,8 +64,8 @@
       "version": "2.1"
     },
     {
-      "id": "finance-storage.funds",
-      "version": "3.0"
+      "id": "finance.funds",
+      "version": "1.0"
     },
     {
       "id": "identifier-types",
