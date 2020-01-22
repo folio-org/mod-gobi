@@ -1018,7 +1018,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(poLine.getCost());
     assertNotNull(poLine.getOrderFormat());
     assertNotNull(poLine.getSource());
-    assertNotNull(poLine.getTitle());
+    assertNotNull(poLine.getTitleOrPackage());
     if (!poLine.getContributors().isEmpty()) {
       poLine.getContributors().forEach(contributor -> {
         assertNotNull(contributor.getContributor());

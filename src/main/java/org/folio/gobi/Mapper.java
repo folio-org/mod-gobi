@@ -387,7 +387,7 @@ public class Mapper {
 
     Optional.ofNullable(mappings.get(Mapping.Field.TITLE))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setTitle((String) o))
+        .thenAccept(o -> pol.setTitleOrPackage((String) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.CANCELLATION_RESTRICTION_NOTE))
