@@ -946,8 +946,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
     final InputStream stream = new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
-    Document doc = docFactory.newDocumentBuilder().parse(stream);
-    return doc;
+    return docFactory.newDocumentBuilder().parse(stream);
   }
 
   /**
@@ -1007,7 +1006,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   /**
    * Make sure all the required fields for creating an order are mapped
-   * @param compPO
+   * @param compPO CompositePurchaseOrder object to be verified
    */
   private void verifyRequiredFieldsAreMapped(CompositePurchaseOrder compPO){
     assertNotNull(compPO.getVendor());

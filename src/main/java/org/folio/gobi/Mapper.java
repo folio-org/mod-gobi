@@ -4,13 +4,35 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang.StringUtils;
-import org.folio.rest.acq.model.*;
+import org.folio.rest.acq.model.Alert;
+import org.folio.rest.acq.model.Claim;
+import org.folio.rest.acq.model.CompositePoLine;
+import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.acq.model.Contributor;
+import org.folio.rest.acq.model.Cost;
 import org.folio.rest.acq.model.Cost.DiscountType;
+import org.folio.rest.acq.model.Details;
+import org.folio.rest.acq.model.Eresource;
+import org.folio.rest.acq.model.FundDistribution;
+import org.folio.rest.acq.model.License;
+import org.folio.rest.acq.model.Location;
+import org.folio.rest.acq.model.Ongoing;
+import org.folio.rest.acq.model.Organization;
+import org.folio.rest.acq.model.Physical;
+import org.folio.rest.acq.model.ProductId;
+import org.folio.rest.acq.model.ReportingCode;
+import org.folio.rest.acq.model.Tags;
+import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -37,12 +59,12 @@ public class Mapper {
     CompositePoLine pol = new CompositePoLine();
     CompositePurchaseOrder compPO = new CompositePurchaseOrder();
 
-    List<CompletableFuture<?>> purchaseOrderfutures = new ArrayList<>();
-    mapPurchaseOrder(purchaseOrderfutures, compPO, doc);
-    mapPurchaseOrderLine(purchaseOrderfutures, pol, doc);
-    mapPurchaseOrderLineStrings(purchaseOrderfutures, pol, doc);
+    List<CompletableFuture<?>> purchaseOrderFutures = new ArrayList<>();
+    mapPurchaseOrder(purchaseOrderFutures, compPO, doc);
+    mapPurchaseOrderLine(purchaseOrderFutures, pol, doc);
+    mapPurchaseOrderLineStrings(purchaseOrderFutures, pol, doc);
 
-    CompletableFuture.allOf(purchaseOrderfutures.toArray(new CompletableFuture<?>[0]))
+    CompletableFuture.allOf(purchaseOrderFutures.toArray(new CompletableFuture<?>[0]))
       .thenApply(v -> compPO.getCompositePoLines().add(pol))
       .thenCompose(v -> mapCompositePOLine(doc, compPO))
       .thenAccept(future::complete)
@@ -65,7 +87,6 @@ public class Mapper {
     FundDistribution fundDistribution = new FundDistribution();
     VendorDetail vendorDetail = new VendorDetail();
     Claim claim = new Claim();
-    Renewal renewal = new Renewal();
     ProductId productId = new ProductId();
     Physical physical = new Physical();
     Contributor contributor = new Contributor();
@@ -80,7 +101,6 @@ public class Mapper {
     mapLocation(futures, location, doc);
     mapVendorDetail(futures, vendorDetail, doc);
     mapClaims(futures, claim, doc);
-    mapRenewal(futures, renewal, doc);
     mapContributor(futures, contributor, doc);
     mapReportingCodes(futures, reportingCode, doc);
     mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
@@ -107,7 +127,6 @@ public class Mapper {
           setObjectIfPresent(physical, o -> pol.setPhysical((Physical) o));
         }
         setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
-        setObjectIfPresent(renewal, o -> compPO.setRenewal((Renewal) o));
 
         setObjectIfPresent(location, o -> {
           List<Location> locations = new ArrayList<>();
@@ -289,34 +308,35 @@ public class Mapper {
       .exceptionally(Mapper::logException)));
   }
 
-  private void mapRenewal(List<CompletableFuture<?>> futures, Renewal renewal, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.RENEWAL_CYCLE))
+  private void mapOngoing(List<CompletableFuture<?>> futures, Ongoing ongoing, Document doc) {
+    Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_IS_SUBSCRIPTION))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> renewal.setCycle(Renewal.Cycle.fromValue((String) o)))
+        .thenAccept(o -> ongoing.setIsSubscription((Boolean) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.RENEWAL_INTERVAL))
+    Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_INTERVAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> renewal.setInterval((Integer) o))
+        .thenAccept(o -> ongoing.setInterval((Integer) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.RENEWAL_MANUAL))
+    Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_MANUAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> renewal.setManualRenewal((Boolean) o))
+        .thenAccept(o -> ongoing.setManualRenewal((Boolean) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.RENEWAL_DATE))
+    Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_DATE))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> renewal.setRenewalDate((Date) o))
+        .thenAccept(o -> ongoing.setRenewalDate((Date) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.RENEWAL_REVIEW_PERIOD))
+    Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_REVIEW_PERIOD))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> renewal.setReviewPeriod((Integer) o))
+        .thenAccept(o -> ongoing.setReviewPeriod((Integer) o))
         .exceptionally(Mapper::logException)));
   }
 
-  private void mapClaims(List<CompletableFuture<?>> futures, Claim claim, Document doc) {
+
+    private void mapClaims(List<CompletableFuture<?>> futures, Claim claim, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.CLAIMED))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> claim.setClaimed((Boolean) o))
@@ -330,8 +350,18 @@ public class Mapper {
 
   private void mapPurchaseOrder(List<CompletableFuture<?>> futures, CompositePurchaseOrder compPo, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.ORDER_TYPE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> compPo.setOrderType(CompositePurchaseOrder.OrderType.fromValue((String) o)))
+      .ifPresent(orderTypeField -> futures.add(orderTypeField.resolve(doc)
+        .thenApply(o -> {
+          compPo.setOrderType(CompositePurchaseOrder.OrderType.fromValue((String) o));
+          return CompositePurchaseOrder.OrderType.fromValue((String) o);
+        })
+        .thenAccept(orderType -> {
+          if (orderType == CompositePurchaseOrder.OrderType.ONGOING) {
+            Ongoing ongoing = new Ongoing();
+            mapOngoing(futures, ongoing, doc);
+            compPo.setOngoing(ongoing);
+          }
+        })
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.APPROVED))
@@ -564,9 +594,7 @@ public class Mapper {
                   .ifPresent(qualifierField -> qualifierField.resolve(doc)
                     .thenAccept(qualifier -> productId.setQualifier((String) qualifier)));
 
-                List<ProductId> ids = new ArrayList<>();
-                ids.add(productId);
-                detail.setProductIds(ids);
+                detail.setProductIds(Collections.singletonList(productId));
               })
               .exceptionally(Mapper::logException))
             .orElse(completedFuture(null));
@@ -782,12 +810,12 @@ public class Mapper {
     return null;
   }
 
-  public static interface Translation<T> {
-    public CompletableFuture<T> apply(String s);
+  public interface Translation<T> {
+    CompletableFuture<T> apply(String s);
   }
 
-  public static interface NodeCombinator {
-    public String apply(NodeList n);
+  public interface NodeCombinator {
+    String apply(NodeList n);
   }
 
 }

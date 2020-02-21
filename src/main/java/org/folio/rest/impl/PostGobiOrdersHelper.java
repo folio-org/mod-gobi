@@ -527,7 +527,7 @@ public class PostGobiOrdersHelper {
     final Throwable t = throwable.getCause();
     if (t instanceof HttpException) {
       final int code = ((HttpException) t).getCode();
-      final String message = ((HttpException) t).getMessage();
+      final String message = t.getMessage();
       switch (code) {
       case 400:
         response.getError().setCode(CODE_BAD_REQUEST);
