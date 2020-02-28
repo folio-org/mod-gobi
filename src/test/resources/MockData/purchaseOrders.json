@@ -10,6 +10,15 @@
          "notes": [
             "v.2 | Test Note to Ybp"
          ],
+        "ongoing" : {
+          "interval": 182,
+          "isSubscription": true,
+          "manualRenewal": true,
+          "notes" : "Some note",
+          "reviewPeriod": 30,
+          "renewalDate": "2019-04-09T00:00:00.000Z",
+          "reviewDate" : "2019-03-09T00:00:00.000Z"
+        },
          "orderType": "Ongoing",
          "totalItems": 1,
          "vendor": "588b5c42-8634-4af7-bc9b-5e0116ed96b6",
