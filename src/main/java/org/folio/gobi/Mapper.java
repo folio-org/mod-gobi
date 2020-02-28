@@ -324,9 +324,19 @@ public class Mapper {
         .thenAccept(o -> ongoing.setManualRenewal((Boolean) o))
         .exceptionally(Mapper::logException)));
 
+    Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_NOTES))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> ongoing.setNotes((String) o))
+        .exceptionally(Mapper::logException)));
+
     Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_DATE))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> ongoing.setRenewalDate((Date) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_REVIEW_DATE))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> ongoing.setReviewDate((Date) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.ONGOING_REVIEW_PERIOD))
