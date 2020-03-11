@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "gobi",
-      "version": "1.8",
+      "version": "1.9",
       "handlers": [
         {
           "methods": ["GET"],

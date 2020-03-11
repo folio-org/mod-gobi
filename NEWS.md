@@ -1,5 +1,12 @@
-## 1.9.0 Unreleased
-
+## 1.9.1 Unreleased
+## 1.9.0 Released
+Major changes in this release related with schema changes for Subscription/renewal and use finance business module.
+  [Full Changelog](https://github.com/folio-org/mod-gobi/comrare/v1.8.0...v1.9.0)
+  
+### Stories  
+ * [MODGOBI-97](https://issues.folio.org/browse/MODGOBI-97) Subscription/renewal schema changes
+ * [MODGOBI-81](https://issues.folio.org/browse/MODGOBI-81) Use finance business logic module
+ 
 ## 1.8.0 Released
  Major changes in this release related to updating RMB fixing the memory leak and security issues, updating fund 
  distribution schema. 
