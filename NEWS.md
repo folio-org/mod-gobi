@@ -1,7 +1,7 @@
 ## 1.9.1 Unreleased
 ## 1.9.0 Released
 Major changes in this release related with schema changes for Subscription/renewal and use finance business module.
-  [Full Changelog](https://github.com/folio-org/mod-gobi/comrare/v1.8.0...v1.9.0)
+  [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.8.0...v1.9.0)
   
 ### Stories  
  * [MODGOBI-97](https://issues.folio.org/browse/MODGOBI-97) Subscription/renewal schema changes
