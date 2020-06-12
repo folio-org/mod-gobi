@@ -1,4 +1,10 @@
-## 1.9.1 Unreleased
+## 2.0.0 Unreleased
+## 1.10.0 Released
+Major changes in this release related with upgrading the RMB to v30.0.1
+  [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.9.0...v1.10.0)
+  
+### Stories  
+ * [MODGOBI-102](https://issues.folio.org/browse/MODGOBI-102) mod-gobi: Update to RMB v30.0.1
 ## 1.9.0 Released
 Major changes in this release related with schema changes for Subscription/renewal and use finance business module.
   [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.8.0...v1.9.0)
