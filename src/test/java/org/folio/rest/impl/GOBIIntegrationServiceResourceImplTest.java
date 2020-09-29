@@ -145,7 +145,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static MockServer mockServer;
 
   @BeforeClass
-  public static void setUpOnce(TestContext context) throws Exception {
+  public static void setUpOnce(TestContext context) {
     vertx = Vertx.vertx();
 
     mockServer = new MockServer(MOCK_PORT);
@@ -196,7 +196,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       .when()
         .get(VALIDATE_PATH)
       .then()
-        .statusCode(200).content(Matchers.equalTo("<test>GET - OK</test>"));
+        .statusCode(200).body(Matchers.equalTo("<test>GET - OK</test>"));
 
     asyncLocal.complete();
 
@@ -218,7 +218,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .post(VALIDATE_PATH)
       .then()
         .contentType("application/xml")
-        .statusCode(200).content(Matchers.equalTo("<test>POST - OK</test>"));
+        .statusCode(200).body(Matchers.equalTo("<test>POST - OK</test>"));
 
     asyncLocal.complete();
 

@@ -1,4 +1,4 @@
-FROM folioci/alpine-jre-openjdk8:latest
+FROM folioci/alpine-jre-openjdk11:latest
 
 ENV VERTICLE_FILE mod-gobi-fat.jar
 
@@ -9,4 +9,4 @@ ENV VERTICLE_HOME /usr/verticles
 COPY target/${VERTICLE_FILE} ${VERTICLE_HOME}/${VERTICLE_FILE}
 
 # Expose this port locally in the container.
-EXPOSE 8081 
+EXPOSE 8081
