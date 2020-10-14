@@ -1,4 +1,15 @@
 ## 2.0.0 Unreleased
+
+## 1.11.0 Released
+Major changes in this release related with upgrading the RMB to v31.1.1 and migrating to JDK 11 
+
+  [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.10.0...v1.11.0)
+  
+### Stories  
+ * [MODGOBI-107](https://issues.folio.org/browse/MODGOBI-107) Update RMB v31.1.1
+ * [MODGOBI-104](https://issues.folio.org/browse/MODGOBI-104) Migrate mod-gobi to JDK 11
+
+
 ## 1.10.0 Released
 Major changes in this release related with upgrading the RMB to v30.0.1
   [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.9.0...v1.10.0)
