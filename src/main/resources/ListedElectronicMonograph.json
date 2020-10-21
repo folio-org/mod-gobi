@@ -79,9 +79,7 @@
           "field": "FUND_ID",
           "dataSource": {
             "from": "//FundCode",
-            "default": "*",
-            "translation": "lookupFundId",
-            "translateDefault": true
+            "translation": "lookupFundId"
           }
         },
         {
