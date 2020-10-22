@@ -669,7 +669,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
   @Test
   public final void testPostGobiOrdersNoFundsExist() throws Exception {
-    logger.info("Begin: Testing for checking if productId is set if there are no productIdTypes in the environment");
+    logger.info("Begin: Testing for checking if FundId is not set if there are no Funds in the environment");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
@@ -678,8 +678,8 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(order.getPoLineNumber());
 
     List<JsonObject> fundsRequests = MockServer.serverRqRs.get(FUNDS, HttpMethod.GET);
-    // 2 calls must be made to identifiers endpoint
-    assertEquals(2, fundsRequests.size());
+    // 1 call must be made to Funds endpoint, as there is no default mapping
+    assertEquals(1, fundsRequests.size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -688,7 +688,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     assertNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
-    logger.info("End: Testing for checking if productId is set if there are no productIdTypes in the environment");
+    logger.info("End: Testing for checking if FundId is not set if there are no Funds in the environment");
   }
 
   @Test
