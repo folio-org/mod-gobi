@@ -674,7 +674,7 @@ public class Mapper {
   }
 
   private void mapFundDistibution(List<CompletableFuture<?>> futures, FundDistribution fundDistribution, Document doc) {
-    if (isValidFundId(futures,fundDistribution, doc)) {
+    if (isValidFundId(futures, fundDistribution, doc)) {
       Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
         .ifPresent(field -> futures.add(field.resolve(doc)
           .thenAccept(o -> fundDistribution.setCode((String) o))
