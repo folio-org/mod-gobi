@@ -674,25 +674,35 @@ public class Mapper {
   }
 
   private void mapFundDistibution(List<CompletableFuture<?>> futures, FundDistribution fundDistribution, Document doc) {
+    if (isValidFundId(futures,fundDistribution, doc)) {
+      Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> fundDistribution.setCode((String) o))
+          .exceptionally(Mapper::logException)));
+
+      Optional.ofNullable(mappings.get(Mapping.Field.FUND_PERCENTAGE))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> fundDistribution.withDistributionType(FundDistribution.DistributionType.PERCENTAGE)
+            .setValue((Double) o))
+          .exceptionally(Mapper::logException)));
+
+      Optional.ofNullable(mappings.get(Mapping.Field.ENCUMBERANCE))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> fundDistribution.setEncumbrance((String) o))
+          .exceptionally(Mapper::logException)));
+    } else {
+      fundDistribution.withDistributionType(null);
+    }
+  }
+
+
+  private boolean isValidFundId(List<CompletableFuture<?>> futures, FundDistribution fundDistribution, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.FUND_ID))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> fundDistribution.setFundId((String) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> fundDistribution.setCode((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.FUND_PERCENTAGE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> fundDistribution.withDistributionType(FundDistribution.DistributionType.PERCENTAGE).setValue((Double) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.ENCUMBERANCE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> fundDistribution.setEncumbrance((String) o))
-        .exceptionally(Mapper::logException)));
+    return StringUtils.isNotEmpty(fundDistribution.getFundId());
   }
 
   private void mapLocation(List<CompletableFuture<?>> futures, Location location, Document doc) {
