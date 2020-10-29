@@ -43,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -686,7 +687,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     verifyRequiredFieldsAreMapped(compPO);
 
-    assertNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    //Fund Distribution List must be empty, with no proper FundId
+    assertEquals(Collections.emptyList(), compPO.getCompositePoLines().get(0).getFundDistribution());
 
     logger.info("End: Testing for checking if FundId is not set if there are no Funds in the environment");
   }
