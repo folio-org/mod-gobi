@@ -450,7 +450,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<String> getOrPlaceOrder(CompositePurchaseOrder compPO) {
     return checkExistingOrder(compPO).thenCompose(isExisting -> {
-      if (isExisting) {
+      if (Boolean.TRUE.equals(isExisting)) {
         logger.info("Order already exists, retrieving the PO Line Number", Json.encodePrettily(compPO));
         return getExistingOrderById(compPO);
       }
