@@ -1,17 +1,16 @@
  package org.folio.rest.impl;
 
+ import org.folio.rest.resource.interfaces.PostDeployVerticle;
+
+ import io.vertx.core.AsyncResult;
+ import io.vertx.core.Context;
+ import io.vertx.core.Handler;
+ import io.vertx.core.Vertx;
  import io.vertx.core.logging.Logger;
  import io.vertx.core.logging.LoggerFactory;
-import org.folio.gobi.MappingHelper;
-import org.folio.rest.resource.interfaces.PostDeployVerticle;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 public class InitConfigService implements PostDeployVerticle {
-  private static final Logger logger = LoggerFactory.getLogger(MappingHelper.class);
+  private static final Logger logger = LoggerFactory.getLogger(InitConfigService.class);
 
   @Override
   public void init(Vertx vertx, Context context, Handler<AsyncResult<Boolean>> handler) {

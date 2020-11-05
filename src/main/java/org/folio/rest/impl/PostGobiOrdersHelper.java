@@ -273,12 +273,12 @@ public class PostGobiOrdersHelper {
     String query = HelperUtils.encodeValue(String.format("code==%s", fundCode), logger);
     String endpoint = String.format(FUNDS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
-      .thenCompose(funds -> {
+      .thenApply(funds -> {
         String fundId = HelperUtils.extractIdOfFirst(funds, "funds");
         if (StringUtils.isEmpty(fundId)) {
-          return completedFuture(null);
+          return null;
         }
-        return completedFuture(fundId);
+        return fundId;
       })
       .exceptionally(t -> {
         logger.error("Exception looking up fund id", t);
