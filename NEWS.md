@@ -1,5 +1,15 @@
 ## 2.0.0 Unreleased
 
+## 1.11.1 Released
+The primary focus of this release was to fix logging issues and fundCode mappings
+
+  [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v1.11.0...v1.11.1)
+  
+### Bug Fixes
+ * [MODGOBI-113](https://issues.folio.org/browse/MODGOBI-113) No logging in honeysuckle version
+ * [MODGOBI-109](https://issues.folio.org/browse/MODGOBI-109) Issue with Fund Code mapping from GOBI
+
+
 ## 1.11.0 Released
 Major changes in this release related with upgrading the RMB to v31.1.1 and migrating to JDK 11 
 
