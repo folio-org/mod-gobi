@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import org.folio.rest.acq.model.Alert;
@@ -92,6 +94,7 @@ public class Mapper {
     Contributor contributor = new Contributor();
     ReportingCode reportingCode = new ReportingCode();
     License license = new License();
+    Tags tags = new Tags();
 
     List<CompletableFuture<?>> futures = new ArrayList<>();
 
@@ -105,6 +108,7 @@ public class Mapper {
     mapReportingCodes(futures, reportingCode, doc);
     mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
     mapLicense(futures, license, doc);
+    mapTags(futures, tags, doc);
 
     CompositePoLine pol = compPO.getCompositePoLines().get(0);
 
@@ -154,6 +158,8 @@ public class Mapper {
             pol.setFundDistribution(Collections.singletonList(fundDistribution));
           }
         });
+
+        setObjectIfPresent(tags, o -> pol.setTags(tags));
 
         future.complete(compPO);
       })
@@ -346,6 +352,14 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.CLAIM_SENT))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> claim.setSent((Date) o))
+        .exceptionally(Mapper::logException)));
+  }
+
+  private void mapTags(List<CompletableFuture<?>> futures, Tags tags, Document doc) {
+    Optional.ofNullable(mappings.get(Mapping.Field.TAGS))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenApply(tagsObject -> splitStringIntoList((String) tagsObject, ","))
+        .thenAccept(tags::setTagList)
         .exceptionally(Mapper::logException)));
   }
 
@@ -815,6 +829,11 @@ public class Mapper {
       return String.valueOf(product);
     }
     return null;
+  }
+
+  public static List<String> splitStringIntoList(String tags, String delimiter) {
+    return Stream.of(tags.split(delimiter))
+      .collect(Collectors.toList());
   }
 
   public interface Translation<T> {

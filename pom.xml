@@ -427,7 +427,7 @@
             <configuration>
               <properties>
                 <property>
-                  <name>log4j.configuration</name>
+                  <name>log4j.configurationFile</name>
                   <value>${project.baseUri}src/main/resources/log4j2.properties</value>
                 </property>
               </properties>
