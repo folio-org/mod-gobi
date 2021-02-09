@@ -179,6 +179,12 @@
           }
         },
         {
+          "field": "TAGS",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData4']/Value"
+          }
+        },
+        {
           "field": "TITLE",
           "dataSource": {
             "from": "//datafield[@tag='245']/*",

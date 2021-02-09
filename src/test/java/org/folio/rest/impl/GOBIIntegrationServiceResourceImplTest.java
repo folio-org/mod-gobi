@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -270,6 +271,9 @@ public class GOBIIntegrationServiceResourceImplTest {
     //make sure that the qualifier field is empty
     assertNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
     assertEquals("9781410352224",compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
+
+    assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
+
     asyncLocal.complete();
 
     logger.info("End: Testing for 201 - posted order listed electronic monograph");
@@ -339,6 +343,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
     asyncLocal.complete();
 
@@ -367,6 +372,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertTrue(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
     asyncLocal.complete();
 
@@ -395,6 +401,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
     asyncLocal.complete();
 
@@ -422,6 +429,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertTrue(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
     asyncLocal.complete();
     logger.info("End: Testing for 201 - posted order unlisted print serial");
