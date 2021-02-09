@@ -32,6 +32,7 @@ import org.folio.rest.acq.model.Ongoing;
 import org.folio.rest.acq.model.Organization;
 import org.folio.rest.acq.model.Physical;
 import org.folio.rest.acq.model.ProductId;
+import org.folio.rest.acq.model.ReferenceNumber;
 import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Tags;
 import org.folio.rest.acq.model.VendorDetail;
@@ -755,17 +756,15 @@ public class Mapper {
         .thenAccept(o -> vendorDetail.setNoteFromVendor((String) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          vendorDetail.setRefNumber((String) o);
-          Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO_TYPE))
-            .ifPresent(refType -> futures.add(refType.resolve(doc)
-              .thenAccept(numberType -> vendorDetail
-                .setRefNumberType(VendorDetail.RefNumberType.fromValue((String) numberType)))
-              .exceptionally(Mapper::logException)));
-        })
-        .exceptionally(Mapper::logException)));
+    ReferenceNumber referenceNumber = new ReferenceNumber()
+            .withVendorDetailsSource(ReferenceNumber.VendorDetailsSource.ORDER_LINE);
+
+    mapRefTypeNumberPair(futures, referenceNumber, doc);
+      setObjectIfPresent(referenceNumber, o -> {
+          List<ReferenceNumber> referenceNumbers = new ArrayList<>();
+          referenceNumbers.add(referenceNumber);
+          vendorDetail.setReferenceNumbers(referenceNumbers);
+      });
 
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
       .ifPresent(field -> futures.add(field.resolve(doc)
@@ -773,7 +772,21 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
-  public boolean isObjectEmpty(Object instance) {
+    private void mapRefTypeNumberPair(List<CompletableFuture<?>> futures, ReferenceNumber referenceNumber, Document doc) {
+        Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO))
+                .ifPresent(field -> futures.add(field.resolve(doc)
+                        .thenAccept(o -> {
+                            referenceNumber.setRefNumber((String) o);
+                            Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO_TYPE))
+                                    .ifPresent(refType -> futures.add(refType.resolve(doc)
+                                            .thenAccept(numberType -> referenceNumber
+                                                    .setRefNumberType(ReferenceNumber.RefNumberType.fromValue((String) numberType)))
+                                            .exceptionally(Mapper::logException)));
+                        })
+                        .exceptionally(Mapper::logException)));
+    }
+
+    public boolean isObjectEmpty(Object instance) {
     return JsonObject.mapFrom(instance).isEmpty();
   }
 
