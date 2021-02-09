@@ -94,8 +94,14 @@
     "vendorDetail" : {
       "instructions" : "v.2 | Test Note to Ybp",
       "noteFromVendor" : "GALEA",
-      "refNumber" : "99962603521",
-      "refNumberType" : "Supplier's unique order line reference number"
+      "referenceNumbers": [
+        {
+          "refNumber" : "99962603521",
+          "refNumberType" : "Vendor order reference number",
+          "vendorDetailsSource": "OrderLine"
+        }
+      ]
+
     }
   } ]
 }
