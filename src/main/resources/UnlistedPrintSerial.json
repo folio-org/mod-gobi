@@ -166,7 +166,7 @@
         {
           "field": "VENDOR_REF_NO_TYPE",
           "dataSource": {
-            "default": "Supplier's unique order line reference number"
+            "default": "Vendor order reference number"
           }
         },
         {
