@@ -2,7 +2,6 @@ package org.folio.gobi;
 
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,15 +19,15 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
 public class GobiPurchaseOrderParser {
-  private static final Logger logger = LoggerFactory.getLogger(GobiPurchaseOrderParser.class);
+  private static final Logger logger = LogManager.getLogger(GobiPurchaseOrderParser.class);
   private static final String PURCHASE_ORDER_SCHEMA = "GobiPurchaseOrder.xsd";
   private static final GobiPurchaseOrderParser INSTANCE = new GobiPurchaseOrderParser();
   private static final String EXTERNAL_DTD_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
@@ -54,7 +53,7 @@ public class GobiPurchaseOrderParser {
   }
 
   public Document parse(String data) throws GobiPurchaseOrderParserException {
-    Document doc = null;
+    Document doc;
     try {
       final InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
       DocumentBuilderFactory factory =  DocumentBuilderFactory.newInstance();
@@ -74,12 +73,7 @@ public class GobiPurchaseOrderParser {
       validator.validate(new DOMSource(doc));
     } catch (Exception e) {
       final Throwable cause = e.getCause();
-      final String message;
-      if (cause != null) {
-        message = cause.getMessage();
-      } else {
-        message = e.getMessage();
-      }
+      final String message = (cause != null) ? cause.getMessage() : e.getMessage();
 
       throw new GobiPurchaseOrderParserException(message, e);
     }
@@ -99,7 +93,7 @@ public class GobiPurchaseOrderParser {
 
   public static class Input implements LSInput {
 
-    private static final Logger logger = LoggerFactory.getLogger(Input.class);
+    private static final Logger logger = LogManager.getLogger(Input.class);
 
     private String publicId;
     private String systemId;
@@ -199,12 +193,5 @@ public class GobiPurchaseOrderParser {
       this.systemId = systemId;
     }
 
-    public InputStream getInputStream() {
-      return inputStream;
-    }
-
-    public void setInputStream(BufferedInputStream inputStream) {
-      this.inputStream = inputStream;
-    }
   }
 }

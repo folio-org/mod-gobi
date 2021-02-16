@@ -4,11 +4,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletionException;
+
+import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.HttpException;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-
 public class HelperUtils {
 
   public static final String CONTRIBUTOR_NAME_TYPES = "contributorNameTypes";
@@ -72,7 +73,8 @@ public class HelperUtils {
     try {
       return URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
     } catch (UnsupportedEncodingException e) {
-      logger.error("Error occured while attempting to encode '{}'", e, query);
+      String errorMessage = String.format("Error occurred while attempting to encode '%s'", query);
+      logger.error(errorMessage, e);
       throw new CompletionException(e);
     }
   }

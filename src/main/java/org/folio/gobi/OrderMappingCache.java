@@ -11,7 +11,7 @@ import org.folio.rest.mappings.model.OrderMappings;
 import io.vertx.core.json.JsonObject;
 
 public class OrderMappingCache {
-  private Map<String, Map<Mapping.Field, DataSourceResolver>> cache;
+  private final Map<String, Map<Mapping.Field, DataSourceResolver>> cache;
 
   private static final OrderMappingCache INSTANCE = new OrderMappingCache();
 

@@ -11,8 +11,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.folio.rest.impl.PostGobiOrdersHelper;
@@ -27,13 +27,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class MappingHelper {
-  private static final Logger logger = LoggerFactory.getLogger(MappingHelper.class);
+  private static final Logger logger = LogManager.getLogger(MappingHelper.class);
 
   private MappingHelper() {
     throw new IllegalStateException("MappingHelper class cannot be instantiated");
   }
 
-  private static Map<OrderMappings.OrderType, OrderMappings> defaultMappings = new EnumMap<>(
+  private static final Map<OrderMappings.OrderType, OrderMappings> defaultMappings = new EnumMap<>(
       OrderMappings.OrderType.class);
 
   static {
@@ -93,12 +93,14 @@ public class MappingHelper {
           try {
             return (String) combinatorMethod.invoke(null, data);
           } catch (Exception e) {
-            logger.error("Unable to invoke combinator method: {}", e, combinator);
+            String errorMessage = String.format("Unable to invoke combinator method: %s", combinator);
+            logger.error(errorMessage, e);
           }
           return null;
         };
       } catch (NoSuchMethodException e) {
-        logger.error("Combinator method not found: {}", e, combinator);
+        String errorMessage = String.format("Combinator method not found: %s", combinator);
+        logger.error(errorMessage, e);
       }
     }
 
@@ -165,7 +167,7 @@ public class MappingHelper {
         .withFrom(dataSourceFrom)
         .withDefault(defaultValue)
         .withTranslation(t)
-        .withTranslateDefault(translateDefault != null && translateDefault.booleanValue())
+        .withTranslateDefault(translateDefault != null && translateDefault)
         .withCombinator(nc)
         .build();
 
@@ -202,7 +204,8 @@ public class MappingHelper {
         return IOUtils.toString(is, StandardCharsets.UTF_8);
       }
     } catch (IOException e) {
-      logger.error("Unable to read configuration in {} file", e, path);
+      String errorMessage = String.format("Unable to read configuration in file: %s", path);
+      logger.error(errorMessage, e);
     }
     return StringUtils.EMPTY;
   }

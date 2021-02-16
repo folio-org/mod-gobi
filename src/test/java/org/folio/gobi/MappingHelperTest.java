@@ -1,6 +1,7 @@
 package org.folio.gobi;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -13,8 +14,8 @@ import org.folio.rest.mappings.model.OrderMappings;
 import org.folio.rest.mappings.model.OrderMappings.OrderType;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -22,7 +23,7 @@ import io.vertx.core.json.JsonObject;
 
 public class MappingHelperTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(MappingHelper.class);
+  private static final Logger logger = LogManager.getLogger(MappingHelper.class);
   private static final String LISTED_PRINT_PATH = "MappingHelper/ListedPrintMonograph.json";
   private static final String UNLISTED_PRINT_PATH = "MappingHelper/UnlistedPrintMonograph.json";
 
@@ -37,7 +38,7 @@ public class MappingHelperTest {
   private static Mapping mapping2 = null;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     logger.info("Begin: SetUp by initializing a default mapping");
 
     JsonObject expectedListedPrintMonographJsonObj = new JsonObject();
@@ -101,7 +102,7 @@ public class MappingHelperTest {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping1 = new LinkedHashMap<>();
     org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mapping1, fieldDataSourceMapping1, null);
     assertEquals("//PurchaseOption/VendorPOCode", dataSource.from);
-    assertEquals(false, dataSource.translateDefValue);
+    assertFalse(dataSource.translateDefValue);
   }
 
   @Test
@@ -111,7 +112,7 @@ public class MappingHelperTest {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping2 = new LinkedHashMap<>();
     org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mapping2, fieldDataSourceMapping2, null);
     assertEquals("//datafield[@tag='020']/subfield[@code='a']", dataSource.from);
-    assertEquals(false, dataSource.translateDefValue);
+    assertFalse(dataSource.translateDefValue);
     assertNotNull(dataSource.combinator);
   }
 }

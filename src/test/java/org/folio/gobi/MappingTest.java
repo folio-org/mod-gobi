@@ -14,13 +14,13 @@ import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 
 public class MappingTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(MappingTest.class);
+  private static final Logger logger = LogManager.getLogger(MappingTest.class);
 
   public static final String testdataPath = "Mapping/testdata.xml";
   private Document doc;
@@ -36,7 +36,7 @@ public class MappingTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
   }
 
   @Test
@@ -111,9 +111,7 @@ public class MappingTest {
 
   private CompletableFuture<String> throwException(String s) {
     CompletableFuture<String> future = new CompletableFuture<>();
-    CompletableFuture.runAsync(() -> {
-      future.completeExceptionally(new Throwable("Whoops!"));
-    });
+    CompletableFuture.runAsync(() -> future.completeExceptionally(new Throwable("Whoops!")));
     return future;
   }
 }

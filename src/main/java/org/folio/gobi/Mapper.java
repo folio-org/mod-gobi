@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.rest.acq.model.Alert;
 import org.folio.rest.acq.model.Claim;
 import org.folio.rest.acq.model.CompositePoLine;
@@ -31,15 +33,13 @@ import org.folio.rest.acq.model.Location;
 import org.folio.rest.acq.model.Ongoing;
 import org.folio.rest.acq.model.Organization;
 import org.folio.rest.acq.model.Physical;
-import org.folio.rest.acq.model.ProductId;
-import org.folio.rest.acq.model.ReferenceNumber;
+import org.folio.rest.acq.model.ProductIdentifier;
+import org.folio.rest.acq.model.ReferenceNumberItem;
 import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Tags;
 import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -48,7 +48,7 @@ import scala.math.BigDecimal;
 
 public class Mapper {
 
-  private static final Logger logger = LoggerFactory.getLogger(Mapper.class);
+  private static final Logger logger = LogManager.getLogger(Mapper.class);
 
   private final Map<Mapping.Field, DataSourceResolver> mappings;
 
@@ -90,7 +90,6 @@ public class Mapper {
     FundDistribution fundDistribution = new FundDistribution();
     VendorDetail vendorDetail = new VendorDetail();
     Claim claim = new Claim();
-    ProductId productId = new ProductId();
     Physical physical = new Physical();
     Contributor contributor = new Contributor();
     ReportingCode reportingCode = new ReportingCode();
@@ -100,7 +99,7 @@ public class Mapper {
     List<CompletableFuture<?>> futures = new ArrayList<>();
 
     mapCost(futures, cost, doc);
-    mapDetail(futures, detail, productId, doc);
+    mapDetail(futures, detail, doc);
     mapFundDistribution(futures, fundDistribution, doc);
     mapLocation(futures, location, doc);
     mapVendorDetail(futures, vendorDetail, doc);
@@ -593,7 +592,7 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
-  private void mapDetail(List<CompletableFuture<?>> futures, Details detail, ProductId productId, Document doc) {
+  private void mapDetail(List<CompletableFuture<?>> futures, Details detail, Document doc) {
     // Adding a new entry to product id only if the product ID and product id
     // type are present
     // as both of them are together are mandatory to create an inventory
@@ -601,6 +600,7 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenCompose(o -> {
+          ProductIdentifier productId = new ProductIdentifier();
           productId.setProductId(o.toString());
           return Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
             .map(prodIdType -> prodIdType.resolve(doc)
@@ -756,15 +756,15 @@ public class Mapper {
         .thenAccept(o -> vendorDetail.setNoteFromVendor((String) o))
         .exceptionally(Mapper::logException)));
 
-    ReferenceNumber referenceNumber = new ReferenceNumber()
-            .withVendorDetailsSource(ReferenceNumber.VendorDetailsSource.ORDER_LINE);
+    ReferenceNumberItem referenceNumber = new ReferenceNumberItem()
+      .withVendorDetailsSource(ReferenceNumberItem.VendorDetailsSource.ORDER_LINE);
 
     mapRefTypeNumberPair(futures, referenceNumber, doc);
-      setObjectIfPresent(referenceNumber, o -> {
-          List<ReferenceNumber> referenceNumbers = new ArrayList<>();
-          referenceNumbers.add(referenceNumber);
-          vendorDetail.setReferenceNumbers(referenceNumbers);
-      });
+    setObjectIfPresent(referenceNumber, o -> {
+      List<ReferenceNumberItem> referenceNumbers = new ArrayList<>();
+      referenceNumbers.add(referenceNumber);
+      vendorDetail.setReferenceNumbers(referenceNumbers);
+    });
 
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
       .ifPresent(field -> futures.add(field.resolve(doc)
@@ -772,19 +772,19 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
-    private void mapRefTypeNumberPair(List<CompletableFuture<?>> futures, ReferenceNumber referenceNumber, Document doc) {
-        Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO))
-                .ifPresent(field -> futures.add(field.resolve(doc)
-                        .thenAccept(o -> {
-                            referenceNumber.setRefNumber((String) o);
-                            Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO_TYPE))
-                                    .ifPresent(refType -> futures.add(refType.resolve(doc)
-                                            .thenAccept(numberType -> referenceNumber
-                                                    .setRefNumberType(ReferenceNumber.RefNumberType.fromValue((String) numberType)))
-                                            .exceptionally(Mapper::logException)));
-                        })
-                        .exceptionally(Mapper::logException)));
-    }
+  private void mapRefTypeNumberPair(List<CompletableFuture<?>> futures, ReferenceNumberItem referenceNumber, Document doc) {
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> {
+          referenceNumber.setRefNumber((String) o);
+          Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO_TYPE))
+            .ifPresent(refType -> futures.add(refType.resolve(doc)
+              .thenAccept(numberType ->
+                referenceNumber.setRefNumberType(ReferenceNumberItem.RefNumberType.fromValue((String) numberType)))
+              .exceptionally(Mapper::logException)));
+        })
+        .exceptionally(Mapper::logException)));
+  }
 
     public boolean isObjectEmpty(Object instance) {
     return JsonObject.mapFrom(instance).isEmpty();
