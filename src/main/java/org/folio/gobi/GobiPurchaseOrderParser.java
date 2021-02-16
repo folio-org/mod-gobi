@@ -25,6 +25,7 @@ import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.SAXException;
 
 public class GobiPurchaseOrderParser {
   private static final Logger logger = LogManager.getLogger(GobiPurchaseOrderParser.class);
@@ -46,7 +47,7 @@ public class GobiPurchaseOrderParser {
       validator = schema.newValidator();
       validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
       validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-    } catch (Exception e) {
+    } catch (SAXException e) {
       logger.error("Unable to create GobiPurchaseOrderParser", e);
     }
   }
@@ -83,9 +84,7 @@ public class GobiPurchaseOrderParser {
 
     @Override
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-      InputStream resourceAsStream = this.getClass()
-        .getClassLoader()
-        .getResourceAsStream(systemId);
+      InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(systemId);
       return new Input(publicId, systemId, resourceAsStream);
     }
   }

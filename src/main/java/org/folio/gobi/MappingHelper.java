@@ -98,8 +98,7 @@ public class MappingHelper {
       }
     }
 
-    org.folio.rest.mappings.model.DataSource.Translation translation = mapping.getDataSource()
-        .getTranslation();
+    org.folio.rest.mappings.model.DataSource.Translation translation = mapping.getDataSource().getTranslation();
     Translation<?> t = null;
     if (translation != null) {
 
@@ -190,8 +189,7 @@ public class MappingHelper {
   }
 
   public static String readMappingsFile(final String path) {
-    try {
-      final InputStream is = PostGobiOrdersHelper.class.getClassLoader().getResourceAsStream(path);
+    try (InputStream is = PostGobiOrdersHelper.class.getClassLoader().getResourceAsStream(path)) {
       if (is != null) {
         return IOUtils.toString(is, StandardCharsets.UTF_8);
       }

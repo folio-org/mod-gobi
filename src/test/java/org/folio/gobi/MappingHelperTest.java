@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.junit.runner.Description;
 
 public class MappingHelperTest {
 
@@ -114,5 +115,10 @@ public class MappingHelperTest {
     assertEquals("//datafield[@tag='020']/subfield[@code='a']", dataSource.from);
     assertFalse(dataSource.translateDefValue);
     assertNotNull(dataSource.combinator);
+  }
+
+  @Test
+  public void readMappingsFile_mappingFileNotFound() {
+    assertEquals("", MappingHelper.readMappingsFile("errorType"));
   }
 }
