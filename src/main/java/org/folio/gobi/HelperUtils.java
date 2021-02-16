@@ -69,14 +69,8 @@ public class HelperUtils {
     return item.getString("id");
   }
 
-  public static String encodeValue(String query, Logger logger) {
-    try {
-      return URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
-    } catch (UnsupportedEncodingException e) {
-      String errorMessage = String.format("Error occurred while attempting to encode '%s'", query);
-      logger.error(errorMessage, e);
-      throw new CompletionException(e);
-    }
+  public static String encodeValue(String query) {
+    return URLEncoder.encode(query, StandardCharsets.UTF_8);
   }
 
 }
