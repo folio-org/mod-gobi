@@ -53,6 +53,8 @@
     <vertx.version>4.0.0</vertx.version>
     <sonar.exclusions>**/models/**.java</sonar.exclusions>
     <sonar.test.exclusions>**/*Test.java</sonar.test.exclusions>
+    <jmockit.version>1.49</jmockit.version>
+    <argLine/>
   </properties>
 
   <repositories>
@@ -146,6 +148,12 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jmockit</groupId>
+      <artifactId>jmockit</artifactId>
+      <version>${jmockit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -574,6 +582,10 @@
                https://issues.folio.org/browse/FOLIO-1609
                https://issues.apache.org/jira/browse/SUREFIRE-1588
           -->
+          <argLine>
+            @{argLine} -javaagent:${settings.localRepository}/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
+            -Duser.language=en -Duser.region=US
+          </argLine>
           <useSystemClassLoader>false</useSystemClassLoader>
         </configuration>
       </plugin>

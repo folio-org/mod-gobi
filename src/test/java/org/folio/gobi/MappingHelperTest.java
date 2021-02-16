@@ -5,22 +5,27 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.OrderMappings;
 import org.folio.rest.mappings.model.OrderMappings.OrderType;
 import org.junit.Before;
 import org.junit.Test;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.junit.runner.Description;
+import mockit.Mock;
+import mockit.MockUp;
 
 public class MappingHelperTest {
 
@@ -120,5 +125,17 @@ public class MappingHelperTest {
   @Test
   public void readMappingsFile_mappingFileNotFound() {
     assertEquals("", MappingHelper.readMappingsFile("errorType"));
+  }
+
+  @Test
+  public void readMappingsFile_IOException() {
+    new MockUp<IOUtils>() {
+      @Mock
+      String toString(final InputStream input, final Charset encoding) throws IOException {
+        throw new IOException("IOException");
+      }
+    };
+
+    assertEquals("", MappingHelper.readMappingsFile(OrderType.LISTED_PRINT_MONOGRAPH.value() + ".json"));
   }
 }
