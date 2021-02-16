@@ -53,8 +53,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
       .thenAccept(poLineNumber -> {
         GobiResponse gobiResponse = new GobiResponse();
         gobiResponse.setPoLineNumber(poLineNumber);
-        BinaryOutStream binaryOutStream = GobiResponseWriter.getWriter()
-          .write(gobiResponse);
+        BinaryOutStream binaryOutStream = GobiResponseWriter.getWriter().write(gobiResponse);
         asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(binaryOutStream)));
       })
       .exceptionally(helper::handleError);

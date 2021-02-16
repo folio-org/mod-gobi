@@ -1,11 +1,9 @@
 package org.folio.gobi;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletionException;
 
-import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.HttpException;
 
 import io.vertx.core.json.JsonArray;
@@ -28,8 +26,7 @@ public class HelperUtils {
     }
 
     if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
-      throw new CompletionException(new HttpException(response.getCode(), response.getError()
-          .toString()));
+      throw new CompletionException(new HttpException(response.getCode(), response.getError().toString()));
     }
 
     return response.getBody();

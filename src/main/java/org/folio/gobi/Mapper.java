@@ -264,7 +264,7 @@ public class Mapper {
     // If contributor name is available, resolve contributor name type (required field) and only then populate contributor details
     Optional.ofNullable(mappings.get(Mapping.Field.CONTRIBUTOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenApply(o -> (String) o)
+        .thenApply(String.class::cast)
         .thenCompose(name -> {
           // Map contributor name type only if name is available
           if (StringUtils.isNotBlank(name)) {
@@ -819,8 +819,7 @@ public class Mapper {
     if (nodes != null) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < nodes.getLength(); i++) {
-        sb.append(nodes.item(i)
-          .getTextContent());
+        sb.append(nodes.item(i).getTextContent());
       }
       return sb.length() > 0 ? sb.toString() : null;
     }
@@ -832,11 +831,9 @@ public class Mapper {
       BigDecimal product = null;
       for (int i = 0; i < nodes.getLength(); i++) {
         if (product == null) {
-          product = BigDecimal.exact(nodes.item(i)
-            .getTextContent());
+          product = BigDecimal.exact(nodes.item(i).getTextContent());
         } else {
-          product = product.$times(BigDecimal.exact(nodes.item(i)
-            .getTextContent()));
+          product = product.$times(BigDecimal.exact(nodes.item(i).getTextContent()));
         }
       }
       return String.valueOf(product);

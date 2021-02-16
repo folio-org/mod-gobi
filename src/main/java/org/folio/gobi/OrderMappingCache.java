@@ -51,12 +51,10 @@ public class OrderMappingCache {
 
   public static String computeKey(String tenant, OrderMappings.OrderType orderType, JsonObject jo) {
     return String.format("%s:%s:%s", tenant, orderType.toString(), jo.toString());
-
   }
 
   public static String computeKey(String tenant, OrderMappings.OrderType orderType) {
     return String.format("%s-%s", tenant, orderType.toString());
-
   }
 
   public void removeKey(String key) {
