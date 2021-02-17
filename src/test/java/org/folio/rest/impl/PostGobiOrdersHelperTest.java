@@ -28,8 +28,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;
@@ -43,23 +43,13 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 @RunWith(VertxUnitRunner.class)
 public class PostGobiOrdersHelperTest {
 
-  static {
-    System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME,
-        "io.vertx.core.logging.Log4j2LogDelegateFactory");
-  }
-
-  private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelperTest.class);
+  private static final Logger logger = LogManager.getLogger(PostGobiOrdersHelperTest.class);
 
   private Unmarshaller jaxbUnmarshaller;
 
   @Before
-  public void setUp(TestContext context) throws Exception {
+  public void setUp() throws Exception {
     jaxbUnmarshaller = JAXBContext.newInstance(GobiResponse.class).createUnmarshaller();
-  }
-
-  @After
-  public void tearDown(TestContext context) throws Exception {
-
   }
 
   @Test
@@ -69,23 +59,20 @@ public class PostGobiOrdersHelperTest {
 
     Throwable t = new Throwable("invalid foo");
 
-    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = new Handler<AsyncResult<javax.ws.rs.core.Response>>() {
-      @Override
-      public void handle(AsyncResult<javax.ws.rs.core.Response> response) {
-        context.assertEquals(400, response.result().getStatus());
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      context.assertEquals(400, response.result().getStatus());
 
-        try {
-          String body = new String(((BinaryOutStream) response.result().getEntity()).getData());
-          GobiResponse gobiResp = (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
+      try {
+        String body = new String(((BinaryOutStream) response.result().getEntity()).getData());
+        GobiResponse gobiResp = (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
 
-          context.assertEquals(CODE_BAD_REQUEST, gobiResp.getError().getCode());
-          context.assertEquals(t.toString(), gobiResp.getError().getMessage());
-        } catch (JAXBException e) {
-          context.fail(e.getMessage());
-        }
-
-        async.complete();
+        context.assertEquals(CODE_BAD_REQUEST, gobiResp.getError().getCode());
+        context.assertEquals(t.toString(), gobiResp.getError().getMessage());
+      } catch (JAXBException e) {
+        context.fail(e.getMessage());
       }
+
+      async.complete();
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
@@ -98,23 +85,20 @@ public class PostGobiOrdersHelperTest {
 
     String msg = "invalid gobi request xml";
 
-    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = new Handler<AsyncResult<javax.ws.rs.core.Response>>() {
-      @Override
-      public void handle(AsyncResult<javax.ws.rs.core.Response> response) {
-        context.assertEquals(400, response.result().getStatus());
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      context.assertEquals(400, response.result().getStatus());
 
-        try {
-          String body = new String(((BinaryOutStream) response.result().getEntity()).getData());
-          GobiResponse gobiResp = (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
+      try {
+        String body = new String(((BinaryOutStream) response.result().getEntity()).getData());
+        GobiResponse gobiResp = (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
 
-          context.assertEquals(CODE_INVALID_XML, gobiResp.getError().getCode());
-          context.assertEquals(msg, gobiResp.getError().getMessage());
-        } catch (JAXBException e) {
-          context.fail(e.getMessage());
-        }
-
-        async.complete();
+        context.assertEquals(CODE_INVALID_XML, gobiResp.getError().getCode());
+        context.assertEquals(msg, gobiResp.getError().getMessage());
+      } catch (JAXBException e) {
+        context.fail(e.getMessage());
       }
+
+      async.complete();
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
@@ -129,13 +113,10 @@ public class PostGobiOrdersHelperTest {
 
     String msg = "requires permission foo.bar.get";
 
-    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = new Handler<AsyncResult<javax.ws.rs.core.Response>>() {
-      @Override
-      public void handle(AsyncResult<javax.ws.rs.core.Response> response) {
-        context.assertEquals(401, response.result().getStatus());
-        context.assertEquals(msg, response.result().getEntity());
-        async.complete();
-      }
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      context.assertEquals(401, response.result().getStatus());
+      context.assertEquals(msg, response.result().getEntity());
+      async.complete();
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
@@ -149,13 +130,10 @@ public class PostGobiOrdersHelperTest {
 
     String msg = "you zigged when you should have zagged";
 
-    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = new Handler<AsyncResult<javax.ws.rs.core.Response>>() {
-      @Override
-      public void handle(AsyncResult<javax.ws.rs.core.Response> response) {
-        context.assertEquals(500, response.result().getStatus());
-        context.assertEquals(msg, response.result().getEntity());
-        async.complete();
-      }
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      context.assertEquals(500, response.result().getStatus());
+      context.assertEquals(msg, response.result().getEntity());
+      async.complete();
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
@@ -169,13 +147,10 @@ public class PostGobiOrdersHelperTest {
 
     String msg = "not implemented";
 
-    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = new Handler<AsyncResult<javax.ws.rs.core.Response>>() {
-      @Override
-      public void handle(AsyncResult<javax.ws.rs.core.Response> response) {
-        context.assertEquals(500, response.result().getStatus());
-        context.assertEquals(msg, response.result().getEntity());
-        async.complete();
-      }
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      context.assertEquals(500, response.result().getStatus());
+      context.assertEquals(msg, response.result().getEntity());
+      async.complete();
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
@@ -189,13 +164,10 @@ public class PostGobiOrdersHelperTest {
 
     Throwable expected = new Throwable("whoops!");
 
-    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = new Handler<AsyncResult<javax.ws.rs.core.Response>>() {
-      @Override
-      public void handle(AsyncResult<javax.ws.rs.core.Response> response) {
-        context.assertEquals(500, response.result().getStatus());
-        context.assertEquals(expected.getMessage(), response.result().getEntity());
-        async.complete();
-      }
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      context.assertEquals(500, response.result().getStatus());
+      context.assertEquals(expected.getMessage(), response.result().getEntity());
+      async.complete();
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
@@ -242,7 +214,7 @@ public class PostGobiOrdersHelperTest {
   }
 
   @Test
-  public final void testLookupOrderMappings(TestContext context) throws Exception {
+  public final void testLookupOrderMappings(TestContext context) {
     final Async async = context.async();
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
@@ -307,7 +279,7 @@ public class PostGobiOrdersHelperTest {
   }
 
   @Test
-  public final void testLookupDefaultOrderMappings(TestContext context) throws Exception {
+  public final void testLookupDefaultOrderMappings(TestContext context) {
 
     logger.info("Begin: Testing for Order Mappings to fetch default mappings if configuration Call fails");
     final Async async = context.async();
@@ -355,7 +327,7 @@ public class PostGobiOrdersHelperTest {
   }
 
   @Test
-  public final void testLookupFirstMaterialTypes(TestContext context) throws Exception {
+  public final void testLookupFirstMaterialTypes(TestContext context) {
 
     logger.info("Begin: Testing if all material type calls return empty, must use first in the list");
     final Async async = context.async();

@@ -13,8 +13,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,7 +44,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public class PostGobiOrdersHelper {
-  private static final Logger logger = LoggerFactory.getLogger(PostGobiOrdersHelper.class);
+  private static final Logger logger = LogManager.getLogger(PostGobiOrdersHelper.class);
 
   static final String LOCATIONS_ENDPOINT = "/locations";
   static final String MATERIAL_TYPES_ENDPOINT = "/material-types";
@@ -67,7 +67,7 @@ public class PostGobiOrdersHelper {
   public static final String CODE_INVALID_XML = "INVALID_XML";
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
-  private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
+  private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling %s %s";
   public static final String DEFAULT_LOOKUP_CODE = "*";
   private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
   private static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
@@ -93,7 +93,7 @@ public class PostGobiOrdersHelper {
     VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
 
       lookupOrderMappings(orderType).thenAccept(ordermappings -> {
-       logger.info("Using Mappings {}",ordermappings.toString());
+       logger.info("Using Mappings {}", ordermappings);
         new Mapper(ordermappings).map(doc)
           .thenAccept(future::complete);
       }).exceptionally(e -> {
@@ -157,12 +157,14 @@ public class PostGobiOrdersHelper {
             future.complete(body);
           })
           .exceptionally(t -> {
-            logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, t, HttpMethod.GET, endpoint);
+            String errorMessage = String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.GET, endpoint);
+            logger.error(errorMessage, t);
             future.completeExceptionally(t);
             return null;
           });
       } catch (Exception e) {
-        logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, e, HttpMethod.GET, endpoint);
+        String errorMessage = String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.GET, endpoint);
+        logger.error(errorMessage, e);
         future.completeExceptionally(e);
       }
       return future;
@@ -174,8 +176,8 @@ public class PostGobiOrdersHelper {
    * @param recordData json to use for update operation
    * @param endpoint endpoint
    */
-  public static CompletableFuture<Void> handlePutRequest(String endpoint, JsonObject recordData, HttpClientInterface httpClient,
-                                                         Context ctx, Map<String, String> okapiHeaders, Logger logger) {
+  public CompletableFuture<Void> handlePutRequest(String endpoint, JsonObject recordData, HttpClientInterface httpClient,
+      Context ctx, Map<String, String> okapiHeaders) {
     CompletableFuture<Void> future = new VertxCompletableFuture<>(ctx);
     try {
       if (logger.isDebugEnabled()) {
@@ -189,8 +191,9 @@ public class PostGobiOrdersHelper {
           future.complete(null);
         })
         .exceptionally(e -> {
+          String errorMessage = String.format("'PUT %s' request failed. Request body: %s", endpoint, recordData.encodePrettily());
+          logger.error(errorMessage, e);
           future.completeExceptionally(e);
-          logger.error("'PUT {}' request failed. Request body: {}", e, endpoint, recordData.encodePrettily());
           return null;
         });
     } catch (Exception e) {
@@ -209,7 +212,7 @@ public class PostGobiOrdersHelper {
    */
   public CompletableFuture<String> lookupLocationId(String location) {
     logger.info("Received location is {}", location);
-    String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location), logger);
+    String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
     String endpoint = String.format(LOCATIONS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenCompose(locations -> {
@@ -233,7 +236,7 @@ public class PostGobiOrdersHelper {
    * @param materialTypeCode
    */
   public CompletableFuture<String> lookupMaterialTypeId(String materialTypeCode) {
-    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, materialTypeCode), logger);
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, materialTypeCode));
     String endpoint = String.format(MATERIAL_TYPES_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenCompose(materialTypes -> {
@@ -254,7 +257,7 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<Organization> lookupOrganization(String vendorCode) {
-      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode), logger);
+      String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode));
       String endpoint = String.format(GET_ORGANIZATION_ENDPOINT+QUERY, query);
 
       return handleGetRequest(endpoint)
@@ -264,13 +267,14 @@ public class PostGobiOrdersHelper {
           .map(organization -> ((JsonObject) organization).mapTo(Organization.class))
           .orElse(null))
         .exceptionally(t -> {
-          logger.error("Exception looking up Organization which is a vendor with code:"+vendorCode, t);
+          String errorMessage = String.format("Exception looking up Organization which is a vendor with code: %s", vendorCode);
+          logger.error(errorMessage, t);
           return null;
         });
   }
 
   public CompletableFuture<String> lookupFundId(String fundCode) {
-    String query = HelperUtils.encodeValue(String.format("code==%s", fundCode), logger);
+    String query = HelperUtils.encodeValue(String.format("code==%s", fundCode));
     String endpoint = String.format(FUNDS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenApply(funds -> {
@@ -294,7 +298,7 @@ public class PostGobiOrdersHelper {
    */
   public CompletableFuture<String> lookupProductIdType(String productType) {
     logger.info("Received ProductType is {}", productType);
-    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, productType), logger);
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, productType));
     String endpoint = String.format(IDENTIFIERS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint).thenCompose(productTypes -> {
       String productTypeId = HelperUtils.extractProductTypeId(productTypes);
@@ -318,7 +322,7 @@ public class PostGobiOrdersHelper {
    */
   public CompletableFuture<String> lookupContributorNameTypeId(String name) {
     logger.info("Received contributorNameType is {}", name);
-    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, name), logger);
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, name));
     String endpoint = String.format(CONTRIBUTOR_NAME_TYPES_ENDPOINT + QUERY + LIMIT_1, query);
     return handleGetRequest(endpoint).thenApply(HelperUtils::extractContributorNameTypeId)
       .thenCompose(typeId -> {
@@ -339,7 +343,7 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<String> lookupMock(String data) {
-    logger.info("Mocking the data lookup for: " + data);
+    logger.info("Mocking the data lookup for: {}", data);
     return CompletableFuture.completedFuture(UUID.randomUUID()
       .toString());
   }
@@ -365,7 +369,7 @@ public class PostGobiOrdersHelper {
           String.format("module==%s AND configName==%s AND code==%s",
               CONFIGURATION_MODULE,
               CONFIGURATION_CONFIG_NAME,
-              CONFIGURATION_CODE+orderType), logger);
+              CONFIGURATION_CODE + orderType));
 
       String endpoint = String.format(CONFIGURATION_ENDPOINT+QUERY, query);
       return handleGetRequest(endpoint)
@@ -433,7 +437,7 @@ public class PostGobiOrdersHelper {
       httpClient.request(HttpMethod.POST, compPO, ORDERS_ENDPOINT, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenAccept(body -> {
-          logger.info("Response from mod-orders: " + body.encodePrettily());
+          logger.info("Response from mod-orders: {}", body.encodePrettily());
           future.complete(body.getJsonArray("compositePoLines").getJsonObject(0).getString("poLineNumber"));
         })
         .exceptionally(t -> {
@@ -441,7 +445,8 @@ public class PostGobiOrdersHelper {
           return null;
         });
     } catch (Exception e) {
-      logger.error("Exception calling {} on {}",HttpMethod.POST,ORDERS_ENDPOINT, e);
+      String errorMessage = String.format("Exception calling %s on %s", HttpMethod.POST, ORDERS_ENDPOINT);
+      logger.error(errorMessage, e);
       future.completeExceptionally(e);
     }
     return future;
@@ -451,7 +456,7 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> getOrPlaceOrder(CompositePurchaseOrder compPO) {
     return checkExistingOrder(compPO).thenCompose(isExisting -> {
       if (Boolean.TRUE.equals(isExisting)) {
-        logger.info("Order already exists, retrieving the PO Line Number", Json.encodePrettily(compPO));
+        logger.info("Order already exists, retrieving the PO Line Number: {}", Json.encodePrettily(compPO));
         return getExistingOrderById(compPO);
       }
       return CompletableFuture.completedFuture(compPO);
@@ -469,8 +474,8 @@ public class PostGobiOrdersHelper {
 
   private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO){
     String vendorRefNumber = compPO.getCompositePoLines().get(0).getVendorDetail().getReferenceNumbers().get(0).getRefNumber();
-    logger.info("Looking for exisiting order with Vendor Reference Number", vendorRefNumber);
-    String query = HelperUtils.encodeValue(String.format("vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber), logger);
+    logger.info("Looking for exisiting order with Vendor Reference Number: {}", vendorRefNumber);
+    String query = HelperUtils.encodeValue(String.format("vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
     String endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenCompose(purchaseOrders -> {
@@ -484,11 +489,11 @@ public class PostGobiOrdersHelper {
         if (purchaseOrder.getWorkflowStatus()
           .equals(CompositePurchaseOrder.WorkflowStatus.PENDING)) {
           purchaseOrder.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.OPEN);
-          handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder), httpClient, ctx, okapiHeaders,
-              logger).exceptionally(e -> {
-                logger.error("Retry to OPEN existing Order failed", e);
-                return null;
-              });
+          handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder), httpClient, ctx, okapiHeaders)
+            .exceptionally(e -> {
+              logger.error("Retry to OPEN existing Order failed", e);
+              return null;
+            });
         }
         return completedFuture(true);
       })
@@ -499,7 +504,7 @@ public class PostGobiOrdersHelper {
   }
 
   private CompletableFuture<CompositePurchaseOrder> getExistingOrderById(CompositePurchaseOrder compositePurchaseOrder) {
-    logger.info("Retrieving existing Order with ID ", compositePurchaseOrder.getId());
+    logger.info("Retrieving existing Order with ID {}", compositePurchaseOrder.getId());
     String endpoint = String.format(ORDERS_BY_ID_ENDPOINT, compositePurchaseOrder.getId());
     return handleGetRequest(endpoint)
       .thenCompose(order -> {

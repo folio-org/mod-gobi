@@ -1,13 +1,10 @@
 package org.folio.rest.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.gobi.model.GobiResponse;
@@ -17,9 +14,14 @@ import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.TenantTool;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
 public class GOBIIntegrationServiceResourceImpl implements Gobi {
 
-  private static final Logger logger = LoggerFactory.getLogger(GOBIIntegrationServiceResourceImpl.class);
+  private static final Logger logger = LogManager.getLogger(GOBIIntegrationServiceResourceImpl.class);
   private static final String GET_DATA = "<test>GET - OK</test>";
   private static final String POST_DATA = "<test>POST - OK</test>";
 
@@ -51,8 +53,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
       .thenAccept(poLineNumber -> {
         GobiResponse gobiResponse = new GobiResponse();
         gobiResponse.setPoLineNumber(poLineNumber);
-        BinaryOutStream binaryOutStream = GobiResponseWriter.getWriter()
-          .write(gobiResponse);
+        BinaryOutStream binaryOutStream = GobiResponseWriter.getWriter().write(gobiResponse);
         asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(binaryOutStream)));
       })
       .exceptionally(helper::handleError);

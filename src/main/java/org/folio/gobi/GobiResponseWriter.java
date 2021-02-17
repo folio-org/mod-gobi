@@ -1,22 +1,18 @@
 package org.folio.gobi;
 
-import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
-
 import java.io.ByteArrayOutputStream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.tools.utils.BinaryOutStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GobiResponseWriter {
-  private static final Logger logger = LoggerFactory.getLogger(GobiResponseWriter.class);
+  private static final Logger logger = LogManager.getLogger(GobiResponseWriter.class);
   private static final String RESPONSE_SCHEMA = "Response.xsd";
   private static final GobiResponseWriter INSTANCE = new GobiResponseWriter();
 
@@ -30,8 +26,7 @@ public class GobiResponseWriter {
     try {
       JAXBContext jaxbContext = JAXBContext.newInstance(GobiResponse.class);
       jaxbMarshaller = jaxbContext.createMarshaller();
-      jaxbMarshaller.setSchema(SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI)
-        .newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(RESPONSE_SCHEMA))));
+      jaxbMarshaller.setProperty(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, RESPONSE_SCHEMA);
     } catch (Exception e) {
       logger.error("Unable to create ResponseWriter", e);
       jaxbMarshaller = null;

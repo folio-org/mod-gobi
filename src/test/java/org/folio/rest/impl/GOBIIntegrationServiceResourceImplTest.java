@@ -28,8 +28,8 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -78,10 +78,8 @@ import org.w3c.dom.Element;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
-  static {
-    System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, "io.vertx.core.logging.Log4j2LogDelegateFactory");
-  }
-  private static final Logger logger = LoggerFactory.getLogger(GOBIIntegrationServiceResourceImplTest.class);
+
+  private static final Logger logger = LogManager.getLogger(GOBIIntegrationServiceResourceImplTest.class);
 
   private static final String APPLICATION_JSON = "application/json";
   private static final String CONFIGS = "configs";
@@ -1041,7 +1039,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     private static final String NAME = "name";
     private static final String ID = "id";
     private static final String TOTAL_RECORDS = "totalRecords";
-    private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
+    private static final Logger logger = LogManager.getLogger(MockServer.class);
     private static final Random rand = new Random(System.nanoTime());
     static Table<String, HttpMethod, List<JsonObject>> serverRqRs = HashBasedTable.create();
 

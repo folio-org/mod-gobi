@@ -11,7 +11,7 @@ import org.folio.rest.mappings.model.OrderMappings;
 import io.vertx.core.json.JsonObject;
 
 public class OrderMappingCache {
-  private Map<String, Map<Mapping.Field, DataSourceResolver>> cache;
+  private final Map<String, Map<Mapping.Field, DataSourceResolver>> cache;
 
   private static final OrderMappingCache INSTANCE = new OrderMappingCache();
 
@@ -51,12 +51,10 @@ public class OrderMappingCache {
 
   public static String computeKey(String tenant, OrderMappings.OrderType orderType, JsonObject jo) {
     return String.format("%s:%s:%s", tenant, orderType.toString(), jo.toString());
-
   }
 
   public static String computeKey(String tenant, OrderMappings.OrderType orderType) {
     return String.format("%s-%s", tenant, orderType.toString());
-
   }
 
   public void removeKey(String key) {
