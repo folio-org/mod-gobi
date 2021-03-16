@@ -1,5 +1,3 @@
-
-
 ## Overview
 The purpose of this form is to disclose the types of personal data stored by each module.  This information enables those hosting FOLIO to better manage and comply with various privacy laws and restrictions, e.g. GDPR.
 
