@@ -10,8 +10,8 @@ Major changes in this release related with upgrading the RMB to v31.1.3
  * [MODGOBI-117] (https://issues.folio.org/browse/MODGOBI-117) Update RMB    
  
 ### Stories  
- * [MODGOBI-100] (https://issues.folio.org/browse/MODGOBI-100) Update the logic of checking the availability of orders and acq-module
  * [MODGOBI-110] (https://issues.folio.org/browse/MODGOBI-110) Add POL tags from incoming GOBI data
+ * [MODGOBI-100] (https://issues.folio.org/browse/MODGOBI-100) Update the logic of checking the availability of orders and acq-module
     
 
 
