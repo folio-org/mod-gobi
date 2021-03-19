@@ -1,4 +1,18 @@
-## 2.0.0 Unreleased
+## 2.1.0 Unreleased
+
+
+## 2.0.0 Released
+Major changes in this release related with upgrading the RMB to v31.1.3
+
+  [Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v1.11.1...v1.12.0)  
+    
+### Technical tasks
+ * [MODGOBI-117] (https://issues.folio.org/browse/MODGOBI-117) Update RMB    
+ 
+### Stories  
+ * [MODGOBI-110] (https://issues.folio.org/browse/MODGOBI-110) Add POL tags from incoming GOBI data
+ * [MODGOBI-100] (https://issues.folio.org/browse/MODGOBI-100) Update the logic of checking the availability of orders and acq-module
+
 
 ## 1.11.1 Released
 The primary focus of this release was to fix logging issues and fundCode mappings
