@@ -58,12 +58,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.gobi.model.GobiResponse;
-import org.folio.rest.tools.PomReader;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -150,11 +149,6 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     mockServer = new MockServer(MOCK_PORT);
     mockServer.start(context);
-
-    String moduleName = PomReader.INSTANCE.getModuleName().replaceAll("_", "-");
-    String moduleVersion = PomReader.INSTANCE.getVersion();
-    String moduleId = moduleName + "-" + moduleVersion;
-    logger.info("Test setup starting for {}", moduleId);
 
     final JsonObject conf = new JsonObject();
     conf.put("http.port", OKAPI_PORT);

@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.rest.acq.model.Alert;
@@ -39,7 +39,6 @@ import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Tags;
 import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.mappings.model.Mapping;
-import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -805,9 +804,9 @@ public class Mapper {
     return CompletableFuture.completedFuture(val);
   }
 
-  public static CompletableFuture<Date> toDate(String s) {
-    DateTime val = s != null ? DateTime.parse(s) : DateTime.now();
-    return CompletableFuture.completedFuture(val.toDate());
+  public static CompletableFuture<LocalDateTime> toDate(String s) {
+    LocalDateTime val = s != null ? LocalDateTime.parse(s) : LocalDateTime.from(LocalDateTime.now());
+    return CompletableFuture.completedFuture(val);
   }
 
   public static Object toBoolean(String s) {
@@ -829,7 +828,7 @@ public class Mapper {
   public static String multiply(NodeList nodes) {
     if (nodes != null && nodes.getLength() > 1) {
       BigDecimal product = null;
-      for (int i = 0; i < nodes.getLength(); i++) {
+      for (var i = 0; i < nodes.getLength(); i++) {
         if (product == null) {
           product = BigDecimal.exact(nodes.item(i).getTextContent());
         } else {
