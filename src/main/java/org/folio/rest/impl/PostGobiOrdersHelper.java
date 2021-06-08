@@ -474,8 +474,8 @@ public class PostGobiOrdersHelper {
 
   private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO){
     String vendorRefNumber = compPO.getCompositePoLines().get(0).getVendorDetail().getReferenceNumbers().get(0).getRefNumber();
-    logger.info("Looking for exisiting order with Vendor Reference Number: {}", vendorRefNumber);
-    String query = HelperUtils.encodeValue(String.format("vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
+    logger.info("Looking for existing order with Vendor Reference Number: {}", vendorRefNumber);
+    String query = HelperUtils.encodeValue(String.format("poLine.vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
     String endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenCompose(purchaseOrders -> {
