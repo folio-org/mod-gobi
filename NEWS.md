@@ -1,5 +1,12 @@
-## 2.1.0 Unreleased
+## 2.2.0 Unreleased
 
+## 2.1.0 Released
+Major changes in this release related with upgrading the RMB to v33.0.0
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.0.0...v2.1.0)
+
+### Technical tasks
+* [MODGOBI-122] (https://issues.folio.org/browse/MODGOBI-122) Update RMB v33.0.0
 
 ## 2.0.0 Released
 Major changes in this release related with upgrading the RMB to v31.1.3
