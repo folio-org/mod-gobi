@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "API Configuration mapping",
+  "type": "object",
+  "properties": {
+    "orderMappingConfigs": {
+      "id": "orderMappingConfigs",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "orderType": {
+            "type": "string",
+            "description": "The type of the GOBI order",
+            "enum": [
+              "ListedElectronicMonograph",
+              "ListedElectronicSerial",
+              "ListedPrintMonograph",
+              "ListedPrintSerial",
+              "UnlistedPrintMonograph",
+              "UnlistedPrintSerial"
+            ]
+          },
+          "source": {
+            "description": "Full path to the order mapping. If set to \"DEFAULT\", then will be get default mapping",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "orderType",
+          "source"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "mappings"
+  ]
+}

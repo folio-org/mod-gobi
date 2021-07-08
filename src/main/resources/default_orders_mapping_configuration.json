@@ -1,0 +1,20 @@
+{
+  "mappings": [
+    {
+      "orderType": "ListedElectronicMonograph",
+      "source": "c:/gobi/ListedElectronicSerial.json"
+    },
+    {
+      "type": "ListedElectronicSerial",
+      "source": "DEFAULT"
+    },
+    {
+      "type": "ListedPrintMonograph",
+      "source": "c:/gobi/ListedPrintMonograph.json"
+    },
+    {
+      "type": "ListedPrintSerial",
+      "source": "DEFAULT"
+    }
+  ]
+}
