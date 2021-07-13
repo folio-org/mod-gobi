@@ -520,7 +520,7 @@ public class PostGobiOrdersHelper {
         return expenseClassId;
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up fund id", t);
+        logger.error("Exception looking up expense class id", t);
         return null;
       });
   }
