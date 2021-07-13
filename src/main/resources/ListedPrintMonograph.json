@@ -61,6 +61,15 @@
           }
         },
         {
+          "field": "EXPENSE_CLASS",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData5']/Value",
+            "default" : "unspecified",
+            "translation": "lookupExpenseClassId",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "FUND_ID",
           "dataSource": {
             "from": "//FundCode",

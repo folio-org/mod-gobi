@@ -1,29 +1,23 @@
 package org.folio.rest.impl;
 
 import static java.util.Objects.nonNull;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
@@ -43,6 +37,15 @@ import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
+
 public class PostGobiOrdersHelper {
   private static final Logger logger = LogManager.getLogger(PostGobiOrdersHelper.class);
 
@@ -54,6 +57,8 @@ public class PostGobiOrdersHelper {
   static final String ORDERS_ENDPOINT = "/orders/composite-orders";
   static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
   static final String FUNDS_ENDPOINT = "/finance/funds";
+  static final String EXPENSE_CLASS_ENDPOINT = "/finance/expense-classes";
+
   static final String CONTRIBUTOR_NAME_TYPES_ENDPOINT = "/contributor-name-types";
   static final String IDENTIFIERS_ENDPOINT = "/identifier-types";
   private static final String QUERY = "?query=%s";
@@ -503,6 +508,23 @@ public class PostGobiOrdersHelper {
       });
   }
 
+  public CompletableFuture<String> lookupExpenseClassId(String expenseClassCode) {
+    String query = HelperUtils.encodeValue(String.format("code==%s", expenseClassCode));
+    String endpoint = String.format(EXPENSE_CLASS_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenApply(funds -> {
+        String expenseClassId = HelperUtils.extractIdOfFirst(funds, "expenseClasses");
+        if (StringUtils.isEmpty(expenseClassId)) {
+          return null;
+        }
+        return expenseClassId;
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up fund id", t);
+        return null;
+      });
+  }
+
   private CompletableFuture<CompositePurchaseOrder> getExistingOrderById(CompositePurchaseOrder compositePurchaseOrder) {
     logger.info("Retrieving existing Order with ID {}", compositePurchaseOrder.getId());
     String endpoint = String.format(ORDERS_BY_ID_ENDPOINT, compositePurchaseOrder.getId());
@@ -533,6 +555,7 @@ public class PostGobiOrdersHelper {
     if (t instanceof HttpException) {
       final int code = ((HttpException) t).getCode();
       final String message = t.getMessage();
+
       switch (code) {
       case 400:
         response.getError().setCode(CODE_BAD_REQUEST);
@@ -562,7 +585,4 @@ public class PostGobiOrdersHelper {
     asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
-
-
-
 }

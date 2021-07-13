@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Constants {
-  public static final String ORDERS_MAPPING_CONFIGURATION_PROPERTY_NAME = "orders.mapping.configuration";
-  public static final String ORDERS_MAPPING_CONFIGURATION_DEFAULT = "default_orders_mapping_configuration.json";
 
   public enum ErrorCodes {
 
