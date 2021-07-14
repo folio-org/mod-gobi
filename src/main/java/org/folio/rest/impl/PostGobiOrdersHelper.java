@@ -49,15 +49,15 @@ import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 public class PostGobiOrdersHelper {
   private static final Logger logger = LogManager.getLogger(PostGobiOrdersHelper.class);
 
-  static final String LOCATIONS_ENDPOINT = "/locations";
-  static final String MATERIAL_TYPES_ENDPOINT = "/material-types";
-  static final String PAYMENT_STATUS_ENDPOINT = "/payment_status";
-  static final String GET_ORGANIZATION_ENDPOINT = "/organizations-storage/organizations";
-  static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
-  static final String ORDERS_ENDPOINT = "/orders/composite-orders";
-  static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
-  static final String FUNDS_ENDPOINT = "/finance/funds";
-  static final String EXPENSE_CLASS_ENDPOINT = "/finance/expense-classes";
+  public static final String LOCATIONS_ENDPOINT = "/locations";
+  public static final String MATERIAL_TYPES_ENDPOINT = "/material-types";
+  public static final String PAYMENT_STATUS_ENDPOINT = "/payment_status";
+  public static final String GET_ORGANIZATION_ENDPOINT = "/organizations-storage/organizations";
+  public static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
+  public static final String ORDERS_ENDPOINT = "/orders/composite-orders";
+  public static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
+  public static final String FUNDS_ENDPOINT = "/finance/funds";
+  public static final String EXPENSE_CLASS_ENDPOINT = "/finance/expense-classes";
 
   static final String CONTRIBUTOR_NAME_TYPES_ENDPOINT = "/contributor-name-types";
   static final String IDENTIFIERS_ENDPOINT = "/identifier-types";
