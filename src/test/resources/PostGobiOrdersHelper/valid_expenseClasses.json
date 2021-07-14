@@ -1,0 +1,17 @@
+{
+  "expenseClasses": [
+    {
+      "id": "1bcc3247-99bf-4dca-9b0f-7bc51a2998c2",
+      "code": "Elec",
+      "name": "Electronic",
+      "externalAccountNumberExt": "54321098",
+      "metadata": {
+        "createdDate": "2019-06-17T14:12:42.497+0000",
+        "createdByUserId": "498492aa-f909-42f6-b154-5bf66e6486ba",
+        "updatedDate": "2019-08-28T08:37:19.263+0000",
+        "updatedByUserId": "7ec56c96-e9f2-4079-9509-86b00f8dacd5"
+      }
+    }
+  ],
+  "totalRecords": 1
+}
