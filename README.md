@@ -24,6 +24,10 @@ MODGOBI currently can handle the below order Types:
 When any of the above order types come through GOBI, the order is mapped to corresponding schemas in https://github.com/folio-org/acq-models
 and the Orders APIs are called. 
 
+## Using custom order mapping
+Please take a look wiki : [Using custom order mapping](https://wiki.folio.org/display/DD/GOBI+-+Overriding+default+Mapping)
+
+
 ### Issue tracker
 
 See project [MODGOBI](https://issues.folio.org/browse/MODGOBI)

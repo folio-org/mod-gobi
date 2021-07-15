@@ -360,4 +360,72 @@ public class PostGobiOrdersHelperTest {
     });
   }
 
+  @Test
+  public final void testSuccessMapLookupExpenseClassId(TestContext context) {
+
+    logger.info("Begin: Testing if all material type calls return empty, must use first in the list");
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(PostGobiOrdersHelper.EXPENSE_CLASS_ENDPOINT) && req.query().contains("Elec")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_expenseClasses.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_expenseClasses.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testDefaultExpenseClasses");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
+        GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
+        vertx.getOrCreateContext());
+      pgoh.lookupExpenseClassId("Elec")
+        .thenAccept(list -> {
+          context.assertNotNull(list);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testShouldReturnNullExpenseClassIdIfExpenseClassNotFound(TestContext context) {
+
+    logger.info("Begin: Testing if all material type calls return empty, must use first in the list");
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(PostGobiOrdersHelper.EXPENSE_CLASS_ENDPOINT) && req.query().contains("Elec")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_expenseClasses.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_expenseClasses.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testDefaultExpenseClasses");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
+        GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
+        vertx.getOrCreateContext());
+      pgoh.lookupExpenseClassId("Prn")
+        .thenAccept(list -> {
+          context.assertNull(list);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
 }

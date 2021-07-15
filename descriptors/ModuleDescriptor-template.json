@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "gobi",
-      "version": "1.9",
+      "version": "1.10",
       "handlers": [
         {
           "methods": ["GET"],
@@ -32,6 +32,7 @@
             "organizations-storage.organizations.collection.get",
             "configuration.entries.collection.get",
             "finance.funds.collection.get",
+            "finance.expense-classes.collection.get",
             "orders.item.approve"
           ]
         }
@@ -70,6 +71,10 @@
     {
       "id": "identifier-types",
       "version": "1.2"
+    },
+    {
+      "id": "finance.expense-classes",
+      "version": "1.0"
     }
   ],
   "permissionSets": [

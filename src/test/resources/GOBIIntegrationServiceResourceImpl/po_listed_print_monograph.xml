@@ -63,6 +63,10 @@
           <Description>LocalData4</Description>
           <Value>signed-edition,vip-order</Value>
         </LocalData>
+        <LocalData>
+          <Description>LocalData5</Description>
+          <Value>Prn</Value>
+        </LocalData>
       </OrderDetail>
     </ListedPrintMonograph>
   </Order>

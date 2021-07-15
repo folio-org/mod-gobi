@@ -57,7 +57,6 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
         asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(binaryOutStream)));
       })
       .exceptionally(helper::handleError);
-
   }
 
   public static HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {
