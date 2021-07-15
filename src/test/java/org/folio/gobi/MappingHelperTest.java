@@ -1,5 +1,8 @@
 package org.folio.gobi;
 
+import static org.folio.rest.mappings.model.Mapping.Field.ACCESS_PROVIDER;
+import static org.folio.rest.mappings.model.Mapping.Field.EXPENSE_CLASS;
+import static org.folio.rest.mappings.model.Mapping.Field.TITLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -40,7 +43,9 @@ public class MappingHelperTest {
   private static String actualUnlistedPrintJson = null;
   private static OrderMappings actualUnlistedPrintMappings = null;
   private static OrderMappings actuallistedPrintMappings = null;
-  private static Mapping mapping1 = null;
+  private static Mapping mappingAccessProvider = null;
+  private static Mapping mappingExpenseClass = null;
+  private static Mapping mappingCombinatorNotExist = null;
   private static Mapping mapping2 = null;
 
   @Before
@@ -49,10 +54,23 @@ public class MappingHelperTest {
 
     JsonObject expectedListedPrintMonographJsonObj = new JsonObject();
     expectedListedPrintMonographJsonObj.put("orderType", "ListedPrintMonograph");
+
+   JsonObject accessProvider = new JsonObject().put("field", ACCESS_PROVIDER.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//PurchaseOption/VendorPOCode").put("translation", "lookupOrganization"));
+
+   JsonObject expenseClass =  new JsonObject().put("field", EXPENSE_CLASS.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//LocalData[Description='LocalData5']/Value").put("translation", "lookupExpenseClassId"));;
     expectedListedPrintMonographJsonObj.put("mappings",
-        new JsonArray().add(new JsonObject().put("field", "ACCESS_PROVIDER")
-          .put("dataSource",
-              new JsonObject().put("from", "//PurchaseOption/VendorPOCode").put("translation", "lookupOrganization"))));
+        new JsonArray().add(accessProvider).add(expenseClass));
+
+    JsonObject combinatorTitle =  new JsonObject().put("field", TITLE.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//datafield[@tag='245']/*").put("combinator", "concat"));;
+    expectedListedPrintMonographJsonObj.put("mappings",
+      new JsonArray().add(accessProvider).add(expenseClass).add(combinatorTitle));
+
 
     String expectedListedPrintMonographJson = expectedListedPrintMonographJsonObj.toString();
 
@@ -87,11 +105,17 @@ public class MappingHelperTest {
 
     List<Mapping> mappingsList1 = actuallistedPrintMappings.getMappings();
     List<Mapping> mappingsList2 = actualUnlistedPrintMappings.getMappings();
-    mapping1 = mappingsList1.get(0);
+    mappingAccessProvider = mappingsList1.get(0);
+    mappingExpenseClass = mappingsList1.get(1);
+    mappingCombinatorNotExist = mappingsList1.get(2);
+    mappingCombinatorNotExist.getDataSource().setCombinator(null);
+
     mapping2 = mappingsList2.get(0);
-    assertEquals(1, mappingsList1.size());
+    assertEquals(3, mappingsList1.size());
     assertEquals(2, mappingsList2.size());
-    assertEquals("ACCESS_PROVIDER", mapping1.getField().toString());
+    assertEquals(Mapping.Field.ACCESS_PROVIDER.value(), mappingAccessProvider.getField().toString());
+    assertEquals(EXPENSE_CLASS.value(), mappingExpenseClass.getField().toString());
+
     assertEquals("PRODUCT_ID", mapping2.getField().toString());
   }
 
@@ -106,7 +130,7 @@ public class MappingHelperTest {
     logger.info(
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType ListedPrintMonograph");
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping1 = new LinkedHashMap<>();
-    org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mapping1, fieldDataSourceMapping1, null);
+    org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mappingAccessProvider, fieldDataSourceMapping1, null);
     assertEquals("//PurchaseOption/VendorPOCode", dataSource.from);
     assertFalse(dataSource.translateDefValue);
   }
@@ -137,5 +161,13 @@ public class MappingHelperTest {
     };
 
     assertEquals("", MappingHelper.readMappingsFile(OrderType.LISTED_PRINT_MONOGRAPH.value() + ".json"));
+  }
+
+  @Test
+  public void testShouldSuccessMapExpenseClass() {
+    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new LinkedHashMap<>();
+    org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mappingExpenseClass, fieldDataSourceMapping, null);
+    assertEquals("//LocalData[Description='LocalData5']/Value", dataSource.from);
+    assertFalse(dataSource.translateDefValue);
   }
 }

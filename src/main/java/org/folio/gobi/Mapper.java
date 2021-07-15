@@ -711,6 +711,11 @@ public class Mapper {
               .ifPresent(encumbranceIdField -> futures.add(encumbranceIdField.resolve(doc)
                 .thenAccept(encumbranceIdObject -> fundDistribution.setEncumbrance((String) encumbranceIdObject))
                 .exceptionally(Mapper::logException)));
+
+            Optional.ofNullable(mappings.get(Mapping.Field.EXPENSE_CLASS))
+              .ifPresent(expenseClassCode -> futures.add(expenseClassCode.resolve(doc)
+                .thenAccept(expenseClassIdObj -> fundDistribution.setExpenseClassId((String) expenseClassIdObj))
+                .exceptionally(Mapper::logException)));
           }
         })
         .exceptionally(Mapper::logException)));

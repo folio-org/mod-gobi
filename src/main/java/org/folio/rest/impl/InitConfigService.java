@@ -1,15 +1,15 @@
- package org.folio.rest.impl;
+package org.folio.rest.impl;
 
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
- import org.folio.rest.resource.interfaces.PostDeployVerticle;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.rest.resource.interfaces.PostDeployVerticle;
 
- import io.vertx.core.AsyncResult;
- import io.vertx.core.Context;
- import io.vertx.core.Handler;
- import io.vertx.core.Vertx;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
-public class InitConfigService implements PostDeployVerticle {
+ public class InitConfigService implements PostDeployVerticle {
   private static final Logger logger = LogManager.getLogger(InitConfigService.class);
 
   @Override
