@@ -112,6 +112,9 @@ public class MappingHelper {
           case LOOKUP_CONTRIBUTOR_NAME_TYPE_ID:
             translatedValue = postGobiOrdersHelper.lookupContributorNameTypeId(data);
             break;
+          case LOOKUP_EXPENSE_CLASS_ID:
+            translatedValue = postGobiOrdersHelper.lookupExpenseClassId(data);
+          break;
           case LOOKUP_LOCATION_ID:
             translatedValue = postGobiOrdersHelper.lookupLocationId(data);
             break;

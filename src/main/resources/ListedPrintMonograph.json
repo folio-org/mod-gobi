@@ -61,6 +61,13 @@
           }
         },
         {
+          "field": "EXPENSE_CLASS",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData4']/Value",
+            "translation": "lookupExpenseClassId"
+          }
+        },
+        {
           "field": "FUND_ID",
           "dataSource": {
             "from": "//FundCode",
@@ -210,12 +217,6 @@
           "field": "SOURCE",
           "dataSource": {
             "default": "API"
-          }
-        },
-        {
-          "field": "TAGS",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData4']/Value"
           }
         },
         {

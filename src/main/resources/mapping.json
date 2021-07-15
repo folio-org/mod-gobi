@@ -34,6 +34,7 @@
         "ENCUMBRANCE",
         "EXPECTED_ACTIVATION",
         "EXPECTED_RECEIPT_DATE",
+        "EXPENSE_CLASS",
         "FUND_ID",
         "FUND_CODE",
         "FUND_PERCENTAGE",
@@ -106,6 +107,7 @@
         "translation": {
           "enum": [
             "lookupContributorNameTypeId",
+            "lookupExpenseClassId",
             "lookupLocationId",
             "lookupMaterialTypeId",
             "lookupFundId",
