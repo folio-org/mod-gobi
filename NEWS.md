@@ -1,5 +1,13 @@
 ## 2.2.0 Unreleased
 
+## 2.1.1 Released
+The primary focus of this release was to support expense classes from LocalData fields
+
+[Full Changelog](https://github.com/folio-org/mod-finance/compare/v2.1.0...v2.1.1)
+
+### Stories
+* [MODGOBI-125](https://issues.folio.org/browse/MODGOBI-125) Support expense classes from LocalData fields
+
 ## 2.1.0 Released
 Major changes in this release related with upgrading the RMB to v33.0.0
 
