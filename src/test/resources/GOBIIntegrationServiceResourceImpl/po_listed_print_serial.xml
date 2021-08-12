@@ -24,7 +24,7 @@
         </record>
       </collection>
       <OrderDetail>
-        <FundCode>UNIV-SUBN</FundCode>
+        <FundCode>UNIV-SUBN:Prn</FundCode>
         <OrderNotes>Next Volume | Listed Print Serial</OrderNotes>
         <Quantity>1</Quantity>
         <YBPOrderKey>99974828485</YBPOrderKey>
