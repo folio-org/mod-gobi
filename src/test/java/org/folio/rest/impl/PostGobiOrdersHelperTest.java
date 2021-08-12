@@ -386,8 +386,8 @@ public class PostGobiOrdersHelperTest {
         GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
         vertx.getOrCreateContext());
       pgoh.lookupExpenseClassId("Elec")
-        .thenAccept(list -> {
-          context.assertNotNull(list);
+        .thenAccept(id -> {
+          context.assertNotNull(id);
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });
@@ -420,8 +420,8 @@ public class PostGobiOrdersHelperTest {
         GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
         vertx.getOrCreateContext());
       pgoh.lookupExpenseClassId("Prn")
-        .thenAccept(list -> {
-          context.assertNull(list);
+        .thenAccept(id -> {
+          context.assertNull(id);
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });
