@@ -2,6 +2,7 @@ package org.folio.rest.impl;
 
 import static java.util.Objects.nonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.folio.gobi.HelperUtils.extractFundCode;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
@@ -99,7 +100,7 @@ public class PostGobiOrdersHelper {
 
       lookupOrderMappings(orderType).thenAccept(ordermappings -> {
        logger.info("Using Mappings {}", ordermappings);
-        new Mapper(ordermappings).map(doc)
+        new Mapper(ordermappings).map(doc, this)
           .thenAccept(future::complete);
       }).exceptionally(e -> {
         logger.error("Exception looking up Order mappings", e);
@@ -279,7 +280,7 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<String> lookupFundId(String fundCode) {
-    String query = HelperUtils.encodeValue(String.format("code==%s", fundCode));
+    String query = HelperUtils.encodeValue(String.format("code==%s", extractFundCode(fundCode)));
     String endpoint = String.format(FUNDS_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenApply(funds -> {

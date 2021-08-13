@@ -363,7 +363,7 @@ public class PostGobiOrdersHelperTest {
   @Test
   public final void testSuccessMapLookupExpenseClassId(TestContext context) {
 
-    logger.info("Begin: Testing if all material type calls return empty, must use first in the list");
+    logger.info("Begin: Testing for expense class id lookup by existent expense class code");
     final Async async = context.async();
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
@@ -386,8 +386,8 @@ public class PostGobiOrdersHelperTest {
         GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
         vertx.getOrCreateContext());
       pgoh.lookupExpenseClassId("Elec")
-        .thenAccept(list -> {
-          context.assertNotNull(list);
+        .thenAccept(id -> {
+          context.assertNotNull(id);
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });
@@ -397,7 +397,7 @@ public class PostGobiOrdersHelperTest {
   @Test
   public final void testShouldReturnNullExpenseClassIdIfExpenseClassNotFound(TestContext context) {
 
-    logger.info("Begin: Testing if all material type calls return empty, must use first in the list");
+    logger.info("Begin: Testing if no expense class id is returned if looked up by non-existent expense class code");
     final Async async = context.async();
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
@@ -420,8 +420,62 @@ public class PostGobiOrdersHelperTest {
         GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
         vertx.getOrCreateContext());
       pgoh.lookupExpenseClassId("Prn")
-        .thenAccept(list -> {
-          context.assertNull(list);
+        .thenAccept(id -> {
+          context.assertNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testSuccessLookupFundId(TestContext context) {
+    logger.info("Begin: Testing for fund id lookup by existent fund code");
+    testLookupFundId(context, "AFRICAHIST", false);
+  }
+
+  @Test
+  public final void testSuccessLookupFundIdByFundCodeWithExpenseClass(TestContext context) {
+    logger.info("Begin: Testing for fund id lookup extracting fund code from a string containing expense class");
+    testLookupFundId(context, "AFRICAHIST:Elec", false);
+  }
+
+  @Test
+  public final void testShouldReturnNullFundIfFundIdNotFound(TestContext context) {
+    logger.info("Begin: Testing if no fund id is returned if looked up by non-existent fund code");
+    testLookupFundId(context, "NONEXISTENT", true);
+  }
+
+  private void testLookupFundId(TestContext context, String fundCode, boolean shouldReturnNull) {
+
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(PostGobiOrdersHelper.FUNDS_ENDPOINT) && req.query().contains("AFRICAHIST")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_funds.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_funds.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testDefaultFunds");
+      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
+        GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
+        vertx.getOrCreateContext());
+      pgoh.lookupFundId(fundCode)
+        .thenAccept(id -> {
+          if (shouldReturnNull) {
+            context.assertNull(id);
+          } else {
+            context.assertNotNull(id);
+          }
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });

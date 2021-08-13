@@ -4,6 +4,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.gobi.exceptions.HttpException;
 
 import io.vertx.core.json.JsonArray;
@@ -11,6 +12,7 @@ import io.vertx.core.json.JsonObject;
 public class HelperUtils {
 
   public static final String CONTRIBUTOR_NAME_TYPES = "contributorNameTypes";
+  public static final String FUND_CODE_EXPENSE_CLASS_SEPARATOR = ":";
 
   private HelperUtils() {
 
@@ -68,6 +70,13 @@ public class HelperUtils {
 
   public static String encodeValue(String query) {
     return URLEncoder.encode(query, StandardCharsets.UTF_8);
+  }
+
+  public static String extractFundCode(String fundCode) {
+    return StringUtils.substringBefore(fundCode, FUND_CODE_EXPENSE_CLASS_SEPARATOR);
+  }
+  public static String extractExpenseClassFromFundCode(String fundCode) {
+    return StringUtils.substringAfterLast(fundCode, FUND_CODE_EXPENSE_CLASS_SEPARATOR);
   }
 
 }

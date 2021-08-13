@@ -1,0 +1,26 @@
+{
+  "funds": [
+    {
+      "id": "7fbd5d84-62d1-44c6-9c45-6cb173998bbd",
+      "allocatedFromIds": [
+        "fb7b70f1-b898-4924-a991-0e4b6312bb5f"
+      ],
+      "allocatedToIds": [
+        "cf23adf0-61ba-4887-bf82-956c4aae2260"
+      ],
+      "code": "AFRICAHIST",
+      "description": "use only for sub-Saharan Africa & the black diaspora; use MIDEASTHIS for North Africa",
+      "externalAccountNo": "140451294503633",
+      "fundStatus": "Active",
+      "fundTypeId": "c93373df-e7ec-4d31-b200-719736610d89",
+      "ledgerId": "133a7916-f05e-4df4-8f7f-09eb2a7076d1",
+      "name": "African History",
+      "acqUnitIds": [],
+      "metadata": {
+        "createdDate": "2021-07-27T11:17:54.328+00:00",
+        "updatedDate": "2021-07-27T11:17:54.328+00:00"
+      }
+    }
+  ],
+  "totalRecords": 1
+}
