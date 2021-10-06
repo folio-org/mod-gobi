@@ -1,5 +1,15 @@
 ## 2.2.0 Unreleased
 
+## 2.2.0 Released
+Major changes in this release related to add mapping od expense classes
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.1.0...v2.2.0)
+
+### Stories
+* [MODGOBI-125] (https://issues.folio.org/browse/MODGOBI-125) Support expense classes from LocalData fields
+* [MODGOBI-123] (https://issues.folio.org/browse/MODGOBI-123) Allow mapping for expense classes through GOBI
+
+
 ## 2.1.0 Released
 Major changes in this release related with upgrading the RMB to v33.0.0
 
