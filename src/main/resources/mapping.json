@@ -108,6 +108,7 @@
           "enum": [
             "lookupContributorNameTypeId",
             "lookupExpenseClassId",
+            "lookupAcquisitionMethodIds",
             "lookupLocationId",
             "lookupMaterialTypeId",
             "lookupFundId",

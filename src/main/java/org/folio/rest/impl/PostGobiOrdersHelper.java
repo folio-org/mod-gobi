@@ -7,6 +7,7 @@ import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond4
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,6 +60,7 @@ public class PostGobiOrdersHelper {
   public static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
   public static final String FUNDS_ENDPOINT = "/finance/funds";
   public static final String EXPENSE_CLASS_ENDPOINT = "/finance/expense-classes";
+  public static final String ACQUISITION_METHOD_ENDPOINT = "/orders/acquisition-methods";
 
   static final String CONTRIBUTOR_NAME_TYPES_ENDPOINT = "/contributor-name-types";
   static final String IDENTIFIERS_ENDPOINT = "/identifier-types";
@@ -78,6 +80,7 @@ public class PostGobiOrdersHelper {
   private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
   private static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
   private static final String CQL_NAME_CRITERIA = "name==%s";
+  public static final String PURCHASE_AT_VENDOR_SYSTEM = "Purchase At Vendor System";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -506,6 +509,27 @@ public class PostGobiOrdersHelper {
       .exceptionally(t -> {
         logger.error("Exception looking up for existing Order", t);
         return false;
+      });
+  }
+
+  public CompletableFuture<Map<String, String>> lookupAcquisitionMethodIds(String acquisitionMethod) {
+    //todo change
+    String query = HelperUtils.encodeValue(String.format("value==%s", acquisitionMethod));
+    String endpoint = String.format(ACQUISITION_METHOD_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenApply(acquisitionMethods -> {
+        String expenseClassId = HelperUtils.extractIdOfFirst(acquisitionMethods, "acquisition_methods");
+        if (StringUtils.isEmpty(expenseClassId)) {
+          return null;
+        }
+        Map<String, String> acquisitionMethodsMap = new HashMap<>();
+        acquisitionMethods.put(acquisitionMethod, expenseClassId);
+        acquisitionMethods.put(PURCHASE_AT_VENDOR_SYSTEM, "306489dd-0053-49ee-a068-c316444a8f55");
+        return acquisitionMethodsMap;
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up acquisition method id", t);
+        return null;
       });
   }
 

@@ -116,6 +116,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final  String ORDER_MOCK_DATA =  "MockData/purchaseOrders.json";
   private static final  String COMPOSITE_ORDER_MOCK_DATA =  "MockData/compositePurchaseOrder.json";
   private static final  String VALID_EXPENSE_CLASS =  "PostGobiOrdersHelper/valid_expenseClasses.json";
+  private static final  String VALID_ACQUISITION_METHOD =  "PostGobiOrdersHelper/valid_acquisition_methods.json";
 
   private static final String LOCATION = "LOCATION";
   private static final String FUNDS = "FUNDS";
@@ -125,6 +126,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String IDENTIFIER_TYPES = "IDENTIFIER_TYPES";
   private static final String UNSPECIFIED_MATERIAL_TYPE_ID = "be44c321-ab73-43c4-a114-70f82fa13f17";
   private static final String EXPENSE_CLASS = "EXPENSE_CLASS";
+  private static final String ACQUISITION_METHOD = "ACQUISITION_METHOD";
 
   private static final String MOCK_OKAPI_GET_ORDER_BY_ID_HEADER = "X-Okapi-MockGetOrderById";
   private static final String MOCK_OKAPI_PUT_ORDER_HEADER = "X-Okapi-MockPutOrder";
@@ -327,7 +329,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Print Monograph has to get the Product type ID so there will be an additional call made
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
-        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS));
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -335,6 +337,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getExpenseClassId());
+    assertNotNull(compPO.getCompositePoLines().get(0).getAcquisitionMethod());
 
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
@@ -476,7 +479,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     //Listed Print Monograph has Product Id type so there will be an additional call made
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
-        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS));
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -1075,6 +1078,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handleGetOrderById);
       router.put(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handlePutOrderById);
       router.get(PostGobiOrdersHelper.EXPENSE_CLASS_ENDPOINT).handler(this::handleGetExpenseClass);
+      router.get(PostGobiOrdersHelper.ACQUISITION_METHOD_ENDPOINT).handler(this::handleGetAcquisitionMethods);
 
       return router;
     }
@@ -1408,13 +1412,32 @@ public class GOBIIntegrationServiceResourceImplTest {
         expenseClasses = new JsonObject();
       }
 
-
       addServerRqRsData(HttpMethod.GET, EXPENSE_CLASS, expenseClasses);
 
       ctx.response()
         .setStatusCode(200)
         .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
         .end(expenseClasses.encodePrettily());
+    }
+
+    private void handleGetAcquisitionMethods(RoutingContext ctx) {
+      logger.info("got acquisition-methods request: {}", ctx.request().query());
+      JsonObject acquisitionMethods = new JsonObject();
+
+      try {
+        if (ctx.request().query().contains("value")) {
+          acquisitionMethods = new JsonObject(getMockData(VALID_ACQUISITION_METHOD));
+        }
+      } catch (IOException e) {
+        acquisitionMethods = new JsonObject();
+      }
+
+      addServerRqRsData(HttpMethod.GET, ACQUISITION_METHOD, acquisitionMethods);
+
+      ctx.response()
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(acquisitionMethods.encodePrettily());
     }
 
     private String randomDigits(int len) {

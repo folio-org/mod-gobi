@@ -4,6 +4,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
 import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
 import static org.folio.gobi.HelperUtils.extractFundCode;
+import static org.folio.rest.impl.PostGobiOrdersHelper.PURCHASE_AT_VENDOR_SYSTEM;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -68,7 +69,7 @@ public class Mapper {
 
     List<CompletableFuture<?>> purchaseOrderFutures = new ArrayList<>();
     mapPurchaseOrder(purchaseOrderFutures, compPO, doc);
-    mapPurchaseOrderLine(purchaseOrderFutures, pol, doc);
+    mapPurchaseOrderLine(purchaseOrderFutures, pol, doc, postGobiOrdersHelper);
     mapPurchaseOrderLineStrings(purchaseOrderFutures, pol, doc);
 
     CompletableFuture.allOf(purchaseOrderFutures.toArray(new CompletableFuture<?>[0]))
@@ -465,10 +466,20 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
-  private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
+  private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc, PostGobiOrdersHelper postGobiOrdersHelper) {
     Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_METHOD))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setAcquisitionMethod(CompositePoLine.AcquisitionMethod.fromValue(o.toString())))
+        .thenAccept(acquisitionMethodObject -> {
+            String acquisitionMethod = (String) acquisitionMethodObject;
+            postGobiOrdersHelper.lookupAcquisitionMethodIds(acquisitionMethod)
+              .thenAccept(acquisitionMethods -> {
+                if(acquisitionMethods.get(acquisitionMethod) != null && !acquisitionMethods.get(acquisitionMethod).isEmpty()) {
+                  pol.setAcquisitionMethod(acquisitionMethods.get(acquisitionMethod));
+                } else {
+                  pol.setAcquisitionMethod(acquisitionMethods.get(PURCHASE_AT_VENDOR_SYSTEM));
+                }
+              });
+          })
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.ALERTS))
