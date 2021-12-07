@@ -2,12 +2,13 @@ package org.folio.rest.impl;
 
 import static java.util.Objects.nonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static org.folio.gobi.HelperUtils.extractFundCode;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import org.folio.gobi.MappingHelper;
 import org.folio.gobi.OrderMappingCache;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
+import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.acq.model.Organization;
 import org.folio.rest.gobi.model.GobiResponse;
@@ -80,7 +82,9 @@ public class PostGobiOrdersHelper {
   private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
   private static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
   private static final String CQL_NAME_CRITERIA = "name==%s";
-  public static final String PURCHASE_AT_VENDOR_SYSTEM = "Purchase At Vendor System";
+  public static final String DEFAULT_ACQ_METHOD_VALUE = "Purchase At Vendor System";
+  public static final String ACQ_METHODS_NAME = "acquisitionMethods";
+  public static final String ACQ_METHODS_QUERY = "value==(%s OR "+ DEFAULT_ACQ_METHOD_VALUE +")";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -512,20 +516,18 @@ public class PostGobiOrdersHelper {
       });
   }
 
-  public CompletableFuture<Map<String, String>> lookupAcquisitionMethodIds(String acquisitionMethod) {
-    //todo change
-    String query = HelperUtils.encodeValue(String.format("value==%s", acquisitionMethod));
+  public CompletableFuture<String> lookupAcquisitionMethodId(String acquisitionMethod) {
+    String query = HelperUtils.encodeValue(String.format(ACQ_METHODS_QUERY, acquisitionMethod));
     String endpoint = String.format(ACQUISITION_METHOD_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
       .thenApply(acquisitionMethods -> {
-        String expenseClassId = HelperUtils.extractIdOfFirst(acquisitionMethods, "acquisition_methods");
-        if (StringUtils.isEmpty(expenseClassId)) {
-          return null;
-        }
-        Map<String, String> acquisitionMethodsMap = new HashMap<>();
-        acquisitionMethods.put(acquisitionMethod, expenseClassId);
-        acquisitionMethods.put(PURCHASE_AT_VENDOR_SYSTEM, "306489dd-0053-49ee-a068-c316444a8f55");
-        return acquisitionMethodsMap;
+        Map<String, AcquisitionMethod> acqMethods = acquisitionMethods.getJsonArray(ACQ_METHODS_NAME).stream()
+          .map(obj -> ((JsonObject) obj).mapTo(AcquisitionMethod.class))
+          .collect(toMap(AcquisitionMethod::getValue, identity()));
+
+        return Optional.ofNullable(acqMethods.get(acquisitionMethod))
+                       .map(AcquisitionMethod::getId)
+                       .orElse(acqMethods.get(DEFAULT_ACQ_METHOD_VALUE).getId());
       })
       .exceptionally(t -> {
         logger.error("Exception looking up acquisition method id", t);

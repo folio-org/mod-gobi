@@ -24,7 +24,7 @@
     "poLineNumber" : "PO_6733180275-1",
     "purchaseOrderId" : "22dd4cfb-3e46-41cb-a9bf-f4b2bfa0b991",
     "checkinItems" : false,
-    "acquisitionMethod" : "Purchase At Vendor System",
+    "acquisitionMethod" : "306489dd-0053-49ee-a068-c316444a8f55",
     "alerts" : [ {
       "alert" : "Test Data"
     } ],
