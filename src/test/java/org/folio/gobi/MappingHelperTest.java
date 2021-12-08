@@ -1,12 +1,7 @@
 package org.folio.gobi;
 
-import static org.folio.rest.mappings.model.Mapping.Field.ACCESS_PROVIDER;
-import static org.folio.rest.mappings.model.Mapping.Field.EXPENSE_CLASS;
-import static org.folio.rest.mappings.model.Mapping.Field.TITLE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.folio.rest.mappings.model.Mapping.Field.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,13 +54,13 @@ public class MappingHelperTest {
       .put("dataSource",
         new JsonObject().put("from", "//PurchaseOption/VendorPOCode").put("translation", "lookupOrganization"));
 
-   JsonObject expenseClass =  new JsonObject().put("field", EXPENSE_CLASS.value())
+    JsonObject expenseClass = new JsonObject().put("field", EXPENSE_CLASS.value())
       .put("dataSource",
         new JsonObject().put("from", "//LocalData[Description='LocalData5']/Value").put("translation", "lookupExpenseClassId"));;
     expectedListedPrintMonographJsonObj.put("mappings",
         new JsonArray().add(accessProvider).add(expenseClass));
 
-    JsonObject combinatorTitle =  new JsonObject().put("field", TITLE.value())
+    JsonObject combinatorTitle = new JsonObject().put("field", TITLE.value())
       .put("dataSource",
         new JsonObject().put("from", "//datafield[@tag='245']/*").put("combinator", "concat"));;
     expectedListedPrintMonographJsonObj.put("mappings",

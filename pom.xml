@@ -596,6 +596,16 @@
               <targetPackage>org.folio.rest.acq.model</targetPackage>
             </configuration>
           </execution>
+          <execution>
+            <id>acq-models-acquisition-method</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/ramls/acq-models/mod-orders-storage/schemas/acquisition_method_collection.json</sourceDirectory>
+              <targetPackage>org.folio.rest.acq.model</targetPackage>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>

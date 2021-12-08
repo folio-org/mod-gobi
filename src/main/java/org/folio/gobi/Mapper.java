@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.Alert;
 import org.folio.rest.acq.model.Claim;
 import org.folio.rest.acq.model.CompositePoLine;
@@ -99,6 +100,7 @@ public class Mapper {
     ReportingCode reportingCode = new ReportingCode();
     License license = new License();
     Tags tags = new Tags();
+    AcquisitionMethod acquisitionMethod = new AcquisitionMethod();
 
     List<CompletableFuture<?>> futures = new ArrayList<>();
 
@@ -113,6 +115,7 @@ public class Mapper {
     mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
     mapLicense(futures, license, doc);
     mapTags(futures, tags, doc);
+    mapAcquisitionMethod(futures, acquisitionMethod, doc, postGobiOrdersHelper);
 
     CompositePoLine pol = compPO.getCompositePoLines().get(0);
 
@@ -164,7 +167,7 @@ public class Mapper {
         });
 
         setObjectIfPresent(tags, o -> pol.setTags(tags));
-
+        setObjectIfPresent(acquisitionMethod, o -> pol.setAcquisitionMethod(acquisitionMethod.getId()));
         future.complete(compPO);
       })
       .exceptionally(t -> {
@@ -175,6 +178,17 @@ public class Mapper {
 
     return future;
 
+  }
+
+  private void mapAcquisitionMethod(List<CompletableFuture<?>> futures, AcquisitionMethod acquisitionMethodToUpdate,
+                                    Document doc, PostGobiOrdersHelper postGobiOrdersHelper) {
+    Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_METHOD))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenApply(acquisitionMethodField -> (String) acquisitionMethodField)
+          .thenCompose(postGobiOrdersHelper::lookupAcquisitionMethodId)
+          .thenAccept(acquisitionMethodToUpdate::setId)
+          .exceptionally(Mapper::logException)
+      ));
   }
 
   /**
@@ -466,11 +480,6 @@ public class Mapper {
   }
 
   private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_METHOD))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setAcquisitionMethod(CompositePoLine.AcquisitionMethod.fromValue(o.toString())))
-        .exceptionally(Mapper::logException)));
-
     Optional.ofNullable(mappings.get(Mapping.Field.ALERTS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
@@ -702,21 +711,21 @@ public class Mapper {
           if (StringUtils.isNotEmpty(fundDistribution.getFundId())) {
             Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
               .ifPresent(fundCodeField -> futures.add(fundCodeField.resolve(doc)
-                .thenAccept(fundCodeObject -> {
+                  .thenAccept(fundCodeObject -> {
                   String fundCode = (String) fundCodeObject;
 
                   if (StringUtils.isNotEmpty(fundCode) && fundCode.contains(FUND_CODE_EXPENSE_CLASS_SEPARATOR)) {
-                    fundDistribution.setCode(extractFundCode(fundCode));
+                      fundDistribution.setCode(extractFundCode(fundCode));
                     postGobiOrdersHelper.lookupExpenseClassId(extractExpenseClassFromFundCode((String) fundCodeObject))
-                      .thenAccept(fundDistribution::setExpenseClassId)
+                                                     .thenAccept(fundDistribution::setExpenseClassId)
                       .exceptionally(Mapper::logException);
-                  } else {
-                    fundDistribution.setCode(fundCode);
-                    Optional.ofNullable(mappings.get(Mapping.Field.EXPENSE_CLASS))
-                      .ifPresent(expenseClassCode -> futures.add(expenseClassCode.resolve(doc)
-                        .thenAccept(expenseClassIdObj -> fundDistribution.setExpenseClassId((String) expenseClassIdObj))
-                        .exceptionally(Mapper::logException)));
-                  }
+                    } else {
+                      fundDistribution.setCode(fundCode);
+                      Optional.ofNullable(mappings.get(Mapping.Field.EXPENSE_CLASS))
+                        .ifPresent(expenseClassCode -> futures.add(expenseClassCode.resolve(doc)
+                          .thenAccept(expenseClassIdObj -> fundDistribution.setExpenseClassId((String) expenseClassIdObj))
+                          .exceptionally(Mapper::logException)));
+                    }
                 })
                 .exceptionally(Mapper::logException)));
 
