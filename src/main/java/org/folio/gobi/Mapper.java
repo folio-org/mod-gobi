@@ -702,31 +702,18 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
-  private void mapFundDistribution(List<CompletableFuture<?>> futures, FundDistribution fundDistribution, Document doc, PostGobiOrdersHelper postGobiOrdersHelper) {
+  private void mapFundDistribution(List<CompletableFuture<?>> futures, FundDistribution fundDistribution, Document doc,
+                                   PostGobiOrdersHelper postGobiOrdersHelper) {
     Optional.ofNullable(mappings.get(Mapping.Field.FUND_ID))
       .ifPresent(fundIdField -> futures.add(fundIdField.resolve(doc)
-        .thenAccept(o -> {
-          fundDistribution.setFundId((String) o);
+        .thenAccept(fundIdObject -> {
 
-          if (StringUtils.isNotEmpty(fundDistribution.getFundId())) {
+          if (StringUtils.isNotEmpty((String) fundIdObject)) {
+            fundDistribution.setFundId((String) fundIdObject);
+
             Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
               .ifPresent(fundCodeField -> futures.add(fundCodeField.resolve(doc)
-                  .thenAccept(fundCodeObject -> {
-                  String fundCode = (String) fundCodeObject;
-
-                  if (StringUtils.isNotEmpty(fundCode) && fundCode.contains(FUND_CODE_EXPENSE_CLASS_SEPARATOR)) {
-                      fundDistribution.setCode(extractFundCode(fundCode));
-                    postGobiOrdersHelper.lookupExpenseClassId(extractExpenseClassFromFundCode((String) fundCodeObject))
-                                                     .thenAccept(fundDistribution::setExpenseClassId)
-                      .exceptionally(Mapper::logException);
-                    } else {
-                      fundDistribution.setCode(fundCode);
-                      Optional.ofNullable(mappings.get(Mapping.Field.EXPENSE_CLASS))
-                        .ifPresent(expenseClassCode -> futures.add(expenseClassCode.resolve(doc)
-                          .thenAccept(expenseClassIdObj -> fundDistribution.setExpenseClassId((String) expenseClassIdObj))
-                          .exceptionally(Mapper::logException)));
-                    }
-                })
+                .thenCompose(fundCodeObject -> fundCodeResolver(fundDistribution, doc, postGobiOrdersHelper, (String) fundCodeObject))
                 .exceptionally(Mapper::logException)));
 
             Optional.ofNullable(mappings.get(Mapping.Field.FUND_PERCENTAGE))
@@ -744,6 +731,32 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
+  private CompletableFuture<Void> fundCodeResolver(FundDistribution fundDistribution, Document doc,
+                                                   PostGobiOrdersHelper postGobiOrdersHelper, String fundCode) {
+
+    if (StringUtils.isNotEmpty(fundCode) && fundCode.contains(FUND_CODE_EXPENSE_CLASS_SEPARATOR)) {
+      fundDistribution.setCode(extractFundCode(fundCode));
+      return postGobiOrdersHelper.lookupExpenseClassId(extractExpenseClassFromFundCode(fundCode))
+        .thenAccept(fundDistribution::setExpenseClassId)
+        .exceptionally(ex -> {
+          Mapper.logException(ex);
+          return null;
+        });
+    } else {
+      fundDistribution.setCode(fundCode);
+      DataSourceResolver expenseClassCode = mappings.get(Mapping.Field.EXPENSE_CLASS);
+      if (expenseClassCode != null) {
+        return expenseClassCode.resolve(doc)
+          .thenAccept(expenseClassIdObj -> fundDistribution.setExpenseClassId((String) expenseClassIdObj))
+          .exceptionally(ex -> {
+            Mapper.logException(ex);
+            return null;
+          });
+      } else {
+        return completedFuture(null);
+      }
+    }
+  }
 
   private void mapLocation(List<CompletableFuture<?>> futures, Location location, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.LOCATION))
