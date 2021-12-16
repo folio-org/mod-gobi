@@ -1,4 +1,11 @@
-## 2.2.0 Unreleased
+## 2.3.0 Unreleased
+
+## 2.2.1 - Released
+This bugfix release focused on fixing Log4j vulnerability
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.2.0...v2.2.1)
+
+### Bugfixes
+* [MODGOBI-140](https://issues.folio.org/browse/MODGOBI-140) - Kiwi R3 2021 - Log4j vulnerability verification and correction
 
 ## 2.2.0 Released
 Major changes in this release related to add mapping od expense classes
