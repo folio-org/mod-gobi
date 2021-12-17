@@ -1,9 +1,17 @@
 ## 2.2.0 Unreleased
 
+## 2.1.2 Released
+The focus of this release was to fix Log4j vulnerability
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.1.1...v2.1.2)
+
+### Bug Fixes
+* [MODGOBI-141](https://issues.folio.org/browse/MODGOBI-141) Juniper R2 2021 - Log4j vulnerability verification and correction
+
 ## 2.1.1 Released
 The primary focus of this release was to support expense classes from LocalData fields
 
-[Full Changelog](https://github.com/folio-org/mod-finance/compare/v2.1.0...v2.1.1)
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.1.0...v2.1.1)
 
 ### Stories
 * [MODGOBI-125](https://issues.folio.org/browse/MODGOBI-125) Support expense classes from LocalData fields
