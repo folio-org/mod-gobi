@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -278,7 +279,8 @@ public class PostGobiOrdersHelper {
           Optional.ofNullable(resp.getJsonArray("organizations"))
           .flatMap(organizations -> organizations.stream().findFirst())
           .map(organization -> ((JsonObject) organization).mapTo(Organization.class))
-          .orElse(null))
+          .orElseThrow(() -> new CompletionException(new HttpException(404, String.format("Vendor '%s' not found", vendorCode)))))
+
         .exceptionally(t -> {
           String errorMessage = String.format("Exception looking up Organization which is a vendor with code: %s", vendorCode);
           logger.error(errorMessage, t);
