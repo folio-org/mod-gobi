@@ -43,7 +43,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
     HttpClientInterface httpClient = getHttpClient(okapiHeaders);
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders, vertxContext);
 
-    logger.info("Parsing Request...");
+    logger.info("Parsing Request: \n {}", entity);
     helper.parse(entity)
       .thenCompose(gobiPO -> {
         logger.info("Mapping Request...");

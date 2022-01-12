@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -279,8 +278,7 @@ public class PostGobiOrdersHelper {
           Optional.ofNullable(resp.getJsonArray("organizations"))
           .flatMap(organizations -> organizations.stream().findFirst())
           .map(organization -> ((JsonObject) organization).mapTo(Organization.class))
-          .orElseThrow(() -> new CompletionException(new HttpException(404, String.format("Vendor '%s' not found", vendorCode)))))
-
+          .orElse(null))
         .exceptionally(t -> {
           String errorMessage = String.format("Exception looking up Organization which is a vendor with code: %s", vendorCode);
           logger.error(errorMessage, t);
@@ -500,7 +498,7 @@ public class PostGobiOrdersHelper {
         }
         CompositePurchaseOrder purchaseOrder = purchaseOrders.getJsonArray("purchaseOrders").getJsonObject(0).mapTo(CompositePurchaseOrder.class);
         compPO.setId(purchaseOrder.getId());
-        //try to Open the Order,doing it asynchronously because irrespective of the result return the existing Order to GOBI
+        // try to Open the Order, doing it asynchronously because irrespective of the result return the existing Order to GOBI
         if (purchaseOrder.getWorkflowStatus()
           .equals(CompositePurchaseOrder.WorkflowStatus.PENDING)) {
           purchaseOrder.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.OPEN);
@@ -608,9 +606,6 @@ public class PostGobiOrdersHelper {
       result = respond500WithTextPlain(throwable.getMessage());
     }
 
-    if (httpClient != null) {
-      httpClient.closeClient();
-    }
     asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
