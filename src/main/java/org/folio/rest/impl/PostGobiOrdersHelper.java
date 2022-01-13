@@ -502,6 +502,7 @@ public class PostGobiOrdersHelper {
         if (purchaseOrder.getWorkflowStatus()
           .equals(CompositePurchaseOrder.WorkflowStatus.PENDING)) {
           purchaseOrder.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.OPEN);
+
           handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder), httpClient, ctx, okapiHeaders)
             .exceptionally(e -> {
               logger.error("Retry to OPEN existing Order failed", e);
