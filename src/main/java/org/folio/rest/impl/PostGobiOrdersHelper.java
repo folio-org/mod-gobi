@@ -498,15 +498,17 @@ public class PostGobiOrdersHelper {
         }
         CompositePurchaseOrder purchaseOrder = purchaseOrders.getJsonArray("purchaseOrders").getJsonObject(0).mapTo(CompositePurchaseOrder.class);
         compPO.setId(purchaseOrder.getId());
-        //try to Open the Order,doing it asynchronously because irrespective of the result return the existing Order to GOBI
+        // try to Open the Order, doing it asynchronously because irrespective of the result return the existing Order to GOBI
         if (purchaseOrder.getWorkflowStatus()
           .equals(CompositePurchaseOrder.WorkflowStatus.PENDING)) {
           purchaseOrder.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.OPEN);
-          handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder), httpClient, ctx, okapiHeaders)
+
+          return handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder), httpClient, ctx, okapiHeaders)
             .exceptionally(e -> {
               logger.error("Retry to OPEN existing Order failed", e);
               return null;
-            });
+            })
+            .thenApply(v -> true);
         }
         return completedFuture(true);
       })
@@ -606,9 +608,6 @@ public class PostGobiOrdersHelper {
       result = respond500WithTextPlain(throwable.getMessage());
     }
 
-    if (httpClient != null) {
-      httpClient.closeClient();
-    }
     asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
