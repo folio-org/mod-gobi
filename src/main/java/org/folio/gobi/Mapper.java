@@ -2,6 +2,7 @@ package org.folio.gobi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
+import static org.folio.gobi.HelperUtils.INVALID_ISBN_PRODUCT_ID_TYPE;
 import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
 import static org.folio.gobi.HelperUtils.extractFundCode;
 
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.isbn.IsbnUtil;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.Alert;
 import org.folio.rest.acq.model.Claim;
@@ -105,7 +107,7 @@ public class Mapper {
     List<CompletableFuture<?>> futures = new ArrayList<>();
 
     mapCost(futures, cost, doc);
-    mapDetail(futures, detail, doc);
+    mapDetail(futures, detail, doc, postGobiOrdersHelper);
     mapFundDistribution(futures, fundDistribution, doc, postGobiOrdersHelper);
     mapLocation(futures, location, doc);
     mapVendorDetail(futures, vendorDetail, doc);
@@ -605,7 +607,7 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
-  private void mapDetail(List<CompletableFuture<?>> futures, Details detail, Document doc) {
+  private void mapDetail(List<CompletableFuture<?>> futures, Details detail, Document doc, PostGobiOrdersHelper postGobiOrdersHelper) {
     // Adding a new entry to product id only if the product ID and product id
     // type are present
     // as both of them are together are mandatory to create an inventory
@@ -616,7 +618,7 @@ public class Mapper {
           ProductIdentifier productId = new ProductIdentifier();
           productId.setProductId(o.toString());
           return Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_ID_TYPE))
-            .map(prodIdType -> prodIdType.resolve(doc)
+            .map(prodIdType -> resolveProductIdType(prodIdType, doc, productId, postGobiOrdersHelper)
               .thenAccept(typeId -> {
                 productId.setProductIdType((String) typeId);
                 Optional.ofNullable(mappings.get(Mapping.Field.PRODUCT_QUALIFIER))
@@ -650,6 +652,15 @@ public class Mapper {
         .thenAccept(o -> detail.setSubscriptionTo((Date) o))
         .exceptionally(Mapper::logException)));
 
+  }
+
+  private CompletableFuture<?> resolveProductIdType(DataSourceResolver prodIdType, Document doc,
+                                                    ProductIdentifier productId, PostGobiOrdersHelper postGobiOrdersHelper) {
+    if (IsbnUtil.isValid13DigitNumber(productId.getProductId()) || IsbnUtil.isValid10DigitNumber(productId.getProductId())) {
+      return prodIdType.resolve(doc);
+    } else {
+      return postGobiOrdersHelper.lookupProductIdType(INVALID_ISBN_PRODUCT_ID_TYPE);
+    }
   }
 
   private void mapEresource(List<CompletableFuture<?>> futures, Eresource eresource, Document doc) {
