@@ -13,6 +13,7 @@ public class HelperUtils {
 
   public static final String CONTRIBUTOR_NAME_TYPES = "contributorNameTypes";
   public static final String FUND_CODE_EXPENSE_CLASS_SEPARATOR = ":";
+  public static final String INVALID_ISBN_PRODUCT_ID_TYPE = "Invalid ISBN";
 
   private HelperUtils() {
 

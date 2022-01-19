@@ -190,6 +190,12 @@
       <artifactId>joda-time</artifactId>
       <version>2.10.10</version>
     </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-isbn-util</artifactId>
+      <version>1.1.0</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <build>
