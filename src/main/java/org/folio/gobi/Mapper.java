@@ -307,7 +307,15 @@ public class Mapper {
   private void mapPhysical(List<CompletableFuture<?>> futures, Physical physical, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.MATERIAL_SUPPLIER))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> physical.setMaterialSupplier((String) o))
+        .thenAccept(o -> {
+          if (o != null)
+            if (o instanceof Organization) {
+              Organization organization = (Organization) o;
+              physical.setMaterialSupplier(organization.getId());
+            } else {
+              physical.setMaterialSupplier((String) o);
+            }
+        })
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.RECEIPT_DUE))
