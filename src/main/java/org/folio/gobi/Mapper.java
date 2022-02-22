@@ -308,13 +308,10 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.MATERIAL_SUPPLIER))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
-          if (o != null)
-            if (o instanceof Organization) {
-              Organization organization = (Organization) o;
-              physical.setMaterialSupplier(organization.getId());
-            } else {
-              physical.setMaterialSupplier((String) o);
-            }
+          if (o != null) {
+            Organization organization = (Organization) o;
+            physical.setMaterialSupplier(organization.getId());
+          }
         })
         .exceptionally(Mapper::logException)));
 
