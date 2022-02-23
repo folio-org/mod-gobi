@@ -200,6 +200,14 @@
           }
         },
         {
+          "field": "MATERIAL_SUPPLIER",
+          "dataSource": {
+            "default": "GOBI",
+            "translation": "lookupOrganization",
+            "translateDefault": true
+          }
+        },
+        {
           "field": "VENDOR_ACCOUNT",
           "dataSource": {
             "from": "//SubAccount",
