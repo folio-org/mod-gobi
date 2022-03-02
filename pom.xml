@@ -54,6 +54,7 @@
     <sonar.exclusions>**/models/**.java</sonar.exclusions>
     <sonar.test.exclusions>**/*Test.java</sonar.test.exclusions>
     <jmockit.version>1.49</jmockit.version>
+    <log4j.version>2.17.2</log4j.version>
     <argLine />
   </properties>
 
@@ -113,6 +114,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-bom</artifactId>
+        <version>${log4j.version}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -146,6 +154,10 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>2.13.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
