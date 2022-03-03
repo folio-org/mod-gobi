@@ -1,4 +1,18 @@
-## 2.2.0 Unreleased
+## 2.4.0 Unreleased
+
+## 2.3.0 Unreleased
+
+Major changes in this release related to allow mapping for expense classes
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.2.0...v2.3.0)
+
+### Stories
+* [MODGOBI-149] (https://issues.folio.org/browse/MODGOBI-149) Material Supplier not mapping correctly to GOBI organization type
+* [MODGOBI-139] (https://issues.folio.org/browse/MODGOBI-139) Support expense classes from LocalData fields
+
+### Bug fixes
+* [MODGOBI-144] (https://issues.folio.org/browse/MODGOBI-144) Can not process order with material type in the LocalData1 field
+
 
 ## 2.2.0 Released
 Major changes in this release related to add mapping od expense classes
