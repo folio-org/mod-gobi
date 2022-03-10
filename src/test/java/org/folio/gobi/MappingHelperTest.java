@@ -148,14 +148,7 @@ public class MappingHelperTest {
 
   @Test
   public void readMappingsFile_IOException() {
-    new MockUp<IOUtils>() {
-      @Mock
-      String toString(final InputStream input, final Charset encoding) throws IOException {
-        throw new IOException("IOException");
-      }
-    };
-
-    assertEquals("", MappingHelper.readMappingsFile(OrderType.LISTED_PRINT_MONOGRAPH.value() + ".json"));
+    assertEquals("", MappingHelper.readMappingsFile(OrderType.LISTED_PRINT_MONOGRAPH.value()));
   }
 
   @Test

@@ -334,6 +334,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    Thread.currentThread().sleep(300);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPriceElectronic(), nullValue());
     assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
