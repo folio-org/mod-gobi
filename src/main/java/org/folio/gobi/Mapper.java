@@ -720,17 +720,17 @@ public class Mapper {
 
   private void mapFundDistribution(List<CompletableFuture<?>> futures, FundDistribution fundDistribution, Document doc,
                                    PostGobiOrdersHelper postGobiOrdersHelper) {
+    Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
+              .ifPresent(fundCodeField -> futures.add(fundCodeField.resolve(doc)
+                .thenCompose(fundCodeObject -> fundCodeResolver(fundDistribution, doc, postGobiOrdersHelper, (String) fundCodeObject))
+                .exceptionally(Mapper::logException)));
+
     Optional.ofNullable(mappings.get(Mapping.Field.FUND_ID))
       .ifPresent(fundIdField -> futures.add(fundIdField.resolve(doc)
         .thenAccept(fundIdObject -> {
 
           if (StringUtils.isNotEmpty((String) fundIdObject)) {
             fundDistribution.setFundId((String) fundIdObject);
-
-            Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
-              .ifPresent(fundCodeField -> futures.add(fundCodeField.resolve(doc)
-                .thenCompose(fundCodeObject -> fundCodeResolver(fundDistribution, doc, postGobiOrdersHelper, (String) fundCodeObject))
-                .exceptionally(Mapper::logException)));
 
             Optional.ofNullable(mappings.get(Mapping.Field.FUND_PERCENTAGE))
               .ifPresent(fundPercentageField -> futures.add(fundPercentageField.resolve(doc)
