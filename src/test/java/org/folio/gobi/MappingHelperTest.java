@@ -66,7 +66,6 @@ public class MappingHelperTest {
     expectedListedPrintMonographJsonObj.put("mappings",
       new JsonArray().add(accessProvider).add(expenseClass).add(combinatorTitle));
 
-
     String expectedListedPrintMonographJson = expectedListedPrintMonographJsonObj.toString();
 
     JsonObject expectedUnListedPrintMonographJsonObj = new JsonObject();
