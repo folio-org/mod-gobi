@@ -45,9 +45,9 @@ public class DataSourceResolver {
     CompletableFuture<Object> future = new CompletableFuture<>();
 
     if (from != null) {
-      applyXPath(doc)
-        .thenAccept(s -> applyTranslation(s)
-          .thenAccept(o -> applyDefault(o, doc)
+      CompletableFuture.completedStage(applyXPath(doc)
+        .thenCompose(s -> CompletableFuture.allOf(applyTranslation(s)
+          .thenCompose(o -> CompletableFuture.allOf(applyDefault(o, doc)
             .thenAccept(future::complete)
             .exceptionally(t -> {
               future.completeExceptionally(t);
@@ -60,14 +60,14 @@ public class DataSourceResolver {
         .exceptionally(t -> {
           future.completeExceptionally(t);
           return null;
-        });
+        }))));
     } else {
-      applyDefault(null, doc)
+      CompletableFuture.allOf(applyDefault(null, doc)
         .thenAccept(future::complete)
         .exceptionally(t -> {
           future.completeExceptionally(t);
           return null;
-        });
+        })).join();
     }
     return future;
   }
@@ -86,7 +86,7 @@ public class DataSourceResolver {
     if (translation != null) {
       return translation.apply(o == null ? null : o.toString());
     } else {
-      return CompletableFuture.completedFuture(o);
+      return CompletableFuture.supplyAsync(()->o);
     }
   }
 
@@ -106,7 +106,7 @@ public class DataSourceResolver {
         }
       }
     }
-    return CompletableFuture.completedFuture(o);
+    return CompletableFuture.supplyAsync(()->o);
   }
 
   public static class Builder {

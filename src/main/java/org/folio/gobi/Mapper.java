@@ -68,16 +68,14 @@ public class Mapper {
 
     CompositePoLine pol = new CompositePoLine();
     CompositePurchaseOrder compPO = new CompositePurchaseOrder();
-    FundDistribution fundDistribution = new FundDistribution();
     List<CompletableFuture<?>> purchaseOrderFutures = new ArrayList<>();
-    mapFundDistribution(purchaseOrderFutures, fundDistribution, doc, postGobiOrdersHelper);
     mapPurchaseOrder(purchaseOrderFutures, compPO, doc);
     mapPurchaseOrderLine(purchaseOrderFutures, pol, doc);
     mapPurchaseOrderLineStrings(purchaseOrderFutures, pol, doc);
 
     CompletableFuture.allOf(purchaseOrderFutures.toArray(new CompletableFuture<?>[0]))
       .thenApply(v -> compPO.getCompositePoLines().add(pol))
-      .thenCompose(v -> mapCompositePOLine(doc, compPO, postGobiOrdersHelper,fundDistribution))
+      .thenCompose(v -> mapCompositePOLine(doc, compPO, postGobiOrdersHelper))
       .thenAccept(future::complete)
       .exceptionally(t -> {
         logger.error("Exception Mapping Composite PO Line fields", t);
@@ -88,7 +86,7 @@ public class Mapper {
     return future;
   }
 
-  private CompletableFuture<CompositePurchaseOrder> mapCompositePOLine(Document doc, CompositePurchaseOrder compPO, PostGobiOrdersHelper postGobiOrdersHelper, FundDistribution fundDistribution) {
+  private CompletableFuture<CompositePurchaseOrder> mapCompositePOLine(Document doc, CompositePurchaseOrder compPO, PostGobiOrdersHelper postGobiOrdersHelper) {
     CompletableFuture<CompositePurchaseOrder> future = new CompletableFuture<>();
 
     Details detail = new Details();
@@ -103,11 +101,12 @@ public class Mapper {
     License license = new License();
     Tags tags = new Tags();
     AcquisitionMethod acquisitionMethod = new AcquisitionMethod();
-
+    FundDistribution fundDistribution = new FundDistribution();
     List<CompletableFuture<?>> futures = new ArrayList<>();
 
     mapCost(futures, cost, doc);
     mapDetail(futures, detail, doc, postGobiOrdersHelper);
+    mapFundDistribution(futures,fundDistribution,doc,postGobiOrdersHelper);
     mapLocation(futures, location, doc);
     mapVendorDetail(futures, vendorDetail, doc);
     mapClaims(futures, claim, doc);
@@ -729,6 +728,7 @@ public class Mapper {
             Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
               .ifPresent(fundCodeField -> futures.add(fundCodeField.resolve(doc)
                 .thenApply(fundCodeObject -> fundCodeResolver(fundDistribution, doc, postGobiOrdersHelper, (String) fundCodeObject)
+
                 .exceptionally(Mapper::logException))));
 
             Optional.ofNullable(mappings.get(Mapping.Field.FUND_PERCENTAGE))
@@ -742,8 +742,12 @@ public class Mapper {
                 .thenAccept(encumbranceIdObject -> fundDistribution.setEncumbrance((String) encumbranceIdObject))
                 .exceptionally(Mapper::logException)));
           }
-        })
+        }
+        )
         .exceptionally(Mapper::logException)));
+
+
+
   }
 
   private CompletableFuture<Void> fundCodeResolver(FundDistribution fundDistribution, Document doc,
@@ -761,12 +765,12 @@ public class Mapper {
       fundDistribution.setCode(fundCode);
       DataSourceResolver expenseClassCode = mappings.get(Mapping.Field.EXPENSE_CLASS);
       if (expenseClassCode != null) {
-        return expenseClassCode.resolve(doc)
+        return (expenseClassCode.resolve(doc)
           .thenAccept(expenseClassIdObj -> fundDistribution.setExpenseClassId((String) expenseClassIdObj))
           .exceptionally(ex -> {
             Mapper.logException(ex);
             return null;
-          });
+          }));
       } else {
         return completedFuture(null);
       }
