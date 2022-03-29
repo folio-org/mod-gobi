@@ -727,7 +727,7 @@ public class Mapper {
 
             Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
               .ifPresent(fundCodeField -> futures.add(fundCodeField.resolve(doc)
-                .thenApply(fundCodeObject -> fundCodeResolver(fundDistribution, doc, postGobiOrdersHelper, (String) fundCodeObject)
+                .thenCompose(fundCodeObject -> fundCodeResolver(fundDistribution, doc, postGobiOrdersHelper, (String) fundCodeObject)
 
                 .exceptionally(Mapper::logException))));
 

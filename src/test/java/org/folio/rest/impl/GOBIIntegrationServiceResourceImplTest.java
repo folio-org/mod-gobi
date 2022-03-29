@@ -1201,7 +1201,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handleGetFund(RoutingContext ctx) {
-      logger.info("got location request: {}", ctx.request().query());
+      logger.info("got fund request: {}", ctx.request().query());
 
       String getByIdInstruction = ctx.request().getHeader(MOCK_OKAPI_GET_FUND_HEADER);
 
