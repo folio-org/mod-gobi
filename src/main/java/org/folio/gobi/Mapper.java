@@ -826,7 +826,7 @@ public class Mapper {
     });
 
     //[MODGOBI-132]
-    //match subAccount send to GOBI with the accountNo established in Organisation, if match found then map otherwise map received subaccount as accountNo.
+    //match subAccount send to GOBI with the accountNo established in Organisation, if match found then map otherwise map subaccount(received to GOBI) as accountNo.
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
