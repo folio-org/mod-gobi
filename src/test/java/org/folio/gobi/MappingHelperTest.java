@@ -127,11 +127,10 @@ public class MappingHelperTest {
   }
 
   @Test
-  public void testHelperUtilsExtractIdOfFirst() {
-    logger.info("Begin: Testing for null when obj is null");
-    assertNull(HelperUtils.extractIdOfFirst(null,""));
+  public void testMapperNodeListMultiply() {
+    logger.info("Begin: Testing for null when NodeList is null");
+    assertNull(Mapper.multiply(null));
   }
-
 
   @Test
   public void testMappingHelperDefaultMappingGetDSMapping1() {
