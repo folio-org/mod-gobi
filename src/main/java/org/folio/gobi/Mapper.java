@@ -834,20 +834,14 @@ public class Mapper {
           Organization organization = (Organization) o;
           Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
           .ifPresent(vendorAccountfield -> {
-            try {
-              if (!HelperUtils.extractSubAccount(organization.getAccounts().get(0).getAccountNo()).equals(vendorAccountfield.resolve(doc).get())) {
+              if (!HelperUtils.extractSubAccount(organization.getAccounts().get(0).getAccountNo()).equals(vendorAccountfield.resolve(doc).join())) {
                  futures.add(vendorAccountfield.resolve(doc)
-                 .thenAccept(accountFieldObject -> {
-                 vendorDetail.setVendorAccount((String) accountFieldObject);
-                })
+                 .thenAccept(accountFieldObject ->vendorDetail.setVendorAccount((String) accountFieldObject))
                .exceptionally(Mapper::logException));
                }
               else {
               vendorDetail.setVendorAccount(organization.getAccounts().get(0).getAccountNo());
               }
-            } catch (InterruptedException | ExecutionException e) {
-              throw new CompletionException(e);
-            }
           });
           }
         })

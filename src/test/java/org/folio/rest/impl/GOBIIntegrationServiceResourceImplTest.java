@@ -340,7 +340,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getExpenseClassId());
     assertNotNull(compPO.getCompositePoLines().get(0).getAcquisitionMethod());
-    assertNotNull(compPO.getCompositePoLines().get(0).getVendorDetail().getVendorAccount());
 
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
