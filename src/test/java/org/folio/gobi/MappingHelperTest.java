@@ -120,6 +120,12 @@ public class MappingHelperTest {
     fail(MappingHelper.readMappingsFile(null));
   }
 
+  @Test(expected=NullPointerException.class)
+  public void testHelperUtilsExtractSubAccount() {
+    logger.info("Begin: Testing for failure when AccountNo is null");
+    assertNull(HelperUtils.extractSubAccount(null));
+  }
+
   @Test
   public void testMappingHelperDefaultMappingGetDSMapping1() {
     logger.info(

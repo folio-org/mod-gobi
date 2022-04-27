@@ -841,8 +841,8 @@ public class Mapper {
       .ifPresent(vendorAccountfield -> {
         String vendorAccountNo = (String) vendorAccountfield.resolve(doc).join();
         String organizationAccountNo = organization.getAccounts().get(0).getAccountNo();
-        if (organizationAccountNo!=null &&
-        vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))) {
+        if (organizationAccountNo != null &&
+         vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))) {
          logger.info("AccountNo matched with subAccount received by GOBI");
          vendorDetail.setVendorAccount(organization.getAccounts().get(0).getAccountNo());
         }
