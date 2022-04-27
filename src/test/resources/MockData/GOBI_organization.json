@@ -143,7 +143,6 @@
 			"accounts": [
 				{
 					"name": "History Account",
-					"accountNo": "GOBI-HIST-12",
 					"description": "This is my account description.",
 					"appSystemNo": "FIN-GOBI-HIST-12",
 					"paymentMethod": "EFT",
