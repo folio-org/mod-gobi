@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -823,9 +825,32 @@ public class Mapper {
       vendorDetail.setReferenceNumbers(referenceNumbers);
     });
 
-    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
+    //[MODGOBI-132]
+    //match subAccount send to GOBI with the accountNo established in Organisation, if match found then map otherwise map received subaccount as accountNo.
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> vendorDetail.setVendorAccount((String) o))
+        .thenAccept(o -> {
+          if (o != null) {
+          Organization organization = (Organization) o;
+          Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
+          .ifPresent(vendorAccountfield -> {
+            try {
+              if (!HelperUtils.extractSubAccount(organization.getAccounts().get(0).getAccountNo()).equals(vendorAccountfield.resolve(doc).get())) {
+                 futures.add(vendorAccountfield.resolve(doc)
+                 .thenAccept(accountFieldObject -> {
+                 vendorDetail.setVendorAccount((String) accountFieldObject);
+                })
+               .exceptionally(Mapper::logException));
+               }
+              else {
+              vendorDetail.setVendorAccount(organization.getAccounts().get(0).getAccountNo());
+              }
+            } catch (InterruptedException | ExecutionException e) {
+              throw new CompletionException(e);
+            }
+          });
+          }
+        })
         .exceptionally(Mapper::logException)));
   }
 
