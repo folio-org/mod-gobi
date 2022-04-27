@@ -127,6 +127,13 @@ public class MappingHelperTest {
   }
 
   @Test
+  public void testHelperUtilsExtractIdOfFirst() {
+    logger.info("Begin: Testing for null when obj is null");
+    assertNull(HelperUtils.extractIdOfFirst(null,""));
+  }
+
+
+  @Test
   public void testMappingHelperDefaultMappingGetDSMapping1() {
     logger.info(
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType ListedPrintMonograph");
