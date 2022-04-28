@@ -133,6 +133,12 @@ public class MappingHelperTest {
   }
 
   @Test
+  public void testMapperNodeListConcat() {
+    logger.info("Begin: Testing for null when NodeList is null");
+    assertNull(Mapper.concat(null));
+  }
+
+  @Test
   public void testMappingHelperDefaultMappingGetDSMapping1() {
     logger.info(
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType ListedPrintMonograph");

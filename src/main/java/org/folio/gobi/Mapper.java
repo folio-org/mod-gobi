@@ -839,22 +839,18 @@ public class Mapper {
   private void mapVendorAccount(List<CompletableFuture<?>> futures, Organization organization, VendorDetail vendorDetail, Document doc)
   {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
-      .ifPresent(vendorAccountfield -> {
-        String vendorAccountNo = (String) vendorAccountfield.resolve(doc).join();
-        String organizationAccountNo = organization.getAccounts().get(0).getAccountNo();
-        if (organizationAccountNo != null &&
-         vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))) {
-         logger.info("AccountNo matched with subAccount received by GOBI");
-         futures.add(CompletableFuture.supplyAsync(()->
-          HelperUtils.extractSubAccount(organizationAccountNo)).thenAccept(organizationAccount->
-           vendorDetail.setVendorAccount(organizationAccount)));
-        }
-        else {
-         logger.info("AccountNo does not match with subAccount received by GOBI");
-         futures.add(vendorAccountfield.resolve(doc)
+      .ifPresent(vendorAccountField -> {
+        String vendorAccountNo = (String) vendorAccountField.resolve(doc).join();
+        Optional.ofNullable(organization.getAccounts().get(0).getAccountNo())
+          .ifPresentOrElse(organizationAccountNo ->{
+          if(vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))){
+          logger.info("AccountNo matched with subAccount received by GOBI");
+          futures.add(vendorAccountField.resolve(doc)
           .thenAccept(accountFieldObject ->vendorDetail.setVendorAccount((String) accountFieldObject))
-          .exceptionally(Mapper::logException));
-        }
+          .exceptionally(Mapper::logException));}
+          },()->futures.add(vendorAccountField.resolve(doc)
+          .thenAccept(accountFieldObject ->vendorDetail.setVendorAccount((String) accountFieldObject))
+          .exceptionally(Mapper::logException)));
       });
   }
 
