@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -835,7 +836,7 @@ public class Mapper {
         })
         .exceptionally(Mapper::logException)));
   }
-  private void mapVendorAccount(List<CompletableFuture<?>> futures,Organization organization,VendorDetail vendorDetail, Document doc)
+  private void mapVendorAccount(List<CompletableFuture<?>> futures, Organization organization, VendorDetail vendorDetail, Document doc)
   {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
       .ifPresent(vendorAccountfield -> {
@@ -844,7 +845,9 @@ public class Mapper {
         if (organizationAccountNo != null &&
          vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))) {
          logger.info("AccountNo matched with subAccount received by GOBI");
-         vendorDetail.setVendorAccount(organization.getAccounts().get(0).getAccountNo());
+         futures.add(CompletableFuture.supplyAsync(()->
+          HelperUtils.extractSubAccount(organizationAccountNo)).thenAccept(organizationAccount->
+           vendorDetail.setVendorAccount(organizationAccount)));
         }
         else {
          logger.info("AccountNo does not match with subAccount received by GOBI");
@@ -852,7 +855,7 @@ public class Mapper {
           .thenAccept(accountFieldObject ->vendorDetail.setVendorAccount((String) accountFieldObject))
           .exceptionally(Mapper::logException));
         }
-    });
+      });
   }
 
   private void mapRefTypeNumberPair(List<CompletableFuture<?>> futures, ReferenceNumberItem referenceNumber, Document doc) {
