@@ -838,8 +838,8 @@ public class Mapper {
   {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
       .ifPresent(vendorAccountField -> {
-        String vendorAccountNo = (String) vendorAccountField.resolve(doc).join();
-        Optional.ofNullable(organization.getAccounts().get(0).getAccountNo())
+      vendorAccountField.resolve(doc).thenAccept(vendorAccountNo->{
+      Optional.ofNullable(organization.getAccounts().get(0).getAccountNo())
           .ifPresentOrElse(organizationAccountNo ->{
           if(vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))){
           logger.info("AccountNo matched with subAccount received by GOBI");
@@ -849,6 +849,7 @@ public class Mapper {
           },()->futures.add(vendorAccountField.resolve(doc)
           .thenAccept(accountFieldObject ->vendorDetail.setVendorAccount((String) accountFieldObject))
           .exceptionally(Mapper::logException)));
+      }).exceptionally(Mapper::logException);
       });
   }
 
