@@ -823,10 +823,34 @@ public class Mapper {
       vendorDetail.setReferenceNumbers(referenceNumbers);
     });
 
-    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> vendorDetail.setVendorAccount((String) o))
+        .thenAccept(o -> {
+          if (o != null) {
+          Organization organization = (Organization) o;
+          mapVendorAccount(futures,organization,vendorDetail,doc);
+          }
+        })
         .exceptionally(Mapper::logException)));
+  }
+
+  private void mapVendorAccount(List<CompletableFuture<?>> futures, Organization organization, VendorDetail vendorDetail, Document doc)
+  {
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
+      .ifPresent(vendorAccountField -> {
+      vendorAccountField.resolve(doc).thenAccept(vendorAccountNo->{
+      Optional.ofNullable(organization.getAccounts().get(0).getAccountNo())
+          .ifPresentOrElse(organizationAccountNo ->{
+          if(vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))){
+          logger.info("AccountNo matched with subAccount received by GOBI");
+          futures.add(CompletableFuture.supplyAsync(()->
+          HelperUtils.extractSubAccount(organizationAccountNo)).thenAccept(organizationAccount->
+           vendorDetail.setVendorAccount(organizationAccount)));}
+          },()->futures.add(vendorAccountField.resolve(doc)
+          .thenAccept(accountFieldObject ->vendorDetail.setVendorAccount((String) accountFieldObject))
+          .exceptionally(Mapper::logException)));
+      }).exceptionally(Mapper::logException);
+      });
   }
 
   private void mapRefTypeNumberPair(List<CompletableFuture<?>> futures, ReferenceNumberItem referenceNumber, Document doc) {
