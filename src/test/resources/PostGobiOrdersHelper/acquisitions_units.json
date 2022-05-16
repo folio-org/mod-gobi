@@ -1,0 +1,18 @@
+{
+  "acquisitionsUnits": [
+    {
+      "id": "0ebb1f7d-983f-3026-8a4c-5318e0ebc041",
+      "name": "gobi_acq_unit_name",
+      "isDeleted": false,
+      "protectCreate": true,
+      "protectRead": false,
+      "protectUpdate": true,
+      "protectDelete": true,
+      "metadata": {
+        "createdDate": "2022-05-13T13:48:03.565+00:00",
+        "updatedDate": "2022-05-13T13:48:03.565+00:00"
+      }
+    }
+  ],
+  "totalRecords": 1
+}

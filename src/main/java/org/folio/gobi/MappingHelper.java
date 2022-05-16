@@ -118,6 +118,9 @@ public class MappingHelper {
           case LOOKUP_ACQUISITION_METHOD_IDS:
             translatedValue = postGobiOrdersHelper.lookupAcquisitionMethodId(data);
             break;
+          case LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME:
+            translatedValue = postGobiOrdersHelper.lookupAcquisitionUnitDefault(data);
+            break;
           case LOOKUP_LOCATION_ID:
             translatedValue = postGobiOrdersHelper.lookupLocationId(data);
             break;

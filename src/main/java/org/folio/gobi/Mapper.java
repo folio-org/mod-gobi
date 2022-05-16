@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.isbn.IsbnUtil;
+import org.folio.rest.acq.model.Account;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.Alert;
 import org.folio.rest.acq.model.Claim;
@@ -38,6 +39,7 @@ import org.folio.rest.acq.model.License;
 import org.folio.rest.acq.model.Location;
 import org.folio.rest.acq.model.Ongoing;
 import org.folio.rest.acq.model.Organization;
+import org.folio.rest.acq.model.OrganizationCollection;
 import org.folio.rest.acq.model.Physical;
 import org.folio.rest.acq.model.ProductIdentifier;
 import org.folio.rest.acq.model.ReferenceNumberItem;
@@ -186,11 +188,10 @@ public class Mapper {
                                     Document doc, PostGobiOrdersHelper postGobiOrdersHelper) {
     Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_METHOD))
       .ifPresent(field -> futures.add(field.resolve(doc)
-          .thenApply(acquisitionMethodField -> (String) acquisitionMethodField)
-          .thenCompose(postGobiOrdersHelper::lookupAcquisitionMethodId)
-          .thenAccept(acquisitionMethodToUpdate::setId)
-          .exceptionally(Mapper::logException)
-      ));
+        .thenApply(String.class::cast)
+        .thenCompose(postGobiOrdersHelper::lookupAcquisitionMethodId)
+        .thenAccept(acquisitionMethodToUpdate::setId)
+        .exceptionally(Mapper::logException)));
   }
 
   /**
@@ -389,6 +390,7 @@ public class Mapper {
   }
 
   private void mapPurchaseOrder(List<CompletableFuture<?>> futures, CompositePurchaseOrder compPo, Document doc) {
+    mapAcquisitionUnits(futures, compPo, doc);
     Optional.ofNullable(mappings.get(Mapping.Field.ORDER_TYPE))
       .ifPresent(orderTypeField -> futures.add(orderTypeField.resolve(doc)
         .thenApply(o -> {
@@ -447,6 +449,38 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> compPo.setDateOrdered((Date) o))
         .exceptionally(Mapper::logException)));
+  }
+
+  private void mapAcquisitionUnits(List<CompletableFuture<?>> futures, CompositePurchaseOrder compPo, Document doc) {
+    Optional.ofNullable(mappings.get(Mapping.Field.LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> compPo.setAcqUnitIds((Collections.singletonList((String) o))))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.LOOKUP_ACQUISITION_UNIT_BY_VENDOR_ACC_NUMBER))
+      .ifPresent(v -> {
+        var vendorDatasource = mappings.get(Mapping.Field.VENDOR);
+        var vendorAccountDatasource = mappings.get(Mapping.Field.LOOKUP_ACQUISITION_UNIT_BY_VENDOR_ACC_NUMBER);
+        if (vendorDatasource != null && vendorAccountDatasource != null) {
+          futures.add(vendorDatasource.resolve(doc)
+            .thenCompose(organizations -> vendorAccountDatasource.resolve(doc)
+              .thenApply(vendorAccount -> {
+                List<String> acqIds = new ArrayList<>();
+                var org = (Organization) organizations;
+                if (org != null) {
+                  acqIds = org.getAccounts()
+                    .stream()
+                    .filter(acc -> HelperUtils.extractSubAccount(acc.getAccountNo()).equals(HelperUtils.extractSubAccount((String) vendorAccount)))
+                    .findFirst()
+                    .map(Account::getAcqUnitIds)
+                    .orElse(null);
+                }
+                return acqIds;
+              })
+              .thenAccept(compPo::setAcqUnitIds)
+              .exceptionally(Mapper::logException)));
+        }
+      });
   }
 
   private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
@@ -834,23 +868,21 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
-  private void mapVendorAccount(List<CompletableFuture<?>> futures, Organization organization, VendorDetail vendorDetail, Document doc)
-  {
+  private void mapVendorAccount(List<CompletableFuture<?>> futures, Organization organization, VendorDetail vendorDetail,
+      Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
-      .ifPresent(vendorAccountField -> {
-      vendorAccountField.resolve(doc).thenAccept(vendorAccountNo->{
-      Optional.ofNullable(organization.getAccounts().get(0).getAccountNo())
-          .ifPresentOrElse(organizationAccountNo ->{
-          if(vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))){
-          logger.info("AccountNo matched with subAccount received by GOBI");
-          futures.add(CompletableFuture.supplyAsync(()->
-          HelperUtils.extractSubAccount(organizationAccountNo)).thenAccept(organizationAccount->
-           vendorDetail.setVendorAccount(organizationAccount)));}
-          },()->futures.add(vendorAccountField.resolve(doc)
-          .thenAccept(accountFieldObject ->vendorDetail.setVendorAccount((String) accountFieldObject))
-          .exceptionally(Mapper::logException)));
-      }).exceptionally(Mapper::logException);
-      });
+      .ifPresent(vendorAccountField -> vendorAccountField.resolve(doc)
+        .thenAccept(vendorAccountNo -> Optional.ofNullable(organization.getAccounts().get(0).getAccountNo())
+          .ifPresentOrElse(organizationAccountNo -> {
+            if (vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))) {
+              logger.info("AccountNo matched with subAccount received by GOBI");
+              futures.add(CompletableFuture.supplyAsync(() -> HelperUtils.extractSubAccount(organizationAccountNo))
+                .thenAccept(vendorDetail::setVendorAccount));
+            }
+          }, () -> futures.add(vendorAccountField.resolve(doc)
+            .thenAccept(accountFieldObject -> vendorDetail.setVendorAccount((String) accountFieldObject))
+            .exceptionally(Mapper::logException))))
+        .exceptionally(Mapper::logException));
   }
 
   private void mapRefTypeNumberPair(List<CompletableFuture<?>> futures, ReferenceNumberItem referenceNumber, Document doc) {
