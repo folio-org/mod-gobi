@@ -8,6 +8,8 @@
       "enum": [
         "ACCESS_PROVIDER",
         "ACQUISITION_METHOD",
+        "LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME",
+        "LOOKUP_ACQUISITION_UNIT_BY_VENDOR_ACC_NUMBER",
         "ACTIVATED",
         "ACTIVATION_DUE",
         "ADDITIONAL_COST",
@@ -109,6 +111,7 @@
             "lookupContributorNameTypeId",
             "lookupExpenseClassId",
             "lookupAcquisitionMethodIds",
+            "lookupAcquisitionUnitDefaultAcqUnitName",
             "lookupLocationId",
             "lookupMaterialTypeId",
             "lookupFundId",

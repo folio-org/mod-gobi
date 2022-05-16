@@ -117,6 +117,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final  String COMPOSITE_ORDER_MOCK_DATA =  "MockData/compositePurchaseOrder.json";
   private static final  String VALID_EXPENSE_CLASS =  "PostGobiOrdersHelper/valid_expenseClasses.json";
   private static final  String VALID_ACQUISITION_METHOD =  "PostGobiOrdersHelper/valid_acquisition_methods.json";
+  private static final  String VALID_ACQUISITION_UNITS =  "PostGobiOrdersHelper/acquisitions_units.json";
 
   private static final String LOCATION = "LOCATION";
   private static final String FUNDS = "FUNDS";
@@ -128,6 +129,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String UNSPECIFIED_MATERIAL_TYPE_ID = "be44c321-ab73-43c4-a114-70f82fa13f17";
   private static final String EXPENSE_CLASS = "EXPENSE_CLASS";
   private static final String ACQUISITION_METHOD = "ACQUISITION_METHOD";
+  private static final String ACQUISITION_UNITS = "ACQUISITION_UNITS";
 
   private static final String MOCK_OKAPI_GET_ORDER_BY_ID_HEADER = "X-Okapi-MockGetOrderById";
   private static final String MOCK_OKAPI_PUT_ORDER_HEADER = "X-Okapi-MockPutOrder";
@@ -293,7 +295,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
-              VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
+              VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, ACQUISITION_UNITS));
 
     // Make sure the mappings from custom configuration were used
     assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
@@ -570,6 +572,26 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     asyncLocal.complete();
+
+    logger.info("End: Testing for falling back to the first location id, if a non existent code is sent");
+  }
+
+  @Test
+  public final void testPostGobiOrdersPopulateAcqUnitDefault(TestContext context) throws Exception {
+    logger.info("Begin: Testing for falling back to the first fund id, if a non existent code is sent");
+
+    final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
+
+    final GobiResponse order = postOrderSuccess(body);
+
+    context.assertNotNull(order.getPoLineNumber());
+
+
+    List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
+    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    verifyRequiredFieldsAreMapped(compPO);
+    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertFalse(compPO.getAcqUnitIds().isEmpty());
 
     logger.info("End: Testing for falling back to the first location id, if a non existent code is sent");
   }
@@ -1083,8 +1105,29 @@ public class GOBIIntegrationServiceResourceImplTest {
       router.put(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handlePutOrderById);
       router.get(PostGobiOrdersHelper.EXPENSE_CLASS_ENDPOINT).handler(this::handleGetExpenseClass);
       router.get(PostGobiOrdersHelper.ACQUISITION_METHOD_ENDPOINT).handler(this::handleGetAcquisitionMethods);
+      router.get(PostGobiOrdersHelper.ACQUISITION_UNIT_ENDPOINT).handler(this::handleGetAcquisitionUnits);
 
       return router;
+    }
+
+    private void handleGetAcquisitionUnits(RoutingContext ctx) {
+      logger.info("got acquisition-units request: {}", ctx.request().query());
+      JsonObject acquisitionMethods = new JsonObject();
+
+      try {
+        if (ctx.request().query().contains("name")) {
+          acquisitionMethods = new JsonObject(getMockData(VALID_ACQUISITION_UNITS));
+        }
+      } catch (IOException e) {
+        acquisitionMethods = new JsonObject();
+      }
+
+      addServerRqRsData(HttpMethod.GET, ACQUISITION_UNITS, acquisitionMethods);
+
+      ctx.response()
+        .setStatusCode(200)
+        .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        .end(acquisitionMethods.encodePrettily());
     }
 
     public void start(TestContext context) {

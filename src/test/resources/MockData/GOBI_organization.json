@@ -143,7 +143,7 @@
 			"accounts": [
 				{
 					"name": "History Account",
-					"accountNo": "891010",
+					"accountNo": "509564",
 					"description": "This is my account description.",
 					"appSystemNo": "FIN-GOBI-HIST-12",
 					"paymentMethod": "EFT",
@@ -151,7 +151,8 @@
 					"contactInfo": "Some basic contact information note.",
 					"libraryCode": "My Library",
 					"libraryEdiCode": "MY-LIB-1",
-					"notes": "note"
+					"notes": "note",
+          "acqUnitIds" : ["588b5c42-8634-4af7-bc9b-5e0116ed96b6"]
 				}
 			],
 			"changelogs": [
