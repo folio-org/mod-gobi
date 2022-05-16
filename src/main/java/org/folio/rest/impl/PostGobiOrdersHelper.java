@@ -84,7 +84,7 @@ public class PostGobiOrdersHelper {
   public static final String DEFAULT_LOOKUP_CODE = "*";
   private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
   private static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
-  private static final String CHECK_ORGANIZATION_IS_DELETED = " and isDeleted==false";
+  private static final String CHECK_ACQ_UNIT_IS_NOT_DELETED = " and isDeleted==false";
   private static final String CQL_NAME_CRITERIA = "name==%s";
   public static final String DEFAULT_ACQ_METHOD_VALUE = "Purchase At Vendor System";
   public static final String ACQ_METHODS_NAME = "acquisitionMethods";
@@ -617,7 +617,7 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<String> lookupAcquisitionUnitDefault(String data) {
-    String query = HelperUtils.encodeValue(String.format(CQL_NAME_STRING_FMT + CHECK_ORGANIZATION_IS_DELETED, "data"));
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_STRING_FMT + CHECK_ACQ_UNIT_IS_NOT_DELETED, data));
     String endpoint = String.format(ACQUISITION_UNIT_ENDPOINT + QUERY, query);
 
     return handleGetRequest(endpoint)

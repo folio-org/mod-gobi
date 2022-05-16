@@ -39,7 +39,6 @@ import org.folio.rest.acq.model.License;
 import org.folio.rest.acq.model.Location;
 import org.folio.rest.acq.model.Ongoing;
 import org.folio.rest.acq.model.Organization;
-import org.folio.rest.acq.model.OrganizationCollection;
 import org.folio.rest.acq.model.Physical;
 import org.folio.rest.acq.model.ProductIdentifier;
 import org.folio.rest.acq.model.ReferenceNumberItem;
