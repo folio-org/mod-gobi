@@ -627,7 +627,7 @@ public class PostGobiOrdersHelper {
           .map(organization -> ((JsonObject) organization).mapTo(AcquisitionsUnit.class).getId())
           .orElse(null))
       .exceptionally(t -> {
-        String errorMessage = String.format("Exception looking up Organization which is a vendor with code: %s", "");
+        String errorMessage = String.format("Exception looking up Acquisition unit for a vendor with name: %s", data);
         logger.error(errorMessage, t);
         return null;
       });
