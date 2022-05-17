@@ -31,6 +31,7 @@ import org.folio.gobi.OrderMappingCache;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.acq.model.AcquisitionMethod;
+import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.acq.model.Organization;
 import org.folio.rest.gobi.model.GobiResponse;
@@ -57,6 +58,7 @@ public class PostGobiOrdersHelper {
   public static final String MATERIAL_TYPES_ENDPOINT = "/material-types";
   public static final String PAYMENT_STATUS_ENDPOINT = "/payment_status";
   public static final String GET_ORGANIZATION_ENDPOINT = "/organizations-storage/organizations";
+  public static final String ACQUISITION_UNIT_ENDPOINT = "/acquisitions-units/units";
   public static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
   public static final String ORDERS_ENDPOINT = "/orders/composite-orders";
   public static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
@@ -76,11 +78,13 @@ public class PostGobiOrdersHelper {
   public static final String CODE_INVALID_TOKEN = "INVALID_TOKEN";
   public static final String CODE_INVALID_XML = "INVALID_XML";
   public static final String CQL_CODE_STRING_FMT = "code==\"%s\"";
+  public static final String CQL_NAME_STRING_FMT = "name==\"%s\"";
   public static final String TENANT_HEADER = "X-Okapi-Tenant";
   private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling %s %s";
   public static final String DEFAULT_LOOKUP_CODE = "*";
   private static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
   private static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
+  private static final String CHECK_ACQ_UNIT_IS_NOT_DELETED = " and isDeleted==false";
   private static final String CQL_NAME_CRITERIA = "name==%s";
   public static final String DEFAULT_ACQ_METHOD_VALUE = "Purchase At Vendor System";
   public static final String ACQ_METHODS_NAME = "acquisitionMethods";
@@ -611,4 +615,23 @@ public class PostGobiOrdersHelper {
     asyncResultHandler.handle(Future.succeededFuture(result));
     return null;
   }
+
+  public CompletableFuture<String> lookupAcquisitionUnitDefault(String data) {
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_STRING_FMT + CHECK_ACQ_UNIT_IS_NOT_DELETED, data));
+    String endpoint = String.format(ACQUISITION_UNIT_ENDPOINT + QUERY, query);
+
+    return handleGetRequest(endpoint)
+      .thenApply(resp ->
+        Optional.ofNullable(resp.getJsonArray("acquisitionsUnits"))
+          .flatMap(acquisitionUnits -> acquisitionUnits.stream().findFirst())
+          .map(organization -> ((JsonObject) organization).mapTo(AcquisitionsUnit.class).getId())
+          .orElse(null))
+      .exceptionally(t -> {
+        String errorMessage = String.format("Exception looking up Acquisition unit for a vendor with name: %s", data);
+        logger.error(errorMessage, t);
+        return null;
+      });
+
+  }
+
 }

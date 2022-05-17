@@ -21,6 +21,7 @@
           "pathPattern": "/gobi/orders",
           "permissionsRequired": ["gobi.item.post"],
           "modulePermissions": [
+            "acquisitions-units.units.collection.get",
             "orders.item.post",
             "orders.collection.get",
             "orders.item.get",
@@ -80,6 +81,10 @@
     {
       "id": "acquisition-methods",
       "version": "1.0"
+    },
+    {
+      "id": "acquisitions-units",
+      "version": "1.1"
     }
   ],
   "permissionSets": [

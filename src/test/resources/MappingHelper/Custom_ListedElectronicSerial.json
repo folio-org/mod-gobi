@@ -9,6 +9,20 @@
           }
         },
         {
+          "field": "LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME",
+          "dataSource": {
+            "default": "gobi_acq_unit_name",
+            "translation": "lookupAcquisitionUnitDefaultAcqUnitName",
+            "translateDefault": true
+          }
+        },
+        {
+          "field": "LOOKUP_ACQUISITION_UNIT_BY_VENDOR_ACC_NUMBER",
+          "dataSource": {
+            "from": "//SubAccount"
+          }
+        },
+        {
           "field": "ACQUISITION_METHOD",
           "dataSource": {
             "default": "Purchase At Vendor System"
