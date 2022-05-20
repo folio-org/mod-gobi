@@ -2,6 +2,7 @@ package org.folio.gobi;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.CompletionException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -82,6 +83,10 @@ public class HelperUtils {
   }
   public static String extractSubAccount(String organisationAccountNo) {
     return organisationAccountNo.replace(BASEACCOUNT_SUBACCOUNT_SEPARATOR,"");
+  }
+  public static String getVendAccountFromOrgAccountsList(String vendorAccountNo, List<String> orgAccountNoList) {
+    return orgAccountNoList.stream().filter(account->
+     extractSubAccount(account).equals(vendorAccountNo)).findFirst().map(Object::toString).orElse("");
   }
 
 }

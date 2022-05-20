@@ -871,18 +871,26 @@ public class Mapper {
       Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
       .ifPresent(vendorAccountField -> vendorAccountField.resolve(doc)
-        .thenAccept(vendorAccountNo -> Optional.ofNullable(organization.getAccounts().get(0).getAccountNo())
-          .ifPresentOrElse(organizationAccountNo -> {
-            if (vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))) {
+        .thenAccept(vendorAccountNo -> Optional.ofNullable(organization.getAccounts().stream()
+         .map(Account::getAccountNo).collect(Collectors.toList()))
+         .ifPresentOrElse(organizationAccountNo -> {
+          if (!HelperUtils.getVendAccountFromOrgAccountsList((String) vendorAccountNo,organizationAccountNo).isEmpty()) {
               logger.info("AccountNo matched with subAccount received by GOBI");
-              futures.add(CompletableFuture.supplyAsync(() -> HelperUtils.extractSubAccount(organizationAccountNo))
+              futures.add(CompletableFuture.supplyAsync(() -> HelperUtils.getVendAccountFromOrgAccountsList((String) vendorAccountNo,organizationAccountNo) )
                 .thenAccept(vendorDetail::setVendorAccount));
-            }
-          }, () -> futures.add(vendorAccountField.resolve(doc)
+          }
+          else {
+              futures.add(vendorAccountField.resolve(doc)
+              .thenAccept(vendorAccNo -> {
+              vendorDetail.setVendorAccount((String) vendorAccNo);
+              })
+              .exceptionally(Mapper::logException));
+          }
+         }, () -> futures.add(vendorAccountField.resolve(doc)
             .thenAccept(accountFieldObject -> vendorDetail.setVendorAccount((String) accountFieldObject))
             .exceptionally(Mapper::logException))))
         .exceptionally(Mapper::logException));
-  }
+}
 
   private void mapRefTypeNumberPair(List<CompletableFuture<?>> futures, ReferenceNumberItem referenceNumber, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO))
