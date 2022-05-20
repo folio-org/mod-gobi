@@ -469,7 +469,7 @@ public class Mapper {
                 if (org != null) {
                   acqIds = org.getAccounts()
                     .stream()
-                    .filter(acc -> HelperUtils.extractSubAccount(acc.getAccountNo()).equals(HelperUtils.extractSubAccount((String) vendorAccount)))
+                    .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout((String) vendorAccount)))
                     .findFirst()
                     .map(Account::getAcqUnitIds)
                     .orElse(null);
@@ -874,9 +874,10 @@ public class Mapper {
         .thenAccept(vendorAccountNo -> Optional.ofNullable(organization.getAccounts().stream()
          .map(Account::getAccountNo).collect(Collectors.toList()))
          .ifPresentOrElse(organizationAccountNo -> {
-          if (!HelperUtils.getVendAccountFromOrgAccountsList((String) vendorAccountNo,organizationAccountNo).isEmpty()) {
+         String normalizeOrgAccountNo = HelperUtils.getVendAccountFromOrgAccountsList((String) vendorAccountNo,organizationAccountNo);
+          if (!normalizeOrgAccountNo.isEmpty()) {
               logger.info("AccountNo matched with subAccount received by GOBI");
-              futures.add(CompletableFuture.supplyAsync(() -> HelperUtils.getVendAccountFromOrgAccountsList((String) vendorAccountNo,organizationAccountNo) )
+              futures.add(CompletableFuture.supplyAsync(() -> normalizeOrgAccountNo)
                 .thenAccept(vendorDetail::setVendorAccount));
           }
           else {

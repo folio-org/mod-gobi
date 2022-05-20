@@ -81,12 +81,12 @@ public class HelperUtils {
   public static String extractExpenseClassFromFundCode(String fundCode) {
     return StringUtils.substringAfterLast(fundCode, FUND_CODE_EXPENSE_CLASS_SEPARATOR);
   }
-  public static String extractSubAccount(String organisationAccountNo) {
+  public static String normalizeSubAccout(String organisationAccountNo) {
     return organisationAccountNo.replace(BASEACCOUNT_SUBACCOUNT_SEPARATOR,"");
   }
   public static String getVendAccountFromOrgAccountsList(String vendorAccountNo, List<String> orgAccountNoList) {
     return orgAccountNoList.stream().filter(account->
-     extractSubAccount(account).equals(vendorAccountNo)).findFirst().map(Object::toString).orElse("");
+     normalizeSubAccout(account).equals(vendorAccountNo)).findFirst().map(Object::toString).orElse("");
   }
 
 }
