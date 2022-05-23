@@ -123,7 +123,7 @@ public class MappingHelperTest {
   @Test(expected=NullPointerException.class)
   public void testHelperUtilsExtractSubAccount() {
     logger.info("Begin: Testing for failure when AccountNo is null");
-    assertNull(HelperUtils.extractSubAccount(null));
+    assertNull(HelperUtils.normalizeSubAccout(null));
   }
 
   @Test

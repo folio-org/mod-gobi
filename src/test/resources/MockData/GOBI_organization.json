@@ -153,6 +153,19 @@
 					"libraryEdiCode": "MY-LIB-1",
 					"notes": "note",
           "acqUnitIds" : ["588b5c42-8634-4af7-bc9b-5e0116ed96b6"]
+				},
+        {
+					"name": "History Account12",
+					"accountNo": "99999-10",
+					"description": "This is my account description1.",
+					"appSystemNo": "FIN-GOBI-HIST-121",
+					"paymentMethod": "EFT",
+					"accountStatus": "Active",
+					"contactInfo": "Some 1basic contact information note.",
+					"libraryCode": "My Library1",
+					"libraryEdiCode": "MY-LIB-1",
+					"notes": "note",
+          "acqUnitIds" : ["588b5c42-8634-4af7-bc9b-5e0116ed96b6"]
 				}
 			],
 			"changelogs": [

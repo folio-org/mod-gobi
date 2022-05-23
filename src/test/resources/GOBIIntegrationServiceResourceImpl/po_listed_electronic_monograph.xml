@@ -1,7 +1,7 @@
 <PurchaseOrder>
   <CustomerDetail>
-    <BaseAccount>8910</BaseAccount>
-    <SubAccount>891025</SubAccount>
+    <BaseAccount>12345</BaseAccount>
+    <SubAccount>1234567</SubAccount>
   </CustomerDetail>
   <Order>
     <ListedElectronicMonograph>

@@ -469,7 +469,7 @@ public class Mapper {
                 if (org != null) {
                   acqIds = org.getAccounts()
                     .stream()
-                    .filter(acc -> HelperUtils.extractSubAccount(acc.getAccountNo()).equals(HelperUtils.extractSubAccount((String) vendorAccount)))
+                    .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout((String) vendorAccount)))
                     .findFirst()
                     .map(Account::getAcqUnitIds)
                     .orElse(null);
@@ -871,18 +871,27 @@ public class Mapper {
       Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
       .ifPresent(vendorAccountField -> vendorAccountField.resolve(doc)
-        .thenAccept(vendorAccountNo -> Optional.ofNullable(organization.getAccounts().get(0).getAccountNo())
-          .ifPresentOrElse(organizationAccountNo -> {
-            if (vendorAccountNo.equals(HelperUtils.extractSubAccount(organizationAccountNo))) {
+        .thenAccept(vendorAccountNo -> Optional.ofNullable(organization.getAccounts().stream()
+         .map(Account::getAccountNo).collect(Collectors.toList()))
+         .ifPresentOrElse(organizationAccountNo -> {
+         String normalizeOrgAccountNo = HelperUtils.getVendAccountFromOrgAccountsList((String) vendorAccountNo,organizationAccountNo);
+          if (!normalizeOrgAccountNo.isEmpty()) {
               logger.info("AccountNo matched with subAccount received by GOBI");
-              futures.add(CompletableFuture.supplyAsync(() -> HelperUtils.extractSubAccount(organizationAccountNo))
+              futures.add(CompletableFuture.supplyAsync(() -> normalizeOrgAccountNo)
                 .thenAccept(vendorDetail::setVendorAccount));
-            }
-          }, () -> futures.add(vendorAccountField.resolve(doc)
+          }
+          else {
+              futures.add(vendorAccountField.resolve(doc)
+              .thenAccept(vendorAccNo -> {
+              vendorDetail.setVendorAccount((String) vendorAccNo);
+              })
+              .exceptionally(Mapper::logException));
+          }
+         }, () -> futures.add(vendorAccountField.resolve(doc)
             .thenAccept(accountFieldObject -> vendorDetail.setVendorAccount((String) accountFieldObject))
             .exceptionally(Mapper::logException))))
         .exceptionally(Mapper::logException));
-  }
+}
 
   private void mapRefTypeNumberPair(List<CompletableFuture<?>> futures, ReferenceNumberItem referenceNumber, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_REF_NO))
