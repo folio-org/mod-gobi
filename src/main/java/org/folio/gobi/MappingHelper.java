@@ -136,6 +136,19 @@ public class MappingHelper {
           case LOOKUP_PRODUCT_ID_TYPE:
             translatedValue = postGobiOrdersHelper.lookupProductIdType(data);
             break;
+          case LOOKUP_BILL_TO:
+          case LOOKUP_SHIP_TO:
+            translatedValue = postGobiOrdersHelper.lookupConfigAddress(data);
+            break;
+          case LOOKUP_PREFIX:
+            translatedValue = postGobiOrdersHelper.lookupPrefix(data);
+            break;
+          case LOOKUP_SUFFIX:
+            translatedValue = postGobiOrdersHelper.lookupSuffix(data);
+            break;
+          case LOOKUP_LINKED_PACKAGE:
+            translatedValue = postGobiOrdersHelper.lookupLinkedPackage(data);
+            break;
           case SEPARATE_ISBN_QUALIFIER:
             translatedValue = postGobiOrdersHelper.separateISBNQualifier(data);
             break;

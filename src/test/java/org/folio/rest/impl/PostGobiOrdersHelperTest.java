@@ -16,6 +16,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
@@ -24,12 +26,9 @@ import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.OrderMappings;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.NetworkUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;

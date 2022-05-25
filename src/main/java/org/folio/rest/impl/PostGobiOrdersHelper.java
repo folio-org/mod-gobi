@@ -48,6 +48,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
@@ -62,9 +63,13 @@ public class PostGobiOrdersHelper {
   public static final String CONFIGURATION_ENDPOINT = "/configurations/entries";
   public static final String ORDERS_ENDPOINT = "/orders/composite-orders";
   public static final String ORDERS_BY_ID_ENDPOINT = "/orders/composite-orders/%s";
+  public static final String ORDER_LINES_ENDPOINT = "/orders/order-lines";
   public static final String FUNDS_ENDPOINT = "/finance/funds";
   public static final String EXPENSE_CLASS_ENDPOINT = "/finance/expense-classes";
   public static final String ACQUISITION_METHOD_ENDPOINT = "/orders/acquisition-methods";
+  public static final String PREFIXES_ENDPOINT = "/orders/configuration/prefixes";
+  public static final String SUFFIXES_ENDPOINT = "/orders/configuration/suffixes";
+
 
   static final String CONTRIBUTOR_NAME_TYPES_ENDPOINT = "/contributor-name-types";
   static final String IDENTIFIERS_ENDPOINT = "/identifier-types";
@@ -89,6 +94,15 @@ public class PostGobiOrdersHelper {
   public static final String DEFAULT_ACQ_METHOD_VALUE = "Purchase At Vendor System";
   public static final String ACQ_METHODS_NAME = "acquisitionMethods";
   public static final String ACQ_METHODS_QUERY = "value==(%s OR "+ DEFAULT_ACQ_METHOD_VALUE +")";
+  public static final String CONFIGURATION_ADDRESS_QUERY = "module==(TENANT or tenant) AND configName==tenant.addresses AND value==*%s*";
+  public static final String PO_LINE_NUMBER_QUERY = "poLineNumber==%s";
+
+  public static final String CONFIGS = "configs";
+  public static final int FIRST_ELEM = 0;
+  public static final String ID = "id";
+  public static final String PREFIXES = "prefixes";
+  public static final String SUFFIXES = "suffixes";
+  public static final String PO_LINES = "poLines";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -376,7 +390,7 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String>  truncateISBNQualifier(String data) {
     String[] productIDArr = data.trim().split("\\s+",2);
     if(productIDArr.length > 1) {
-      return completedFuture(productIDArr[0]);
+      return completedFuture(productIDArr[FIRST_ELEM]);
     }
     return completedFuture(data);
   }
@@ -391,7 +405,7 @@ public class PostGobiOrdersHelper {
       String endpoint = String.format(CONFIGURATION_ENDPOINT+QUERY, query);
       return handleGetRequest(endpoint)
         .thenApply(jo ->  {
-          if(!jo.getJsonArray("configs").isEmpty())
+          if(!jo.getJsonArray(CONFIGS).isEmpty())
             return extractOrderMappings(orderType, jo);
           return getDefaultMappingsFromCache(orderType);
         })
@@ -455,7 +469,7 @@ public class PostGobiOrdersHelper {
         .thenApply(HelperUtils::verifyAndExtractBody)
         .thenAccept(body -> {
           logger.info("Response from mod-orders: {}", body.encodePrettily());
-          future.complete(body.getJsonArray("compositePoLines").getJsonObject(0).getString("poLineNumber"));
+          future.complete(body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber"));
         })
         .exceptionally(t -> {
           future.completeExceptionally(t);
@@ -480,7 +494,7 @@ public class PostGobiOrdersHelper {
     })
       .thenCompose(compositePO -> {
         String poLineNumber = compositePO.getCompositePoLines()
-          .get(0)
+          .get(FIRST_ELEM)
           .getPoLineNumber();
         if (StringUtils.isEmpty(poLineNumber)) {
           return placeOrder(compositePO);
@@ -490,7 +504,7 @@ public class PostGobiOrdersHelper {
   }
 
   private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO){
-    String vendorRefNumber = compPO.getCompositePoLines().get(0).getVendorDetail().getReferenceNumbers().get(0).getRefNumber();
+    String vendorRefNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getVendorDetail().getReferenceNumbers().get(FIRST_ELEM).getRefNumber();
     logger.info("Looking for existing order with Vendor Reference Number: {}", vendorRefNumber);
     String query = HelperUtils.encodeValue(String.format("poLine.vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
     String endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
@@ -500,7 +514,7 @@ public class PostGobiOrdersHelper {
         if (StringUtils.isEmpty(orderId)) {
           return completedFuture(false);
         }
-        CompositePurchaseOrder purchaseOrder = purchaseOrders.getJsonArray("purchaseOrders").getJsonObject(0).mapTo(CompositePurchaseOrder.class);
+        CompositePurchaseOrder purchaseOrder = purchaseOrders.getJsonArray("purchaseOrders").getJsonObject(FIRST_ELEM).mapTo(CompositePurchaseOrder.class);
         compPO.setId(purchaseOrder.getId());
         // try to Open the Order, doing it asynchronously because irrespective of the result return the existing Order to GOBI
         if (purchaseOrder.getWorkflowStatus()
@@ -564,11 +578,11 @@ public class PostGobiOrdersHelper {
     return handleGetRequest(endpoint)
       .thenCompose(order -> {
         CompositePurchaseOrder compPO = order.mapTo(CompositePurchaseOrder.class);
-        String poLineNumber = compPO.getCompositePoLines().get(0).getPoLineNumber();
+        String poLineNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getPoLineNumber();
         if (StringUtils.isEmpty(poLineNumber)) {
           return completedFuture(compositePurchaseOrder);
         }
-        compositePurchaseOrder.getCompositePoLines().get(0).setPoLineNumber(poLineNumber);
+        compositePurchaseOrder.getCompositePoLines().get(FIRST_ELEM).setPoLineNumber(poLineNumber);
         return completedFuture(compositePurchaseOrder);
       })
       .exceptionally(t -> {
@@ -634,4 +648,75 @@ public class PostGobiOrdersHelper {
 
   }
 
+  public CompletableFuture<String> lookupConfigAddress(String shipToName) {
+    final String query = HelperUtils.encodeValue(String.format(CONFIGURATION_ADDRESS_QUERY, shipToName));
+    String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenApply(addressConfig ->  {
+        JsonArray addressJsonArray = addressConfig.getJsonArray(CONFIGS);
+        if(!addressJsonArray.isEmpty()) {
+          JsonObject address = (JsonObject) addressJsonArray.getList().get(FIRST_ELEM);
+          return address.getString(ID);
+        }
+        return null;
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up address ID from configuration", t);
+        return null;
+      });
+  }
+
+  public CompletableFuture<String> lookupPrefix(String prefixName) {
+    final String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, prefixName));
+    String endpoint = String.format(PREFIXES_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenApply(prefixes ->  {
+        JsonArray prefixesJsonArray = prefixes.getJsonArray(PREFIXES);
+        if(!prefixesJsonArray.isEmpty()) {
+          JsonObject address = (JsonObject) prefixesJsonArray.getList().get(FIRST_ELEM);
+          return address.getString(ID);
+        }
+        return null;
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up prefix ID", t);
+        return null;
+      });
+  }
+
+  public CompletableFuture<String> lookupSuffix(String suffixName) {
+    final String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, suffixName));
+    String endpoint = String.format(SUFFIXES_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenApply(prefixes ->  {
+        JsonArray prefixesJsonArray = prefixes.getJsonArray(SUFFIXES);
+        if(!prefixesJsonArray.isEmpty()) {
+          JsonObject address = (JsonObject) prefixesJsonArray.getList().get(FIRST_ELEM);
+          return address.getString(ID);
+        }
+        return null;
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up suffix ID ", t);
+        return null;
+      });
+  }
+
+  public CompletableFuture<String> lookupLinkedPackage(String linkedPackageLineNumber) {
+    final String query = HelperUtils.encodeValue(String.format(PO_LINE_NUMBER_QUERY, linkedPackageLineNumber));
+    String endpoint = String.format(ORDER_LINES_ENDPOINT + QUERY, query);
+    return handleGetRequest(endpoint)
+      .thenApply(addressConfig ->  {
+        JsonArray addressJsonArray = addressConfig.getJsonArray(PO_LINES);
+        if(!addressJsonArray.isEmpty()) {
+          JsonObject address = (JsonObject) addressJsonArray.getList().get(FIRST_ELEM);
+          return address.getString(ID);
+        }
+        return null;
+      })
+      .exceptionally(t -> {
+        logger.error("Exception looking up address ID from configuration", t);
+        return null;
+      });
+  }
 }
