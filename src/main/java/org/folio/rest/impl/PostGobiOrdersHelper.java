@@ -103,6 +103,7 @@ public class PostGobiOrdersHelper {
   public static final String PREFIXES = "prefixes";
   public static final String SUFFIXES = "suffixes";
   public static final String PO_LINES = "poLines";
+  public static final String NAME = "name";
 
   private final HttpClientInterface httpClient;
   private final Context ctx;
@@ -655,7 +656,7 @@ public class PostGobiOrdersHelper {
       .thenApply(addressConfig ->  {
         JsonArray addressJsonArray = addressConfig.getJsonArray(CONFIGS);
         if(!addressJsonArray.isEmpty()) {
-          JsonObject address = (JsonObject) addressJsonArray.getList().get(FIRST_ELEM);
+          JsonObject address = addressJsonArray.getJsonObject(FIRST_ELEM);
           return address.getString(ID);
         }
         return null;
@@ -673,8 +674,8 @@ public class PostGobiOrdersHelper {
       .thenApply(prefixes ->  {
         JsonArray prefixesJsonArray = prefixes.getJsonArray(PREFIXES);
         if(!prefixesJsonArray.isEmpty()) {
-          JsonObject address = (JsonObject) prefixesJsonArray.getList().get(FIRST_ELEM);
-          return address.getString(ID);
+          JsonObject address = prefixesJsonArray.getJsonObject(FIRST_ELEM);
+          return address.getString(NAME);
         }
         return null;
       })
@@ -688,11 +689,11 @@ public class PostGobiOrdersHelper {
     final String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, suffixName));
     String endpoint = String.format(SUFFIXES_ENDPOINT + QUERY, query);
     return handleGetRequest(endpoint)
-      .thenApply(prefixes ->  {
-        JsonArray prefixesJsonArray = prefixes.getJsonArray(SUFFIXES);
-        if(!prefixesJsonArray.isEmpty()) {
-          JsonObject address = (JsonObject) prefixesJsonArray.getList().get(FIRST_ELEM);
-          return address.getString(ID);
+      .thenApply(suffixes ->  {
+        JsonArray suffixesJsonArray = suffixes.getJsonArray(SUFFIXES);
+        if(!suffixesJsonArray.isEmpty()) {
+          JsonObject address = suffixesJsonArray.getJsonObject(FIRST_ELEM);
+          return address.getString(NAME);
         }
         return null;
       })
@@ -709,7 +710,7 @@ public class PostGobiOrdersHelper {
       .thenApply(addressConfig ->  {
         JsonArray addressJsonArray = addressConfig.getJsonArray(PO_LINES);
         if(!addressJsonArray.isEmpty()) {
-          JsonObject address = (JsonObject) addressJsonArray.getList().get(FIRST_ELEM);
+          JsonObject address = addressJsonArray.getJsonObject(FIRST_ELEM);
           return address.getString(ID);
         }
         return null;
