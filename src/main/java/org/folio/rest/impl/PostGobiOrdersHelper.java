@@ -28,6 +28,7 @@ import org.folio.gobi.HelperUtils;
 import org.folio.gobi.Mapper;
 import org.folio.gobi.MappingHelper;
 import org.folio.gobi.OrderMappingCache;
+import org.folio.gobi.domain.BindingResult;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.acq.model.AcquisitionMethod;
@@ -127,6 +128,7 @@ public class PostGobiOrdersHelper {
       lookupOrderMappings(orderType).thenAccept(ordermappings -> {
        logger.info("Using Mappings {}", ordermappings);
         new Mapper(ordermappings).map(doc, this)
+          .thenApply(BindingResult::getResult)
           .thenAccept(future::complete);
       }).exceptionally(e -> {
         logger.error("Exception looking up Order mappings", e);

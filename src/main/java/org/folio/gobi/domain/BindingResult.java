@@ -5,26 +5,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.folio.rest.jaxrs.model.Errors;
+import org.folio.rest.jaxrs.model.Error;
+import org.folio.rest.mappings.model.DataSource;
 
 public class BindingResult<T> {
-  private Map<String, Errors> errors = new ConcurrentHashMap<>();
+  private Map<DataSource.Field, Error> errors = new ConcurrentHashMap<>();
   private final T result;
 
   public BindingResult(T result) {
     this.result = result;
   }
 
-  public Errors getErrors(String key) {
+  public Error getError(DataSource.Field key) {
     return errors.get(key);
   }
 
-  public List<Errors> getAllErrors() {
+  public List<Error> getAllErrors() {
     return new ArrayList<>(errors.values());
   }
 
-  public void addErrors(String key, Errors errors) {
-    this.errors.put(key, errors);
+  public void addErrors(DataSource.Field key, Error error) {
+    this.errors.put(key, error);
   }
 
   public T getResult() {

@@ -48,7 +48,6 @@ import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Tags;
 import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.impl.PostGobiOrdersHelper;
-import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
@@ -74,16 +73,17 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
 
     CompositePoLine pol = new CompositePoLine();
     CompositePurchaseOrder compPO = new CompositePurchaseOrder();
+    compPO.getCompositePoLines().add(pol);
     BindingResult<CompositePurchaseOrder> bindingResult = new BindingResult<>(compPO);
 
     List<CompletableFuture<?>> purchaseOrderFutures = new ArrayList<>();
-    mapPurchaseOrder(purchaseOrderFutures, compPO, doc);
-    mapPurchaseOrderLine(purchaseOrderFutures, pol, doc);
-    mapPurchaseOrderLineStrings(purchaseOrderFutures, pol, doc);
+    mapPurchaseOrder(purchaseOrderFutures, bindingResult, doc);
+    mapPurchaseOrderLine(purchaseOrderFutures, bindingResult, doc);
+    mapPurchaseOrderLineStrings(purchaseOrderFutures, bindingResult, doc);
 
     CompletableFuture.allOf(purchaseOrderFutures.toArray(new CompletableFuture<?>[0]))
-      .thenApply(v -> compPO.getCompositePoLines().add(pol))
-      .thenCompose(v -> mapCompositePOLine(doc, compPO, postGobiOrdersHelper))
+      .thenCompose(v -> mapCompositePOLine(doc, bindingResult, postGobiOrdersHelper))
+      .thenAccept(this::mapPurchaseOrderWorkflow)
       .thenAccept(mappedCompPO -> future.complete(bindingResult))
       .exceptionally(t -> {
         if (t instanceof FieldLookupException) {
@@ -97,7 +97,12 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
     return future;
   }
 
-  private CompletableFuture<CompositePurchaseOrder> mapCompositePOLine(Document doc, CompositePurchaseOrder compPO, PostGobiOrdersHelper postGobiOrdersHelper) {
+  private void mapPurchaseOrderWorkflow(CompositePurchaseOrder compositePurchaseOrder) {
+
+  }
+
+  private CompletableFuture<CompositePurchaseOrder> mapCompositePOLine(Document doc, BindingResult<CompositePurchaseOrder> bindingResult,
+                                                                       PostGobiOrdersHelper postGobiOrdersHelper) {
     CompletableFuture<CompositePurchaseOrder> future = new CompletableFuture<>();
 
     Details detail = new Details();
@@ -113,6 +118,7 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
     License license = new License();
     Tags tags = new Tags();
     AcquisitionMethod acquisitionMethod = new AcquisitionMethod();
+    CompositePurchaseOrder compPO = bindingResult.getResult();
 
     List<CompletableFuture<?>> futures = new ArrayList<>();
 
@@ -126,7 +132,7 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
     mapReportingCodes(futures, reportingCode, doc);
     mapVendorDependentFields(futures, eresource, physical, compPO, claim, doc);
     mapLicense(futures, license, doc);
-  //  mapTags(futures, tags, doc);
+    mapTags(futures, tags, doc);
     mapAcquisitionMethod(futures, acquisitionMethod, doc, postGobiOrdersHelper);
 
     CompositePoLine pol = compPO.getCompositePoLines().get(0);
@@ -406,7 +412,8 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
         .exceptionally(Mapper::logException)));
   }
 
-  private void mapPurchaseOrder(List<CompletableFuture<?>> futures, CompositePurchaseOrder compPo, Document doc) {
+  private void mapPurchaseOrder(List<CompletableFuture<?>> futures, BindingResult<CompositePurchaseOrder> bindingResult, Document doc) {
+    CompositePurchaseOrder compPo = bindingResult.getResult();
     mapAcquisitionUnits(futures, compPo, doc);
     Optional.ofNullable(mappings.get(Mapping.Field.ORDER_TYPE))
       .ifPresent(orderTypeField -> futures.add(orderTypeField.resolve(doc)
@@ -532,142 +539,118 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
       });
   }
 
-  private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.REQUESTER))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setRequester((String) o))
-        .exceptionally(Mapper::logException)));
+  private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, BindingResult<CompositePurchaseOrder> bindingResult, Document doc) {
+    Optional.ofNullable(bindingResult.getResult().getCompositePoLines().get(0)).ifPresent(pol -> {
+      Optional.ofNullable(mappings.get(Mapping.Field.REQUESTER))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setRequester((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.TITLE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setTitleOrPackage((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.TITLE))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setTitleOrPackage((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.CANCELLATION_RESTRICTION_NOTE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setCancellationRestrictionNote((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.CANCELLATION_RESTRICTION_NOTE))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setCancellationRestrictionNote((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.DESCRIPTION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setDescription((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.DESCRIPTION))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setDescription((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.DONOR))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setDonor((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.DONOR)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> pol.setDonor((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.SELECTOR))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setSelector((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.SELECTOR))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setSelector((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.SOURCE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setSource(CompositePoLine.Source.fromValue((String) o)))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.SOURCE))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> pol.setSource(CompositePoLine.Source.fromValue((String) o)))
+          .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.SELECTOR))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setSelector((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.SELECTOR))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setSelector((String) o)).exceptionally(Mapper::logException)));
+    });
   }
 
-  private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, CompositePoLine pol, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.ALERTS))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          Alert alert = new Alert();
-          alert.setAlert((String) o);
-          List<Alert> alerts = new ArrayList<>();
-          alerts.add(alert);
-          pol.setAlerts(alerts);
-        })
-        .exceptionally(Mapper::logException)));
+  private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, BindingResult<CompositePurchaseOrder> bindingResult, Document doc) {
+    Optional.ofNullable(bindingResult.getResult().getCompositePoLines().get(0)).ifPresent(pol -> {
+      Optional.ofNullable(mappings.get(Mapping.Field.ALERTS)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> {
+        Alert alert = new Alert();
+        alert.setAlert((String) o);
+        List<Alert> alerts = new ArrayList<>();
+        alerts.add(alert);
+        pol.setAlerts(alerts);
+      }).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.CANCELLATION_RESTRICTION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setCancellationRestriction((Boolean) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.CANCELLATION_RESTRICTION))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setCancellationRestriction((Boolean) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_ORDER_FORMAT))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setOrderFormat(CompositePoLine.OrderFormat.fromValue((String) o)))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_ORDER_FORMAT))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> pol.setOrderFormat(CompositePoLine.OrderFormat.fromValue((String) o)))
+          .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.COLLECTION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setCollection((Boolean) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.COLLECTION))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setCollection((Boolean) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_DESCRIPTION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setPoLineDescription((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_DESCRIPTION))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setPoLineDescription((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_PAYMENT_STATUS))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setPaymentStatus(CompositePoLine.PaymentStatus.fromValue((String) o)))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_PAYMENT_STATUS))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> pol.setPaymentStatus(CompositePoLine.PaymentStatus.fromValue((String) o)))
+          .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PUBLICATION_DATE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setPublicationDate((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.PUBLICATION_DATE))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setPublicationDate((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PUBLISHER))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setPublisher((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.PUBLISHER))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setPublisher((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PURCHASE_ORDER_ID))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setPurchaseOrderId((String) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.PURCHASE_ORDER_ID))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setPurchaseOrderId((String) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.RECEIPT_DATE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setReceiptDate((Date) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.RECEIPT_DATE))
+        .ifPresent(field -> futures.add(
+          field.resolve(doc).thenAccept(o -> pol.setReceiptDate((Date) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.RUSH))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setRush((Boolean) o))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.RUSH)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> pol.setRush((Boolean) o)).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.TAGS))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          Tags tags = new Tags();
-          List<String> tagList = new ArrayList<>();
-          tagList.add((String) o);
-          tags.setTagList(tagList);
-          pol.setTags(tags);
-        })
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.TAGS)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> {
+        Tags tags = new Tags();
+        List<String> tagList = new ArrayList<>();
+        tagList.add((String) o);
+        tags.setTagList(tagList);
+        pol.setTags(tags);
+      }).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_RECEIPT_STATUS))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setReceiptStatus(CompositePoLine.ReceiptStatus.fromValue((String) o)))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_RECEIPT_STATUS))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> pol.setReceiptStatus(CompositePoLine.ReceiptStatus.fromValue((String) o)))
+          .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.RECEIVING_WORKFLOW))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
+      Optional.ofNullable(mappings.get(Mapping.Field.RECEIVING_WORKFLOW)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> {
           Optional.ofNullable(gobiReceivingFlowType.get((String) o)).ifPresent(pol::setCheckinItems);
-        })
-        .exceptionally(Mapper::logException)));
+        }).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PACKAGE_DESIGNATION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(isPackage -> mapIsPackageToBoolean(isPackage).ifPresent(pol::setIsPackage))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.PACKAGE_DESIGNATION))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(isPackage -> mapIsPackageToBoolean(isPackage).ifPresent(pol::setIsPackage))
+          .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.LINKED_PACKAGE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(packagePoLineId -> pol.setPackagePoLineId((String) packagePoLineId))
-        .exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.LINKED_PACKAGE))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(packagePoLineId -> pol.setPackagePoLineId((String) packagePoLineId))
+          .exceptionally(Mapper::logException)));
+    });
   }
 
   private Optional<Boolean> mapIsPackageToBoolean(Object isPackage) {
