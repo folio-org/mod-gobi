@@ -40,7 +40,7 @@
   </licenses>
 
   <properties>
-    <aspectj.version>1.9.6</aspectj.version>
+    <aspectj.version>1.9.7</aspectj.version>
     <module_name>mod-gobi</module_name>
     <http.port>8081</http.port>
     <generated_sources_dir>${project.build.directory}/generated-sources</generated_sources_dir>
@@ -48,9 +48,9 @@
     <jaxb_output_dir>${generated_sources_dir}/jaxb</jaxb_output_dir>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <ramlfiles_util_path>${ramlfiles_path}/raml-util</ramlfiles_util_path>
-    <raml-module-builder.version>33.0.0</raml-module-builder.version>
+    <raml-module-builder.version>34.0.0</raml-module-builder.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <vertx.version>4.1.0.CR1</vertx.version>
+    <vertx.version>4.3.1</vertx.version>
     <sonar.exclusions>**/models/**.java</sonar.exclusions>
     <sonar.test.exclusions>**/*Test.java</sonar.test.exclusions>
     <jmockit.version>1.49</jmockit.version>
@@ -167,7 +167,7 @@
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
-      <version>4.4.0</version>
+      <version>5.0.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -342,7 +342,8 @@
 
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>3.2.0</version>
         <executions>
           <execution>
             <id>copy-resources</id>
