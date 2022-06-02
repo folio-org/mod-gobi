@@ -11,7 +11,7 @@
         {
           "field": "EXPENSE_CLASS",
           "dataSource": {
-            "from": "//LocalData[Description='LocalData5']/Value",
+            "from": "//LocalData[Description='LocalData6']/Value",
             "translation": "lookupExpenseClassId"
           }
         },
@@ -20,6 +20,41 @@
           "dataSource": {
             "from": "//datafield[@tag='245']/*",
             "combinator": "concat"
+          }
+        },
+        {
+          "field": "LINKED_PACKAGE",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData5']/Value",
+            "translation": "lookupLinkedPackage"
+          }
+        },
+        {
+          "field": "SHIP_TO",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData4']/Value",
+            "translation": "lookupConfigAddress"
+          }
+        },
+        {
+          "field": "BILL_TO",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData3']/Value",
+            "translation": "lookupConfigAddress"
+          }
+        },
+        {
+          "field": "SUFFIX",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData2']/Value",
+            "translation": "lookupSuffix"
+          }
+        },
+        {
+          "field": "PREFIX",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData1']/Value",
+            "translation": "lookupPrefix"
           }
         }
       ]

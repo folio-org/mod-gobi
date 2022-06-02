@@ -5,20 +5,28 @@ import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
 import static org.folio.gobi.HelperUtils.INVALID_ISBN_PRODUCT_ID_TYPE;
 import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
 import static org.folio.gobi.HelperUtils.extractFundCode;
+import static org.folio.rest.mappings.model.Mapping.Field.BILL_TO;
+import static org.folio.rest.mappings.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.mappings.model.Mapping.Field.PREFIX;
+import static org.folio.rest.mappings.model.Mapping.Field.SHIP_TO;
+import static org.folio.rest.mappings.model.Mapping.Field.SUFFIX;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,6 +56,8 @@ import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Tags;
 import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.impl.PostGobiOrdersHelper;
+import org.folio.rest.jaxrs.model.Error;
+import org.folio.rest.mappings.model.DataSource;
 import org.folio.rest.mappings.model.Mapping;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
@@ -58,9 +68,11 @@ import scala.math.BigDecimal;
 
 public class Mapper {
 
+  public static final String VALUE_FOR_FIELD_NOT_FOUND = "Value for field not found";
   private static final Logger logger = LogManager.getLogger(Mapper.class);
   private static final Map<String, Boolean> gobiBooleanType = Map.of("YES", Boolean.TRUE, "NO", Boolean.FALSE);
   private static final Map<String, Boolean> gobiReceivingFlowType = Map.of("SYNCHRONIZED", Boolean.FALSE, "INDEPENDENT", Boolean.TRUE);
+  public static final String LOOKUP_ERROR = "LOOKUP_ERROR";
 
   private final Map<Mapping.Field, DataSourceResolver> mappings;
 String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field\": \"ACQUISITION_METHOD\", \"dataSource\": { \"default\": \"Purchase At Vendor System\" } }, { \"field\": \"APPROVED\", \"dataSource\": { \"default\": \"true\", \"translation\": \"toBoolean\", \"translateDefault\": true } }, { \"field\": \"CLAIMED\", \"dataSource\": { \"default\": \"true\", \"translation\": \"toBoolean\", \"translateDefault\": true } }, { \"field\": \"COLLECTION\", \"dataSource\": { \"default\": \"false\", \"translation\": \"toBoolean\", \"translateDefault\": true } }, { \"field\": \"CONTRIBUTOR\", \"dataSource\": { \"from\": \"//datafield[@tag='100']/*\", \"combinator\": \"concat\" } }, { \"field\": \"CONTRIBUTOR_NAME_TYPE\", \"dataSource\": { \"default\": \"Personal name\", \"translation\": \"lookupContributorNameTypeId\", \"translateDefault\": true } }, { \"field\": \"CURRENCY\", \"dataSource\": { \"from\": \"//ListPrice/Currency\", \"default\": \"USD\" } }, { \"field\": \"DATE_ORDERED\", \"dataSource\": { \"from\": \"//OrderPlaced\", \"translation\": \"toDate\" } }, { \"field\": \"EXPENSE_CLASS\", \"dataSource\": { \"from\": \"//LocalData[Description='LocalData5']/Value\", \"translation\": \"lookupExpenseClassId\" } }, { \"field\": \"FUND_ID\", \"dataSource\": { \"from\": \"//FundCode\", \"translation\": \"lookupFundId\" } }, { \"field\": \"FUND_CODE\", \"dataSource\": { \"from\": \"//FundCode\" } }, { \"field\": \"FUND_PERCENTAGE\", \"dataSource\": { \"default\": \"100\", \"translation\": \"toDouble\", \"translateDefault\": true } }, { \"field\": \"VENDOR_INSTRUCTIONS\", \"dataSource\": { \"from\": \"//OrderNotes\", \"default\": \"N/A\" } }, { \"field\": \"LIST_UNIT_PRICE\", \"dataSource\": { \"from\": \"//ListPrice/Amount\", \"default\": \"0\", \"translation\": \"toDouble\", \"translateDefault\": true } }, { \"field\": \"LOCATION\", \"dataSource\": { \"from\": \"//Location\", \"default\": \"*\", \"translation\": \"lookupLocationId\", \"translateDefault\": true } }, { \"field\": \"MANUAL_PO\", \"dataSource\": { \"default\": \"false\", \"translation\": \"toBoolean\", \"translateDefault\": true } }, { \"field\": \"MATERIAL_TYPE\", \"dataSource\": { \"from\": \"//LocalData[Description='LocalData1']/Value\", \"default\": \"unspecified\", \"translation\": \"lookupMaterialTypeId\", \"translateDefault\": true } }, { \"field\": \"ORDER_TYPE\", \"dataSource\": { \"default\": \"One-Time\" } }, { \"field\": \"PO_LINE_ORDER_FORMAT\", \"dataSource\": { \"default\": \"Physical Resource\" } }, { \"field\": \"PO_LINE_PAYMENT_STATUS\", \"dataSource\": { \"default\": \"Awaiting Payment\" } }, { \"field\": \"PO_LINE_RECEIPT_STATUS\", \"dataSource\": { \"default\": \"Awaiting Receipt\" } }, { \"field\": \"PRODUCT_ID\", \"dataSource\": { \"from\": \"//datafield[@tag='020']/subfield[@code='a']\", \"translation\": \"truncateISBNQualifier\" } }, { \"field\": \"PRODUCT_ID_TYPE\", \"dataSource\": { \"default\": \"ISBN\", \"translation\": \"lookupProductIdType\", \"translateDefault\": true } }, { \"field\": \"PRODUCT_QUALIFIER\", \"dataSource\": { \"from\": \"//datafield[@tag='020']/subfield[@code='q']\", \"defaultMapping\": { \"dataSource\": { \"from\": \"//datafield[@tag='020']/subfield[@code='a']\", \"translation\": \"separateISBNQualifier\" } } } }, { \"field\": \"PUBLICATION_DATE\", \"dataSource\": { \"from\": \"//datafield[@tag='260']/subfield[@code='c']\" } }, { \"field\": \"PUBLISHER\", \"dataSource\": { \"from\": \"//datafield[@tag='260']/subfield[@code='b']\" } }, { \"field\": \"QUANTITY_PHYSICAL\", \"dataSource\": { \"from\": \"//Quantity\", \"default\": \"1\", \"translation\": \"toInteger\" } }, { \"field\": \"SOURCE\", \"dataSource\": { \"default\": \"API\" } }, { \"field\": \"TITLE\", \"dataSource\": { \"from\": \"//datafield[@tag='245']/*\", \"combinator\": \"concat\" } }, { \"field\": \"VENDOR\", \"dataSource\": { \"default\": \"GOBI\", \"translation\": \"lookupOrganization\", \"translateDefault\": true } }, { \"field\": \"MATERIAL_SUPPLIER\", \"dataSource\": { \"default\": \"GOBI\", \"translation\": \"lookupOrganization\", \"translateDefault\": true } }, { \"field\": \"VENDOR_ACCOUNT\", \"dataSource\": { \"from\": \"//SubAccount\", \"default\": \"0\" } }, { \"field\": \"VENDOR_REF_NO\", \"dataSource\": { \"from\": \"//YBPOrderKey\" } }, { \"field\": \"VENDOR_REF_NO_TYPE\", \"dataSource\": { \"default\": \"Vendor order reference number\" } }, { \"field\": \"WORKFLOW_STATUS\", \"dataSource\": { \"default\": \"Open\" } }, { \"field\": \"PACKAGE_DESIGNATION\", \"dataSource\": { \"from\": \"//LocalData[Description='LocalData2']/Value\" } }, { \"field\": \"EXCHANGE_RATE\", \"dataSource\": { \"from\": \"//LocalData[Description='LocalData3']/Value\", \"translation\": \"toDouble\" } }, { \"field\": \"PREFIX\", \"dataSource\": { \"from\": \"//LocalData[Description='LocalData4']/Value\", \"translation\": \"lookupPrefix\" } } ] }";
@@ -83,7 +95,7 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
 
     CompletableFuture.allOf(purchaseOrderFutures.toArray(new CompletableFuture<?>[0]))
       .thenCompose(v -> mapCompositePOLine(doc, bindingResult, postGobiOrdersHelper))
-      .thenAccept(this::mapPurchaseOrderWorkflow)
+      .thenAccept(mappedCompPO -> mapPurchaseOrderWorkflow(bindingResult))
       .thenAccept(mappedCompPO -> future.complete(bindingResult))
       .exceptionally(t -> {
         if (t instanceof FieldLookupException) {
@@ -97,8 +109,15 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
     return future;
   }
 
-  private void mapPurchaseOrderWorkflow(CompositePurchaseOrder compositePurchaseOrder) {
-
+  private void mapPurchaseOrderWorkflow(BindingResult<CompositePurchaseOrder> bindingResult) {
+    EnumSet<Mapping.Field> pendingSet = EnumSet.of(BILL_TO, SHIP_TO, LINKED_PACKAGE, SUFFIX, PREFIX);
+    List<Error> errors = bindingResult.getAllErrors();
+    if (CollectionUtils.isNotEmpty(bindingResult.getAllErrors())) {
+      boolean isPendingStatus = pendingSet.stream().anyMatch(errors::contains);
+      if (isPendingStatus) {
+        bindingResult.getResult().setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.PENDING);
+      }
+    }
   }
 
   private CompletableFuture<CompositePurchaseOrder> mapCompositePOLine(Document doc, BindingResult<CompositePurchaseOrder> bindingResult,
@@ -119,6 +138,7 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
     Tags tags = new Tags();
     AcquisitionMethod acquisitionMethod = new AcquisitionMethod();
     CompositePurchaseOrder compPO = bindingResult.getResult();
+    CompositePoLine pol = compPO.getCompositePoLines().get(0);
 
     List<CompletableFuture<?>> futures = new ArrayList<>();
 
@@ -134,8 +154,6 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
     mapLicense(futures, license, doc);
     mapTags(futures, tags, doc);
     mapAcquisitionMethod(futures, acquisitionMethod, doc, postGobiOrdersHelper);
-
-    CompositePoLine pol = compPO.getCompositePoLines().get(0);
 
     if (pol.getOrderFormat().equals(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE)) {
       mapEresource(futures, eresource, doc);
@@ -476,35 +494,52 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
 
     Optional.ofNullable(mappings.get(Mapping.Field.SHIP_TO))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          logger.info("Ship to address id : ", o);
-          compPo.setShipTo((String) o);
-        })
-        .exceptionally(Mapper::logException)));
+        .thenAccept(shipToId -> Optional.ofNullable(shipToId)
+                                      .ifPresentOrElse(value -> bindingResult.getResult().setShipTo((String) value),
+                                                                addLookupError(Mapping.Field.SHIP_TO, bindingResult)))
+        .exceptionally(ex -> {
+          Mapper.logException(ex);
+          addLookupError(Mapping.Field.SHIP_TO, bindingResult);
+          return null;
+        })));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.BILL_TO))
+    Optional.ofNullable(mappings.get(BILL_TO))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          logger.info("Bill to address id : ", o);
-          compPo.setBillTo((String) o);
-        })
-        .exceptionally(Mapper::logException)));
+        .thenAccept(billToId -> Optional.ofNullable(billToId)
+                                      .ifPresentOrElse(value -> bindingResult.getResult().setBillTo((String) value),
+                                                                  addLookupError(BILL_TO, bindingResult)))
+        .exceptionally(ex -> {
+          Mapper.logException(ex);
+          addLookupError(Mapping.Field.BILL_TO, bindingResult);
+          return null;
+        })));
 
     Optional.ofNullable(mappings.get(Mapping.Field.PREFIX))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          logger.info("Prefix id : ", o);
-          compPo.setPoNumberPrefix((String) o);
-        })
-        .exceptionally(Mapper::logException)));
+        .thenAccept(prefixId -> Optional.ofNullable(prefixId)
+                                        .ifPresentOrElse(value -> bindingResult.getResult().setPoNumberPrefix((String) value),
+                                                                  addLookupError(Mapping.Field.PREFIX, bindingResult)))
+        .exceptionally(ex -> {
+          Mapper.logException(ex);
+          addLookupError(Mapping.Field.PREFIX, bindingResult);
+          return null;
+        })));
 
     Optional.ofNullable(mappings.get(Mapping.Field.SUFFIX))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          logger.info("Suffix id : ", o);
-          compPo.setPoNumberSuffix((String) o);
-        })
-        .exceptionally(Mapper::logException)));
+        .thenAccept(suffixId -> Optional.ofNullable(suffixId)
+                                        .ifPresentOrElse(value -> bindingResult.getResult().setPoNumberSuffix((String) value),
+                                                                  addLookupError(Mapping.Field.SUFFIX, bindingResult)))
+        .exceptionally(ex -> {
+          Mapper.logException(ex);
+          addLookupError(Mapping.Field.SUFFIX, bindingResult);
+          return null;
+        })));
+  }
+
+  private Runnable addLookupError(Mapping.Field field, BindingResult<CompositePurchaseOrder> bindingResult) {
+    return () -> bindingResult.addError(field, new Error().withType(LOOKUP_ERROR).withCode(field.value())
+                                                          .withMessage(VALUE_FOR_FIELD_NOT_FOUND));
   }
 
   private void mapAcquisitionUnits(List<CompletableFuture<?>> futures, CompositePurchaseOrder compPo, Document doc) {
@@ -637,9 +672,10 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
           .thenAccept(o -> pol.setReceiptStatus(CompositePoLine.ReceiptStatus.fromValue((String) o)))
           .exceptionally(Mapper::logException)));
 
-      Optional.ofNullable(mappings.get(Mapping.Field.RECEIVING_WORKFLOW)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> {
-          Optional.ofNullable(gobiReceivingFlowType.get((String) o)).ifPresent(pol::setCheckinItems);
-        }).exceptionally(Mapper::logException)));
+      Optional.ofNullable(mappings.get(Mapping.Field.RECEIVING_WORKFLOW))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> Optional.ofNullable(gobiReceivingFlowType.get((String) o)).ifPresent(pol::setCheckinItems))
+          .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PACKAGE_DESIGNATION))
         .ifPresent(field -> futures.add(field.resolve(doc)
@@ -648,8 +684,14 @@ String s = "{ \"orderType\": \"ListedPrintMonograph\", \"mappings\": [ { \"field
 
       Optional.ofNullable(mappings.get(Mapping.Field.LINKED_PACKAGE))
         .ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(packagePoLineId -> pol.setPackagePoLineId((String) packagePoLineId))
-          .exceptionally(Mapper::logException)));
+          .thenAccept(packagePoLineId -> Optional.ofNullable(packagePoLineId)
+                                                .ifPresentOrElse(value -> pol.setPackagePoLineId((String) value),
+                                                                    addLookupError(Mapping.Field.LINKED_PACKAGE, bindingResult)))
+          .exceptionally(ex -> {
+            Mapper.logException(ex);
+            addLookupError(Mapping.Field.LINKED_PACKAGE, bindingResult);
+            return null;
+          })));
     });
   }
 

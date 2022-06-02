@@ -1,7 +1,18 @@
 package org.folio.gobi;
 
-import static org.folio.rest.mappings.model.Mapping.Field.*;
-import static org.junit.Assert.*;
+import static org.folio.rest.mappings.model.Mapping.Field.ACCESS_PROVIDER;
+import static org.folio.rest.mappings.model.Mapping.Field.BILL_TO;
+import static org.folio.rest.mappings.model.Mapping.Field.EXPENSE_CLASS;
+import static org.folio.rest.mappings.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.mappings.model.Mapping.Field.PREFIX;
+import static org.folio.rest.mappings.model.Mapping.Field.SHIP_TO;
+import static org.folio.rest.mappings.model.Mapping.Field.SUFFIX;
+import static org.folio.rest.mappings.model.Mapping.Field.TITLE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,27 +56,48 @@ public class MappingHelperTest {
 
   @Before
   public void setUp() {
-    logger.info("Begin: SetUp by initializing a default mapping");
+   logger.info("Begin: SetUp by initializing a default mapping");
 
-    JsonObject expectedListedPrintMonographJsonObj = new JsonObject();
-    expectedListedPrintMonographJsonObj.put("orderType", "ListedPrintMonograph");
+   JsonObject expectedListedPrintMonographJsonObj = new JsonObject();
+   expectedListedPrintMonographJsonObj.put("orderType", "ListedPrintMonograph");
 
    JsonObject accessProvider = new JsonObject().put("field", ACCESS_PROVIDER.value())
       .put("dataSource",
         new JsonObject().put("from", "//PurchaseOption/VendorPOCode").put("translation", "lookupOrganization"));
 
+    JsonObject prefixId = new JsonObject().put("field", PREFIX.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//LocalData[Description='LocalData1']/Value").put("translation", "lookupPrefix"));;
+
+    JsonObject suffixId = new JsonObject().put("field", SUFFIX.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//LocalData[Description='LocalData2']/Value").put("translation", "lookupSuffix"));;
+    expectedListedPrintMonographJsonObj.put("mappings",
+      new JsonArray().add(suffixId));
+
+    JsonObject billToId = new JsonObject().put("field", BILL_TO.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//LocalData[Description='LocalData3']/Value").put("translation", "lookupConfigAddress"));;
+
+    JsonObject shipToId = new JsonObject().put("field", SHIP_TO.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//LocalData[Description='LocalData4']/Value").put("translation", "lookupConfigAddress"));;
+
+    JsonObject linkedPackageId = new JsonObject().put("field", LINKED_PACKAGE.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//LocalData[Description='LocalData5']/Value").put("translation", "lookupLinkedPackage"));;
+
+
     JsonObject expenseClass = new JsonObject().put("field", EXPENSE_CLASS.value())
       .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData5']/Value").put("translation", "lookupExpenseClassId"));;
-    expectedListedPrintMonographJsonObj.put("mappings",
-        new JsonArray().add(accessProvider).add(expenseClass));
+        new JsonObject().put("from", "//LocalData[Description='LocalData6']/Value").put("translation", "lookupExpenseClassId"));;
 
     JsonObject combinatorTitle = new JsonObject().put("field", TITLE.value())
       .put("dataSource",
         new JsonObject().put("from", "//datafield[@tag='245']/*").put("combinator", "concat"));;
     expectedListedPrintMonographJsonObj.put("mappings",
-      new JsonArray().add(accessProvider).add(expenseClass).add(combinatorTitle));
-
+      new JsonArray().add(accessProvider).add(expenseClass).add(combinatorTitle).add(linkedPackageId)
+                        .add(shipToId).add(billToId).add(suffixId).add(prefixId));
 
     String expectedListedPrintMonographJson = expectedListedPrintMonographJsonObj.toString();
 
@@ -106,7 +138,7 @@ public class MappingHelperTest {
     mappingCombinatorNotExist.getDataSource().setCombinator(null);
 
     mapping2 = mappingsList2.get(0);
-    assertEquals(3, mappingsList1.size());
+    assertEquals(8, mappingsList1.size());
     assertEquals(2, mappingsList2.size());
     assertEquals(Mapping.Field.ACCESS_PROVIDER.value(), mappingAccessProvider.getField().toString());
     assertEquals(EXPENSE_CLASS.value(), mappingExpenseClass.getField().toString());
@@ -180,7 +212,7 @@ public class MappingHelperTest {
   public void testShouldSuccessMapExpenseClass() {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new LinkedHashMap<>();
     org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mappingExpenseClass, fieldDataSourceMapping, null);
-    assertEquals("//LocalData[Description='LocalData5']/Value", dataSource.from);
+    assertEquals("//LocalData[Description='LocalData6']/Value", dataSource.from);
     assertFalse(dataSource.translateDefValue);
   }
 }

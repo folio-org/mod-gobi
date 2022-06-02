@@ -134,6 +134,7 @@
             "lookupSuffix",
             "lookupPrefix",
             "lookupLinkedPackage",
+            "lookupConfigAddress",
             "separateISBNQualifier",
             "truncateISBNQualifier",
             "toBoolean",
