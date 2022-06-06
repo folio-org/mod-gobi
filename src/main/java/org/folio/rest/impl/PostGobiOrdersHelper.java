@@ -21,6 +21,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.completablefuture.FolioVertxCompletableFuture;
 import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
@@ -123,7 +124,7 @@ public class PostGobiOrdersHelper {
 
   public CompletableFuture<CompositePurchaseOrder> mapToPurchaseOrder(Document doc) {
     final OrderMappings.OrderType orderType = getOrderType(doc);
-    VertxCompletableFuture<CompositePurchaseOrder> future = new VertxCompletableFuture<>(ctx);
+    FolioVertxCompletableFuture<CompositePurchaseOrder> future = new FolioVertxCompletableFuture<>(ctx);
 
       lookupOrderMappings(orderType).thenAccept(ordermappings -> {
        logger.info("Using Mappings {}", ordermappings);
@@ -163,7 +164,7 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<Document> parse(String entity) {
-    VertxCompletableFuture<Document> future = new VertxCompletableFuture<>(ctx);
+    FolioVertxCompletableFuture<Document> future = new FolioVertxCompletableFuture<>(ctx);
     final GobiPurchaseOrderParser parser = GobiPurchaseOrderParser.getParser();
 
     try {
@@ -176,7 +177,7 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<JsonObject> handleGetRequest(String endpoint) {
-      CompletableFuture<JsonObject> future = new VertxCompletableFuture<>(ctx);
+    FolioVertxCompletableFuture<JsonObject> future = new FolioVertxCompletableFuture<>(ctx);
       try {
         logger.debug("Calling GET {}", endpoint);
         httpClient.request(HttpMethod.GET, endpoint, okapiHeaders)
@@ -212,7 +213,7 @@ public class PostGobiOrdersHelper {
    */
   public CompletableFuture<Void> handlePutRequest(String endpoint, JsonObject recordData, HttpClientInterface httpClient,
       Context ctx, Map<String, String> okapiHeaders) {
-    CompletableFuture<Void> future = new VertxCompletableFuture<>(ctx);
+    FolioVertxCompletableFuture<Void> future = new FolioVertxCompletableFuture<>(ctx);
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Sending 'PUT {}' with body: {}", endpoint, recordData.encodePrettily());
@@ -466,7 +467,7 @@ public class PostGobiOrdersHelper {
   }
 
   private CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
-    VertxCompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
+    FolioVertxCompletableFuture<String> future = new FolioVertxCompletableFuture<>(ctx);
     try {
       httpClient.request(HttpMethod.POST, compPO, ORDERS_ENDPOINT, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
