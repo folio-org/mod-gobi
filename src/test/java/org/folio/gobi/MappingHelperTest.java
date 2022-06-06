@@ -1,5 +1,6 @@
 package org.folio.gobi;
 
+import static java.util.stream.Collectors.groupingBy;
 import static org.folio.rest.mappings.model.Mapping.Field.ACCESS_PROVIDER;
 import static org.folio.rest.mappings.model.Mapping.Field.BILL_TO;
 import static org.folio.rest.mappings.model.Mapping.Field.EXPENSE_CLASS;
@@ -20,6 +21,7 @@ import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -209,10 +211,26 @@ public class MappingHelperTest {
   }
 
   @Test
+  public void testShouldSuccessMapDiffLookups() {
+    Map<Mapping.Field, List<Mapping>> mappings = actuallistedPrintMappings.getMappings().stream().collect(groupingBy(Mapping::getField));
+    org.folio.gobi.DataSourceResolver dataSourcePrefix = MappingHelper.getDS(mappings.get(PREFIX).get(0), new LinkedHashMap<>(), null);
+
+    assertEquals("//LocalData[Description='LocalData1']/Value", dataSourcePrefix.from);
+    org.folio.gobi.DataSourceResolver dataSourceSuffix = MappingHelper.getDS(mappings.get(SUFFIX).get(0), new LinkedHashMap<>(), null);
+    assertEquals("//LocalData[Description='LocalData2']/Value", dataSourceSuffix.from);
+    org.folio.gobi.DataSourceResolver dataSourceBillTo = MappingHelper.getDS(mappings.get(BILL_TO).get(0), new LinkedHashMap<>(), null);
+     assertEquals("//LocalData[Description='LocalData3']/Value", dataSourceBillTo.from);
+    org.folio.gobi.DataSourceResolver dataSourceShipTo = MappingHelper.getDS(mappings.get(SHIP_TO).get(0), new LinkedHashMap<>(), null);
+    assertEquals("//LocalData[Description='LocalData4']/Value", dataSourceShipTo.from);
+    org.folio.gobi.DataSourceResolver dataSourceLinkedPackage = MappingHelper.getDS(mappings.get(LINKED_PACKAGE).get(0), new LinkedHashMap<>(), null);
+    assertEquals("//LocalData[Description='LocalData5']/Value", dataSourceLinkedPackage.from);
+  }
+
+  @Test
   public void testShouldSuccessMapExpenseClass() {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new LinkedHashMap<>();
     org.folio.gobi.DataSourceResolver dataSource = MappingHelper.getDS(mappingExpenseClass, fieldDataSourceMapping, null);
-    assertEquals("//LocalData[Description='LocalData6']/Value", dataSource.from);
+    assertEquals("//LocalData[Description='LocalData5']/Value", dataSource.from);
     assertFalse(dataSource.translateDefValue);
   }
 }
