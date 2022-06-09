@@ -449,12 +449,8 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.APPROVED))
-      .ifPresent(field -> futures.add(
-        field.resolve(doc)
-          .thenAccept(o -> {
-            Object dd = 0;
-            compPo.setApproved((Boolean) o);
-          })
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> compPo.setApproved((Boolean) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.ASSIGNED_TO))
@@ -464,10 +460,7 @@ public class Mapper {
 
     Optional.ofNullable(mappings.get(Mapping.Field.MANUAL_PO))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          Object ss = o;
-          compPo.setManualPo((Boolean) o);
-        })
+        .thenAccept(o -> compPo.setManualPo((Boolean) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.NOTES))
@@ -584,51 +577,60 @@ public class Mapper {
   private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, BindingResult<CompositePurchaseOrder> bindingResult, Document doc) {
     Optional.ofNullable(bindingResult.getResult().getCompositePoLines().get(0)).ifPresent(pol -> {
       Optional.ofNullable(mappings.get(Mapping.Field.REQUESTER))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setRequester((String) o)).exceptionally(Mapper::logException)));
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> pol.setRequester((String) o))
+          .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.TITLE))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setTitleOrPackage((String) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setTitleOrPackage((String) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.CANCELLATION_RESTRICTION_NOTE))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setCancellationRestrictionNote((String) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setCancellationRestrictionNote((String) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.DESCRIPTION))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setDescription((String) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setDescription((String) o))
+        .exceptionally(Mapper::logException)));
 
-      Optional.ofNullable(mappings.get(Mapping.Field.DONOR)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> pol.setDonor((String) o)).exceptionally(Mapper::logException)));
+    Optional.ofNullable(mappings.get(Mapping.Field.DONOR))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setDonor((String) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.SELECTOR))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setSelector((String) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setSelector((String) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.SOURCE))
         .ifPresent(field -> futures.add(field.resolve(doc)
           .thenAccept(o -> pol.setSource(CompositePoLine.Source.fromValue((String) o)))
           .exceptionally(Mapper::logException)));
-
-      Optional.ofNullable(mappings.get(Mapping.Field.SELECTOR))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setSelector((String) o)).exceptionally(Mapper::logException)));
     });
   }
 
+
   private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, BindingResult<CompositePurchaseOrder> bindingResult, Document doc) {
     Optional.ofNullable(bindingResult.getResult().getCompositePoLines().get(0)).ifPresent(pol -> {
-      Optional.ofNullable(mappings.get(Mapping.Field.ALERTS)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> {
+      Optional.ofNullable(mappings.get(Mapping.Field.ALERTS))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(o -> {
         Alert alert = new Alert();
         alert.setAlert((String) o);
         List<Alert> alerts = new ArrayList<>();
         alerts.add(alert);
         pol.setAlerts(alerts);
-      }).exceptionally(Mapper::logException)));
+        })
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.CANCELLATION_RESTRICTION))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setCancellationRestriction((Boolean) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setCancellationRestriction((Boolean) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_ORDER_FORMAT))
         .ifPresent(field -> futures.add(field.resolve(doc)
@@ -636,15 +638,14 @@ public class Mapper {
           .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.COLLECTION))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> {
-            Object vvc = 0;
-            pol.setCollection((Boolean) o);
-          }).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setCollection((Boolean) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_DESCRIPTION))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setPoLineDescription((String) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setPoLineDescription((String) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_PAYMENT_STATUS))
         .ifPresent(field -> futures.add(field.resolve(doc)
@@ -652,33 +653,40 @@ public class Mapper {
           .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PUBLICATION_DATE))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> {
-            Object dddd = o;
-            pol.setPublicationDate((String) o);
-          }).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setPublicationDate((String) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PUBLISHER))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setPublisher((String) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setPublisher((String) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PURCHASE_ORDER_ID))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setPurchaseOrderId((String) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setPurchaseOrderId((String) o))
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.RECEIPT_DATE))
-        .ifPresent(field -> futures.add(
-          field.resolve(doc).thenAccept(o -> pol.setReceiptDate((Date) o)).exceptionally(Mapper::logException)));
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setReceiptDate((Date) o))
+        .exceptionally(Mapper::logException)));
 
-      Optional.ofNullable(mappings.get(Mapping.Field.RUSH)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> pol.setRush((Boolean) o)).exceptionally(Mapper::logException)));
+    Optional.ofNullable(mappings.get(Mapping.Field.RUSH))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setRush((Boolean) o))
+        .exceptionally(Mapper::logException)));
 
-      Optional.ofNullable(mappings.get(Mapping.Field.TAGS)).ifPresent(field -> futures.add(field.resolve(doc).thenAccept(o -> {
+    Optional.ofNullable(mappings.get(Mapping.Field.TAGS))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> {
         Tags tags = new Tags();
         List<String> tagList = new ArrayList<>();
         tagList.add((String) o);
         tags.setTagList(tagList);
         pol.setTags(tags);
-      }).exceptionally(Mapper::logException)));
+        })
+        .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PO_LINE_RECEIPT_STATUS))
         .ifPresent(field -> futures.add(field.resolve(doc)
@@ -737,18 +745,12 @@ public class Mapper {
 
     Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_ELECTRONIC))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          Object fff = 0;
-          cost.setQuantityElectronic((Integer) o);
-        })
+        .thenAccept(o -> cost.setQuantityElectronic((Integer) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.QUANTITY_PHYSICAL))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          Object kkk = o;
-          cost.setQuantityPhysical((Integer) o);
-        })
+        .thenAccept(o -> cost.setQuantityPhysical((Integer) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.DISCOUNT))
@@ -869,11 +871,7 @@ public class Mapper {
   private void mapLicense(List<CompletableFuture<?>> futures, License license, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_CODE))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          // license.setCode((String) o);
-            throw new FieldLookupException();
-          }
-        )
+        .thenAccept(o -> license.setCode((String) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_DESCRIPTION))

@@ -36,10 +36,7 @@ public class FieldMappingTranslatorResolver {
   private static final Logger logger = LogManager.getLogger(FieldMappingTranslatorResolver.class);
   private final Map<DataSource.Translation, Function<String, CompletableFuture<?>>> methodTranslatorsMap = new HashMap<>();
 
-  private final LookupService lookupService;
-
   public FieldMappingTranslatorResolver(LookupService lookupService) {
-    this.lookupService = lookupService;
     methodTranslatorsMap.put(LOOKUP_MOCK, lookupService::lookupMock);
     methodTranslatorsMap.put(LOOKUP_CONTRIBUTOR_NAME_TYPE_ID, lookupService::lookupContributorNameTypeId);
     methodTranslatorsMap.put(LOOKUP_EXPENSE_CLASS_ID, lookupService::lookupExpenseClassId);
