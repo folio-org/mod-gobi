@@ -3,7 +3,6 @@ package org.folio.rest.impl;
 import static java.util.UUID.randomUUID;
 import static org.folio.gobi.HelperUtils.CONTRIBUTOR_NAME_TYPES;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
-import static org.folio.rest.impl.PostGobiOrdersHelper.DEFAULT_LOOKUP_CODE;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
@@ -14,28 +13,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.http.Header;
-import io.restassured.mapper.ObjectMapperType;
-import io.restassured.specification.RequestSpecification;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +27,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -57,8 +35,13 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.gobi.LookupService;
+import org.folio.rest.ResourcePaths;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
@@ -71,9 +54,31 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import org.w3c.dom.Element;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.http.Header;
+import io.restassured.mapper.ObjectMapperType;
+import io.restassured.specification.RequestSpecification;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 
 @RunWith(VertxUnitRunner.class)
 public class GOBIIntegrationServiceResourceImplTest {
@@ -1092,21 +1097,21 @@ public class GOBIIntegrationServiceResourceImplTest {
       Router router = Router.router(vertx);
 
       router.route().handler(BodyHandler.create());
-      router.route(HttpMethod.POST, PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
-      router.get(PostGobiOrdersHelper.GET_ORGANIZATION_ENDPOINT).handler(this::handleGetOrganization);
-      router.get(PostGobiOrdersHelper.MATERIAL_TYPES_ENDPOINT).handler(this::handleGetMaterialType);
-      router.get(PostGobiOrdersHelper.LOCATIONS_ENDPOINT).handler(this::handleGetLocation);
-      router.get(PostGobiOrdersHelper.FUNDS_ENDPOINT).handler(this::handleGetFund);
-      router.get(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
-      router.get(PostGobiOrdersHelper.IDENTIFIERS_ENDPOINT).handler(this::handleGetProductTypes);
-      router.get(PostGobiOrdersHelper.CONTRIBUTOR_NAME_TYPES_ENDPOINT).handler(this::handleGetContributorNameTypes);
-      router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT).handler(this::handleGetOrders);
-      router.get(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handleGetOrderById);
-      router.put(PostGobiOrdersHelper.ORDERS_ENDPOINT+"/:id").handler(this::handlePutOrderById);
-      router.get(PostGobiOrdersHelper.EXPENSE_CLASS_ENDPOINT).handler(this::handleGetExpenseClass);
-      router.get(PostGobiOrdersHelper.ACQUISITION_METHOD_ENDPOINT).handler(this::handleGetAcquisitionMethods);
-      router.get(PostGobiOrdersHelper.ACQUISITION_UNIT_ENDPOINT).handler(this::handleGetAcquisitionUnits);
+      router.route(HttpMethod.POST, ResourcePaths.ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
+      router.get(ResourcePaths.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
+      router.get(ResourcePaths.ORDERS_ENDPOINT).handler(this::handleGetOrders);
+      router.get(ResourcePaths.ORDERS_ENDPOINT+"/:id").handler(this::handleGetOrderById);
+      router.get(ResourcePaths.EXPENSE_CLASS_ENDPOINT).handler(this::handleGetExpenseClass);
+      router.get(ResourcePaths.ACQUISITION_METHOD_ENDPOINT).handler(this::handleGetAcquisitionMethods);
+      router.get(ResourcePaths.ACQUISITION_UNIT_ENDPOINT).handler(this::handleGetAcquisitionUnits);
+      router.get(ResourcePaths.IDENTIFIERS_ENDPOINT).handler(this::handleGetProductTypes);
+      router.get(ResourcePaths.CONTRIBUTOR_NAME_TYPES_ENDPOINT).handler(this::handleGetContributorNameTypes);
+      router.get(ResourcePaths.GET_ORGANIZATION_ENDPOINT).handler(this::handleGetOrganization);
+      router.get(ResourcePaths.MATERIAL_TYPES_ENDPOINT).handler(this::handleGetMaterialType);
+      router.get(ResourcePaths.LOCATIONS_ENDPOINT).handler(this::handleGetLocation);
+      router.get(ResourcePaths.FUNDS_ENDPOINT).handler(this::handleGetFund);
 
+      router.put(ResourcePaths.ORDERS_ENDPOINT+"/:id").handler(this::handlePutOrderById);
       return router;
     }
 
@@ -1255,7 +1260,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       } else if (MOCK_INSTRUCTION_NOT_EXIST.equals(getByIdInstruction)) {
         funds.put("funds", new JsonArray()).put(TOTAL_RECORDS, 0);
 
-      } else if (ctx.queryParam("query").get(0).split("==")[1].contains(DEFAULT_LOOKUP_CODE)) {
+      } else if (ctx.queryParam("query").get(0).split("==")[1].contains(LookupService.DEFAULT_LOOKUP_CODE)) {
         funds.put("funds", new JsonArray().add(new JsonObject().put(ID, randomUUID().toString())
           .put("code", "HUM")))
           .put(TOTAL_RECORDS, 1);
@@ -1432,7 +1437,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       String name = ctx.queryParam("query").get(0).split("==")[1];
 
       if (MOCK_INSTRUCTION_NOT_EXIST.equals(instruction)
-          || (MOCK_INSTRUCTION_USE_DEFAULT.equals(instruction) && !DEFAULT_LOOKUP_CODE.equals(name))) {
+          || (MOCK_INSTRUCTION_USE_DEFAULT.equals(instruction) && !LookupService.DEFAULT_LOOKUP_CODE.equals(name))) {
         types.put(CONTRIBUTOR_NAME_TYPES, new JsonArray())
           .put(TOTAL_RECORDS, 0);
       } else {

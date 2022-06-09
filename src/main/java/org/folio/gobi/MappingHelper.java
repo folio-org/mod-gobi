@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,13 +27,13 @@ import io.vertx.core.json.JsonObject;
 
 public class MappingHelper {
   private static final Logger logger = LogManager.getLogger(MappingHelper.class);
+  private final FieldMappingTranslatorResolver fieldMappingTranslatorResolver;
 
-  private MappingHelper() {
-    throw new IllegalStateException("MappingHelper class cannot be instantiated");
+  public MappingHelper(FieldMappingTranslatorResolver fieldMappingTranslatorResolver) {
+    this.fieldMappingTranslatorResolver = fieldMappingTranslatorResolver;
   }
 
-  private static final Map<OrderMappings.OrderType, OrderMappings> defaultMappings = new EnumMap<>(
-      OrderMappings.OrderType.class);
+  private static final Map<OrderMappings.OrderType, OrderMappings> defaultMappings = new EnumMap<>(OrderMappings.OrderType.class);
 
   static {
     for (OrderMappings.OrderType orderType : OrderMappings.OrderType.values()) {
@@ -42,7 +41,7 @@ public class MappingHelper {
     }
   }
 
-  public static Map<Mapping.Field, DataSourceResolver> getDefaultMappingForOrderType(
+  public Map<Mapping.Field, DataSourceResolver> getDefaultMappingForOrderType(
       PostGobiOrdersHelper postGobiOrdersHelper, OrderType orderType) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
     List<Mapping> mappingsList = defaultMappings.get(orderType).getMappings();
@@ -56,7 +55,7 @@ public class MappingHelper {
     return fieldDataSourceMapping;
   }
 
-  public static Object getDefaultValue(org.folio.rest.mappings.model.DataSource dataSource,
+  public Object getDefaultValue(org.folio.rest.mappings.model.DataSource dataSource,
       Map<Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping, PostGobiOrdersHelper postGobiOrdersHelper) {
     Object ret = null;
     if (dataSource.getDefault() != null) {
@@ -71,7 +70,7 @@ public class MappingHelper {
   }
 
   @SuppressWarnings("unchecked")
-  public static org.folio.gobi.DataSourceResolver getDS(Mapping mapping,
+  public org.folio.gobi.DataSourceResolver getDS(Mapping mapping,
       Map<Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping, PostGobiOrdersHelper postGobiOrdersHelper) {
 
     Object defaultValue = getDefaultValue(mapping.getDataSource(), fieldDataSourceMapping, postGobiOrdersHelper);
@@ -99,85 +98,7 @@ public class MappingHelper {
     }
 
     org.folio.rest.mappings.model.DataSource.Translation translation = mapping.getDataSource().getTranslation();
-    Translation<?> t = null;
-    if (translation != null) {
-
-      t = data -> {
-        Object translatedValue;
-        try {
-          switch (translation) {
-          case LOOKUP_MOCK:
-            translatedValue = postGobiOrdersHelper.lookupMock(data);
-            break;
-          case LOOKUP_CONTRIBUTOR_NAME_TYPE_ID:
-            translatedValue = postGobiOrdersHelper.lookupContributorNameTypeId(data);
-            break;
-          case LOOKUP_EXPENSE_CLASS_ID:
-            translatedValue = postGobiOrdersHelper.lookupExpenseClassId(data);
-            break;
-          case LOOKUP_ACQUISITION_METHOD_IDS:
-            translatedValue = postGobiOrdersHelper.lookupAcquisitionMethodId(data);
-            break;
-          case LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME:
-            translatedValue = postGobiOrdersHelper.lookupAcquisitionUnitDefault(data);
-            break;
-          case LOOKUP_LOCATION_ID:
-            translatedValue = postGobiOrdersHelper.lookupLocationId(data);
-            break;
-          case LOOKUP_MATERIAL_TYPE_ID:
-            translatedValue = postGobiOrdersHelper.lookupMaterialTypeId(data);
-            break;
-          case LOOKUP_FUND_ID:
-            translatedValue = postGobiOrdersHelper.lookupFundId(data);
-            break;
-          case LOOKUP_ORGANIZATION:
-            translatedValue = postGobiOrdersHelper.lookupOrganization(data);
-            break;
-          case LOOKUP_PRODUCT_ID_TYPE:
-            translatedValue = postGobiOrdersHelper.lookupProductIdType(data);
-            break;
-          case LOOKUP_BILL_TO:
-          case LOOKUP_SHIP_TO:
-            translatedValue = postGobiOrdersHelper.lookupConfigAddress(data);
-            break;
-          case LOOKUP_PREFIX:
-            translatedValue = postGobiOrdersHelper.lookupPrefix(data);
-            break;
-          case LOOKUP_SUFFIX:
-            translatedValue = postGobiOrdersHelper.lookupSuffix(data);
-            break;
-          case LOOKUP_LINKED_PACKAGE:
-            translatedValue = postGobiOrdersHelper.lookupLinkedPackage(data);
-            break;
-          case SEPARATE_ISBN_QUALIFIER:
-            translatedValue = postGobiOrdersHelper.separateISBNQualifier(data);
-            break;
-          case TRUNCATE_ISBN_QUALIFIER:
-            translatedValue = postGobiOrdersHelper.truncateISBNQualifier(data);
-            break;
-          case TO_DATE:
-            translatedValue = Mapper.toDate(data);
-            break;
-          case TO_DOUBLE:
-            translatedValue = Mapper.toDouble(data);
-            break;
-          case TO_INTEGER:
-            translatedValue = Mapper.toInteger(data);
-            break;
-          case TO_BOOLEAN:
-            translatedValue = Mapper.toBoolean(data);
-            break;
-          default:
-            throw new IllegalArgumentException("No such Translation available: " + translation);
-          }
-          return (CompletableFuture<Object>) translatedValue;
-        } catch (Exception e) {
-          logger.error("Exception in Mapperhelper", e);
-        }
-        return null;
-      };
-    }
-
+    Translation<?> t = fieldMappingTranslatorResolver.resolve(translation);
     return org.folio.gobi.DataSourceResolver.builder()
         .withFrom(dataSourceFrom)
         .withDefault(defaultValue)
@@ -188,7 +109,7 @@ public class MappingHelper {
 
   }
 
-  public static Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType,
+  public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType,
       JsonObject jo, PostGobiOrdersHelper postGobiOrdersHelper) {
     final Map<Mapping.Field, DataSourceResolver> map = new EnumMap<>(Mapping.Field.class);
 

@@ -9,13 +9,6 @@
           }
         },
         {
-          "field": "EXPENSE_CLASS",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData6']/Value",
-            "translation": "lookupExpenseClassId"
-          }
-        },
-        {
           "field": "TITLE",
           "dataSource": {
             "from": "//datafield[@tag='245']/*",
@@ -25,8 +18,15 @@
         {
           "field": "LINKED_PACKAGE",
           "dataSource": {
-            "from": "//LocalData[Description='LocalData5']/Value",
+            "from": "//LocalData[Description='LocalData6']/Value",
             "translation": "lookupLinkedPackage"
+          }
+        },
+        {
+          "field": "EXPENSE_CLASS",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData5']/Value",
+            "translation": "lookupExpenseClassId"
           }
         },
         {

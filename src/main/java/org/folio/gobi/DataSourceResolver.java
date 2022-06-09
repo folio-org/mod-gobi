@@ -46,8 +46,8 @@ public class DataSourceResolver {
 
     if (from != null) {
       applyXPath(doc)
-        .thenAccept(s -> applyTranslation(s)
-          .thenAccept(o -> applyDefault(o, doc)
+        .thenCompose(s -> applyTranslation(s)
+          .thenCompose(o -> applyDefault(o, doc)
             .thenAccept(future::complete)
             .exceptionally(t -> {
               future.completeExceptionally(t);
