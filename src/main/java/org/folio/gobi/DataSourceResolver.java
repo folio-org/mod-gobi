@@ -75,14 +75,6 @@ public class DataSourceResolver {
       } catch (XPathExpressionException e) {
         throw new CompletionException(e);
       }
-
-//    return CompletableFuture.supplyAsync(() -> {
-//      try {
-//        return (NodeList) xpath.evaluate(from, doc, XPathConstants.NODESET);
-//      } catch (XPathExpressionException e) {
-//        throw new CompletionException(e);
-//      }
-//    }).thenApply(combinator::apply);
   }
 
   private CompletableFuture<?> applyTranslation(Object o) {

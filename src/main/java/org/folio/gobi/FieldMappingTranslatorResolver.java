@@ -1,16 +1,5 @@
 package org.folio.gobi;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.folio.rest.mappings.model.DataSource;
-
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_ACQUISITION_METHOD_IDS;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_BILL_TO;
@@ -32,6 +21,16 @@ import static org.folio.rest.mappings.model.DataSource.Translation.TO_DATE;
 import static org.folio.rest.mappings.model.DataSource.Translation.TO_DOUBLE;
 import static org.folio.rest.mappings.model.DataSource.Translation.TO_INTEGER;
 import static org.folio.rest.mappings.model.DataSource.Translation.TRUNCATE_ISBN_QUALIFIER;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.rest.mappings.model.DataSource;
 
 public class FieldMappingTranslatorResolver {
   private static final Logger logger = LogManager.getLogger(FieldMappingTranslatorResolver.class);
