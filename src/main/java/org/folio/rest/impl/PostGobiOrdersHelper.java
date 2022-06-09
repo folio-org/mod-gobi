@@ -85,7 +85,7 @@ public class PostGobiOrdersHelper {
 
       lookupOrderMappings(orderType).thenAccept(ordermappings -> {
        logger.info("Using Mappings {}", ordermappings);
-        new Mapper(ordermappings, lookupService).map(doc, this)
+        new Mapper(lookupService).map(ordermappings, doc)
           .thenApply(BindingResult::getResult)
           .thenAccept(future::complete);
       }).exceptionally(e -> {
@@ -171,7 +171,7 @@ public class PostGobiOrdersHelper {
     String tenant = restClient.getOkapiHeaders().get(TENANT_HEADER);
     boolean cacheFound = OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
-         OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : mappingHelper.getDefaultMappingForOrderType(this, orderType);
+         OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : mappingHelper.getDefaultMappingForOrderType(orderType);
 
     if(!cacheFound)
       OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
@@ -192,7 +192,7 @@ public class PostGobiOrdersHelper {
         OrderMappingCache.getInstance().removeKey(tenantKey);
       }
       //extract the mappings and add it to cache
-      mappings= mappingHelper.extractOrderMappings(orderType, jo, this);
+      mappings= mappingHelper.extractOrderMappings(orderType, jo);
       if(!mappings.isEmpty())
           OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);
     }

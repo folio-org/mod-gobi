@@ -183,7 +183,7 @@ public class MappingHelperTest {
     logger.info(
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType ListedPrintMonograph");
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping1 = new LinkedHashMap<>();
-    org.folio.gobi.DataSourceResolver dataSource = mappingHelper.getDS(mappingAccessProvider, fieldDataSourceMapping1, null);
+    org.folio.gobi.DataSourceResolver dataSource = mappingHelper.getDS(mappingAccessProvider, fieldDataSourceMapping1);
     assertEquals("//PurchaseOption/VendorPOCode", dataSource.from);
     assertFalse(dataSource.translateDefValue);
   }
@@ -193,7 +193,7 @@ public class MappingHelperTest {
     logger.info(
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType UnlistedPrintMonograph");
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping2 = new LinkedHashMap<>();
-    org.folio.gobi.DataSourceResolver dataSource = mappingHelper.getDS(mapping2, fieldDataSourceMapping2, null);
+    org.folio.gobi.DataSourceResolver dataSource = mappingHelper.getDS(mapping2, fieldDataSourceMapping2);
     assertEquals("//datafield[@tag='020']/subfield[@code='a']", dataSource.from);
     assertFalse(dataSource.translateDefValue);
     assertNotNull(dataSource.combinator);
@@ -219,20 +219,20 @@ public class MappingHelperTest {
   @Test
   public void testShouldSuccessMapDiffLookups() {
     Map<Mapping.Field, List<Mapping>> mappings = actuallistedPrintMappings.getMappings().stream().collect(groupingBy(Mapping::getField));
-    org.folio.gobi.DataSourceResolver dataSourcePrefix = mappingHelper.getDS(mappings.get(PREFIX).get(0), fieldDataSourceMapping, null);
+    org.folio.gobi.DataSourceResolver dataSourcePrefix = mappingHelper.getDS(mappings.get(PREFIX).get(0), fieldDataSourceMapping);
 
     assertEquals("//LocalData[Description='LocalData1']/Value", dataSourcePrefix.from);
     assertNotNull(dataSourcePrefix.translation);
-    org.folio.gobi.DataSourceResolver dataSourceSuffix = mappingHelper.getDS(mappings.get(SUFFIX).get(0), fieldDataSourceMapping, null);
+    org.folio.gobi.DataSourceResolver dataSourceSuffix = mappingHelper.getDS(mappings.get(SUFFIX).get(0), fieldDataSourceMapping);
     assertEquals("//LocalData[Description='LocalData2']/Value", dataSourceSuffix.from);
     assertNotNull(dataSourceSuffix.translation);
-    org.folio.gobi.DataSourceResolver dataSourceBillTo = mappingHelper.getDS(mappings.get(BILL_TO).get(0),fieldDataSourceMapping, null);
+    org.folio.gobi.DataSourceResolver dataSourceBillTo = mappingHelper.getDS(mappings.get(BILL_TO).get(0),fieldDataSourceMapping);
     assertEquals("//LocalData[Description='LocalData3']/Value", dataSourceBillTo.from);
     assertNotNull(dataSourceBillTo.translation);
-    org.folio.gobi.DataSourceResolver dataSourceShipTo = mappingHelper.getDS(mappings.get(SHIP_TO).get(0), fieldDataSourceMapping, null);
+    org.folio.gobi.DataSourceResolver dataSourceShipTo = mappingHelper.getDS(mappings.get(SHIP_TO).get(0), fieldDataSourceMapping);
     assertEquals("//LocalData[Description='LocalData4']/Value", dataSourceShipTo.from);
     assertNotNull(dataSourceShipTo.translation);
-    org.folio.gobi.DataSourceResolver dataSourceLinkedPackage = mappingHelper.getDS(mappings.get(LINKED_PACKAGE).get(0), fieldDataSourceMapping, null);
+    org.folio.gobi.DataSourceResolver dataSourceLinkedPackage = mappingHelper.getDS(mappings.get(LINKED_PACKAGE).get(0), fieldDataSourceMapping);
     assertNotNull(dataSourceLinkedPackage.translation);
     assertEquals("//LocalData[Description='LocalData6']/Value", dataSourceLinkedPackage.from);
   }
@@ -240,7 +240,7 @@ public class MappingHelperTest {
   @Test
   public void testShouldSuccessMapExpenseClass() {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new LinkedHashMap<>();
-    org.folio.gobi.DataSourceResolver dataSource = mappingHelper.getDS(mappingExpenseClass, fieldDataSourceMapping, null);
+    org.folio.gobi.DataSourceResolver dataSource = mappingHelper.getDS(mappingExpenseClass, fieldDataSourceMapping);
     assertEquals("//LocalData[Description='LocalData5']/Value", dataSource.from);
     assertNotNull(dataSource.translation);
     assertFalse(dataSource.translateDefValue);

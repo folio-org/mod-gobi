@@ -15,7 +15,6 @@ public final class ResourcePaths {
   public static final String LOCATIONS_ENDPOINT = "/locations";
   public static final String ORDER_LINES_ENDPOINT = "/orders/order-lines";
   public static final String MATERIAL_TYPES_ENDPOINT = "/material-types";
-  public static final String PAYMENT_STATUS_ENDPOINT = "/payment_status";
   public static final String CONTRIBUTOR_NAME_TYPES_ENDPOINT = "/contributor-name-types";
   public static final String IDENTIFIERS_ENDPOINT = "/identifier-types";
   public static final String CONFIGURATION_ENDPOINT = "/configurations/entries";

@@ -19,8 +19,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.DataSourceResolver;
-import org.folio.gobi.FieldMappingTranslatorResolver;
-import org.folio.gobi.MappingHelper;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.ResourcePaths;
@@ -32,7 +30,6 @@ import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;
@@ -49,8 +46,6 @@ public class PostGobiOrdersHelperTest {
   private static final Logger logger = LogManager.getLogger(PostGobiOrdersHelperTest.class);
 
   private Unmarshaller jaxbUnmarshaller;
-  private FieldMappingTranslatorResolver fieldMappingTranslatorResolver = Mockito.mock(FieldMappingTranslatorResolver.class);
-  private MappingHelper mappingHelper = new MappingHelper(fieldMappingTranslatorResolver);
 
   @Before
   public void setUp() throws Exception {

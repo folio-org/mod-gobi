@@ -1292,7 +1292,10 @@ public class GOBIIntegrationServiceResourceImplTest {
                     new JsonObject().put("value", getMockData(CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING))))
             .put(TOTAL_RECORDS, 1);
 
-        } else {
+        } else if (ctx.request().query().contains("ListedElectronicSerial")) {
+
+        }
+        else {
           configurationsEntries.put(CONFIGS, new JsonArray())
             .put(TOTAL_RECORDS, 0);
         }

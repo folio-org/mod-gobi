@@ -66,7 +66,6 @@ public class FieldMappingTranslatorResolver {
   }
 
   public Mapper.Translation<?> resolve(DataSource.Translation translation) {
-
     Mapper.Translation<?> t = null;
     if (translation != null) {
       t = buildTranslator(translation);

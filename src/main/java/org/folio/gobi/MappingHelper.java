@@ -41,14 +41,13 @@ public class MappingHelper {
     }
   }
 
-  public Map<Mapping.Field, DataSourceResolver> getDefaultMappingForOrderType(
-      PostGobiOrdersHelper postGobiOrdersHelper, OrderType orderType) {
+  public Map<Mapping.Field, DataSourceResolver> getDefaultMappingForOrderType(OrderType orderType) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
     List<Mapping> mappingsList = defaultMappings.get(orderType).getMappings();
 
     for (Mapping mapping : mappingsList) {
       Mapping.Field field = mapping.getField();
-      org.folio.gobi.DataSourceResolver dataSource = getDS(mapping, fieldDataSourceMapping, postGobiOrdersHelper);
+      org.folio.gobi.DataSourceResolver dataSource = getDS(mapping, fieldDataSourceMapping);
       fieldDataSourceMapping.put(field, dataSource);
     }
 
@@ -56,7 +55,7 @@ public class MappingHelper {
   }
 
   public Object getDefaultValue(org.folio.rest.mappings.model.DataSource dataSource,
-      Map<Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping, PostGobiOrdersHelper postGobiOrdersHelper) {
+      Map<Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping) {
     Object ret = null;
     if (dataSource.getDefault() != null) {
       ret = dataSource.getDefault();
@@ -64,16 +63,16 @@ public class MappingHelper {
       String otherField = dataSource.getFromOtherField().value();
       ret = fieldDataSourceMapping.get(Field.valueOf(otherField));
     } else if (dataSource.getDefaultMapping() != null) {
-      ret = getDS(dataSource.getDefaultMapping(), fieldDataSourceMapping, postGobiOrdersHelper);
+      ret = getDS(dataSource.getDefaultMapping(), fieldDataSourceMapping);
     }
     return ret;
   }
 
   @SuppressWarnings("unchecked")
   public org.folio.gobi.DataSourceResolver getDS(Mapping mapping,
-      Map<Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping, PostGobiOrdersHelper postGobiOrdersHelper) {
+      Map<Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping) {
 
-    Object defaultValue = getDefaultValue(mapping.getDataSource(), fieldDataSourceMapping, postGobiOrdersHelper);
+    Object defaultValue = getDefaultValue(mapping.getDataSource(), fieldDataSourceMapping);
     Boolean translateDefault = mapping.getDataSource().getTranslateDefault();
     String dataSourceFrom = mapping.getDataSource().getFrom();
 
@@ -109,8 +108,7 @@ public class MappingHelper {
 
   }
 
-  public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType,
-      JsonObject jo, PostGobiOrdersHelper postGobiOrdersHelper) {
+  public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
     final Map<Mapping.Field, DataSourceResolver> map = new EnumMap<>(Mapping.Field.class);
 
     final JsonArray configs = jo.getJsonArray("configs");
@@ -124,7 +122,7 @@ public class MappingHelper {
       if (orderMappingList != null) {
         for (Mapping mapping : orderMappingList) {
           logger.info("Mapping exists for type: {} , field: {}", orderType, mapping.getField());
-          map.put(mapping.getField(), getDS(mapping, map, postGobiOrdersHelper));
+          map.put(mapping.getField(), getDS(mapping, map));
         }
       }
     }

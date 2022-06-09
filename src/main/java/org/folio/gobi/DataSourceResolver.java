@@ -8,16 +8,16 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
+import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
+import org.folio.completablefuture.FolioVertxCompletableFuture;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class DataSourceResolver {
-
-  public static final ObjectMapper MAPPER = new ObjectMapper();
 
   public final String from;
   public final Object defValue;
@@ -73,13 +73,20 @@ public class DataSourceResolver {
   }
 
   private CompletableFuture<String> applyXPath(Document doc) {
-    return CompletableFuture.supplyAsync(() -> {
       try {
-        return (NodeList) xpath.evaluate(from, doc, XPathConstants.NODESET);
+        NodeList nodeList = (NodeList) xpath.evaluate(from, doc, XPathConstants.NODESET);
+        return CompletableFuture.completedFuture(combinator.apply(nodeList));
       } catch (XPathExpressionException e) {
         throw new CompletionException(e);
       }
-    }).thenApply(combinator::apply);
+
+//    return CompletableFuture.supplyAsync(() -> {
+//      try {
+//        return (NodeList) xpath.evaluate(from, doc, XPathConstants.NODESET);
+//      } catch (XPathExpressionException e) {
+//        throw new CompletionException(e);
+//      }
+//    }).thenApply(combinator::apply);
   }
 
   private CompletableFuture<?> applyTranslation(Object o) {
