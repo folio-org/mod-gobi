@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.rest.mappings.model.DataSource;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +35,8 @@ import static org.folio.rest.mappings.model.DataSource.Translation.TRUNCATE_ISBN
 
 public class FieldMappingTranslatorResolver {
   private static final Logger logger = LogManager.getLogger(FieldMappingTranslatorResolver.class);
-  private final Map<DataSource.Translation, Function<String, CompletableFuture<?>>> methodTranslatorsMap = new HashMap<>();
+  private final Map<DataSource.Translation, Function<String, CompletableFuture<?>>> methodTranslatorsMap =
+          new EnumMap<>(DataSource.Translation.class);
 
   public FieldMappingTranslatorResolver(LookupService lookupService) {
     methodTranslatorsMap.put(LOOKUP_MOCK, lookupService::lookupMock);

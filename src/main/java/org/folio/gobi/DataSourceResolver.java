@@ -8,10 +8,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import io.vertx.core.Context;
-import io.vertx.core.Vertx;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
-import org.folio.completablefuture.FolioVertxCompletableFuture;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.w3c.dom.Document;

@@ -1,0 +1,11 @@
+{
+    "suffixes":
+        [
+          {
+            "id": "0c966bd2-0ca6-43a2-9388-3a4403f19e6f",
+            "name": "Custom suffix",
+            "description": "Custom suffix description"
+          }
+        ],
+    "totalRecords": 1
+}

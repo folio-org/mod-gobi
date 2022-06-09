@@ -61,6 +61,43 @@ public class LookupServiceTest {
     });
   }
 
+
+  @Test
+  public final void testSuccessLookupFundId(TestContext context) {
+    testLookupFundId(context, "AFRICAHIST", false);
+  }
+
+  @Test
+  public final void testSuccessMapLookupExpenseClassId(TestContext context) {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(ResourcePaths.EXPENSE_CLASS_ENDPOINT) && req.query().contains("Elec")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_expenseClasses.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_expenseClasses.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testDefaultExpenseClasses");
+      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
+      LookupService lookupService = new LookupService(restClient);
+      lookupService.lookupExpenseClassId("Elec")
+        .thenAccept(id -> {
+          context.assertNotNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
   @Test
   public final void testShouldReturnNullExpenseClassIdIfExpenseClassNotFound(TestContext context) {
     final Async async = context.async();
@@ -93,20 +130,15 @@ public class LookupServiceTest {
   }
 
   @Test
-  public final void testSuccessLookupFundId(TestContext context) {
-    testLookupFundId(context, "AFRICAHIST", false);
-  }
-
-  @Test
-  public final void testSuccessMapLookupExpenseClassId(TestContext context) {
+  public final void testSuccessMapLookupSuffixId(TestContext context) {
     final Async async = context.async();
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
     server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.EXPENSE_CLASS_ENDPOINT) && req.query().contains("Elec")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_expenseClasses.json");
+      if (req.path().equals(ResourcePaths.SUFFIXES_ENDPOINT) && req.query().contains("Suf")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_suffix_collection.json");
       } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_expenseClasses.json");
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_suffixes.json");
       }
     });
 
@@ -116,12 +148,229 @@ public class LookupServiceTest {
 
       Map<String, String> okapiHeaders = new HashMap<>();
       okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultExpenseClasses");
+      okapiHeaders.put("x-okapi-tenant", "testSuffixes");
       RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
       LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupExpenseClassId("Elec")
+      lookupService.lookupSuffix("Suf")
         .thenAccept(id -> {
           context.assertNotNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testShouldReturnNullIdIfSuffixNotFound(TestContext context) {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(ResourcePaths.SUFFIXES_ENDPOINT) && req.query().contains("Sdf")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_suffix_collection.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_suffixes.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testPrefixes");
+      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
+      LookupService lookupService = new LookupService(restClient);
+      lookupService.lookupSuffix("NonValidAddd")
+        .thenAccept(id -> {
+          context.assertNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testSuccessMapLookupPrefixId(TestContext context) {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(ResourcePaths.PREFIXES_ENDPOINT) && req.query().contains("Pref")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_prefix_collection.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_prefixes.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testPrefixes");
+      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
+      LookupService lookupService = new LookupService(restClient);
+      lookupService.lookupPrefix("Pref")
+        .thenAccept(id -> {
+          context.assertNotNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testShouldReturnNullIdIfPrefixNotFound(TestContext context) {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(ResourcePaths.PREFIXES_ENDPOINT) && req.query().contains("Pref")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_prefix_collection.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_prefixes.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testSuffixes");
+      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
+      LookupService lookupService = new LookupService(restClient);
+      lookupService.lookupPrefix("NonValidAddd")
+        .thenAccept(id -> {
+          context.assertNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testSuccessMapLookupAddressId(TestContext context) {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(ResourcePaths.CONFIGURATION_ENDPOINT) && req.query().contains("Address")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_address_collection.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_address.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testPrefixes");
+      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
+      LookupService lookupService = new LookupService(restClient);
+      lookupService.lookupConfigAddress("Address")
+        .thenAccept(id -> {
+          context.assertNotNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testShouldReturnNullIdIfAddressNotFound(TestContext context) {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(ResourcePaths.CONFIGURATION_ENDPOINT) && req.query().contains("Address")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_address_collection.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_address.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testSuffixes");
+      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
+      LookupService lookupService = new LookupService(restClient);
+      lookupService.lookupConfigAddress("NonValid")
+        .thenAccept(id -> {
+          context.assertNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testSuccessMapLookupPoLineId(TestContext context) {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(ResourcePaths.ORDER_LINES_ENDPOINT) && req.query().contains("343434343")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_po_line_collection.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_po_lines.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testPrefixes");
+      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
+      LookupService lookupService = new LookupService(restClient);
+      lookupService.lookupLinkedPackage("343434343")
+        .thenAccept(id -> {
+          context.assertNotNull(id);
+          vertx.close(context.asyncAssertSuccess());
+          async.complete();
+        });
+    });
+  }
+
+  @Test
+  public final void testShouldReturnNullIdIfPoLineNotFound(TestContext context) {
+    final Async async = context.async();
+    final Vertx vertx = Vertx.vertx();
+    final HttpServer server = vertx.createHttpServer();
+    server.requestHandler(req -> {
+      if (req.path().equals(ResourcePaths.ORDER_LINES_ENDPOINT) && req.query().contains("22222")) {
+        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_po_line_collection.json");
+      } else {
+        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_po_lines.json");
+      }
+    });
+
+    int port = NetworkUtils.nextFreePort();
+    server.listen(port, "localhost", ar -> {
+      context.assertTrue(ar.succeeded());
+
+      Map<String, String> okapiHeaders = new HashMap<>();
+      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
+      okapiHeaders.put("x-okapi-tenant", "testSuffixes");
+      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
+      LookupService lookupService = new LookupService(restClient);
+      lookupService.lookupLinkedPackage("NonValid")
+        .thenAccept(id -> {
+          context.assertNull(id);
           vertx.close(context.asyncAssertSuccess());
           async.complete();
         });
