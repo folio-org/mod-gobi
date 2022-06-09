@@ -1,0 +1,137 @@
+{
+    "poLines": [
+      {
+        "id": "c0d08448-347b-418a-8c2f-5fb50248d67e",
+        "edition": "First edition",
+        "checkinItems": false,
+        "instanceId": "8343e5a0-fed8-11e8-8eb2-f2801f1b9fd1",
+        "isPackage": false,
+        "agreementId": "bdc75fea-fed8-11e8-8eb2-f2801f1b9fd1",
+        "acquisitionMethod": "73d14bc5-d131-48c6-b380-f8e62f63c8f3",
+        "alerts": [
+          "9a665b22-9fe5-4c95-b4ee-837a5433c95d"
+        ],
+        "cancellationRestriction": false,
+        "cancellationRestrictionNote": "ABCDEFGHIJKLMNOPQRSTUVW",
+        "claims": [
+          {
+            "claimed": false,
+            "sent": "2018-10-09T00:00:00.000Z",
+            "grace": 30
+          }
+        ],
+        "collection": false,
+        "contributors": [
+          {
+            "contributor": "Ed Mashburn",
+            "contributorNameTypeId": "fbdd42a8-e47d-4694-b448-cc571d1b44c3"
+          }
+        ],
+        "cost": {
+          "additionalCost": 4.99,
+          "currency": "USD",
+          "discount": 10,
+          "discountType": "percentage",
+          "exchangeRate": 1.12,
+          "listUnitPriceElectronic": 24.99,
+          "quantityElectronic": 2,
+          "poLineEstimatedPrice": 49.97
+        },
+        "description": "ABCDEFGH",
+        "details": {
+          "receivingNote": "ABCDEFGHIJKL",
+          "productIds": [
+            {
+              "productId": "9780764354113",
+              "productIdType": "8261054f-be78-422d-bd51-4ed9f33c3422",
+              "qualifier": "(paperback)"
+            }
+          ],
+          "subscriptionFrom": "2018-10-09T00:00:00.000Z",
+          "subscriptionInterval": 824,
+          "subscriptionTo": "2020-10-09T00:00:00.000Z"
+        },
+        "donor": "ABCDEFGHIJKLM",
+        "eresource": {
+          "accessProvider": "ba3f3d45-247d-41f6-8dc9-6488adcad329",
+          "activated": false,
+          "activationDue": 10,
+          "createInventory": "Instance, Holding",
+          "expectedActivation": "2018-10-09T00:00:00.000Z",
+          "license": {
+            "code": "Code 1",
+            "description": "License Agreement 1"
+          },
+          "materialType": "f7e72403-2a13-43a4-a069-aaabe6c9dea8",
+          "trial": false,
+          "userLimit": 10,
+          "resourceUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+        },
+        "fundDistribution": [
+          {
+            "code": "HIST",
+            "fundId": "63157e96-0693-426d-b0df-948bacdfdb08",
+            "distributionType": "percentage",
+            "value": 100.0,
+            "encumbrance": "eb506834-6c70-4239-8d1a-6414a5b08ac3"
+          }
+        ],
+        "locations": [
+          {
+            "locationId": "eb2d063a-5b4c-4cab-8db1-5fc5c5941df6",
+            "quantity": 1,
+            "quantityElectronic": 1
+          },
+          {
+            "locationId": "53cf956f-c1df-410b-8bea-27f712cca7c0",
+            "quantity": 1,
+            "quantityElectronic": 1
+          }
+        ],
+        "orderFormat": "Electronic Resource",
+        "paymentStatus": "Awaiting Payment",
+        "poLineDescription": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+        "poLineNumber": "268758-03",
+        "publicationDate": "2017",
+        "publisher": "Schiffer Publishing",
+        "purchaseOrderId": "d79b0bcc-DcAD-1E4E-Abb7-DbFcaD5BB3bb",
+        "receiptDate": "2018-10-09T00:00:00.000Z",
+        "receiptStatus": "Awaiting Receipt",
+        "reportingCodes": [
+          "5926dcd7-85f5-4504-8283-712595ebc38b",
+          "fa316c04-8101-4e72-8aaf-01281bac718f",
+          "ea68b696-3125-4940-bf91-1d128323473e"
+        ],
+        "requester": "Leo Bulero",
+        "rush": true,
+        "selector": "ABCD",
+        "source": "User",
+        "tags": {
+          "tagList": [
+            "important"
+          ]
+        },
+        "titleOrPackage": "Kayak Fishing in the Northern Gulf Coast",
+        "vendorDetail": {
+          "instructions": "ABCDEFG",
+          "noteFromVendor": "ABCDEFGHIKJKLMNOP",
+          "referenceNumbers": [
+            {
+              "refNumber": "123456-78",
+              "refNumberType": "Vendor title number",
+              "vendorDetailsSource": "OrderLine"
+            }
+          ],
+          "vendorAccount": "8910-25"
+        },
+        "metadata": {
+          "createdDate": "2018-07-19T00:00:00.000+0000",
+          "createdByUserId": "28d1057c-d137-11e8-a8d5-f2801f1b9fd1"
+        },
+        "holdingIds": [
+          "c0d08448-347b-418a-8c2f-5fb50248d67x"
+        ]
+      }
+    ],
+    "totalRecords": 1
+}

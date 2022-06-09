@@ -1,0 +1,18 @@
+{
+  "configs": [
+    {
+      "id": "588b5c42-8634-4af7-bc9b-5e0116ed96b6",
+      "addressLine1": "10 Estes Street",
+      "addressLine2": "",
+      "city": "Ipswich",
+      "stateRegion": "MA",
+      "zipCode": "01938",
+      "country": "USA",
+      "metadata": {
+            "createdDate": "2019-06-19T00:00:00.000+0000",
+            "createdByUserId": "28d1057c-d137-11e8-a8d5-f2801f1b9fd1"
+          }
+      }
+    ],
+  "totalRecords": 1
+}

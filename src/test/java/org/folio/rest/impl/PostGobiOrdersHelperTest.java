@@ -16,20 +16,20 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
+import org.folio.rest.ResourcePaths;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.mappings.model.Mapping;
 import org.folio.rest.mappings.model.OrderMappings;
 import org.folio.rest.tools.utils.BinaryOutStream;
 import org.folio.rest.tools.utils.NetworkUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;
@@ -219,7 +219,7 @@ public class PostGobiOrdersHelperTest {
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
     server.requestHandler(req -> {
-      if (req.path().equals(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT)) {
+      if (req.path().equals(ResourcePaths.CONFIGURATION_ENDPOINT)) {
         req.response()
           .setStatusCode(200)
           .putHeader("content-type", "application/json")
@@ -286,7 +286,7 @@ public class PostGobiOrdersHelperTest {
     final Vertx vertx = Vertx.vertx();
     final HttpServer server = vertx.createHttpServer();
     server.requestHandler(req -> {
-      if (req.path().equals(PostGobiOrdersHelper.CONFIGURATION_ENDPOINT)) {
+      if (req.path().equals(ResourcePaths.CONFIGURATION_ENDPOINT)) {
         req.response().setStatusCode(500).end("Unrecheable End point: " + req.path());
       }
     });
@@ -325,161 +325,4 @@ public class PostGobiOrdersHelperTest {
         });
     });
   }
-
-  @Test
-  public final void testLookupFirstMaterialTypes(TestContext context) {
-
-    logger.info("Begin: Testing if all material type calls return empty, must use first in the list");
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(PostGobiOrdersHelper.MATERIAL_TYPES_ENDPOINT) && req.query().contains("*")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_materialType.json");
-      } else {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/empty_materialType.json");
-      }
-    });
-
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultMaterialTypes");
-      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
-          GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
-          vertx.getOrCreateContext());
-      pgoh.lookupMaterialTypeId("unspecified")
-        .thenAccept(list -> {
-          context.assertNotNull(list);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
-  }
-
-  @Test
-  public final void testSuccessMapLookupExpenseClassId(TestContext context) {
-
-    logger.info("Begin: Testing for expense class id lookup by existent expense class code");
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(PostGobiOrdersHelper.EXPENSE_CLASS_ENDPOINT) && req.query().contains("Elec")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_expenseClasses.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_expenseClasses.json");
-      }
-    });
-
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultExpenseClasses");
-      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
-        GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
-        vertx.getOrCreateContext());
-      pgoh.lookupExpenseClassId("Elec")
-        .thenAccept(id -> {
-          context.assertNotNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
-  }
-
-  @Test
-  public final void testShouldReturnNullExpenseClassIdIfExpenseClassNotFound(TestContext context) {
-
-    logger.info("Begin: Testing if no expense class id is returned if looked up by non-existent expense class code");
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(PostGobiOrdersHelper.EXPENSE_CLASS_ENDPOINT) && req.query().contains("Elec")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_expenseClasses.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_expenseClasses.json");
-      }
-    });
-
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultExpenseClasses");
-      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
-        GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
-        vertx.getOrCreateContext());
-      pgoh.lookupExpenseClassId("Prn")
-        .thenAccept(id -> {
-          context.assertNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
-  }
-
-  @Test
-  public final void testSuccessLookupFundId(TestContext context) {
-    logger.info("Begin: Testing for fund id lookup by existent fund code");
-    testLookupFundId(context, "AFRICAHIST", false);
-  }
-
-  @Test
-  public final void testSuccessLookupFundIdByFundCodeWithExpenseClass(TestContext context) {
-    logger.info("Begin: Testing for fund id lookup extracting fund code from a string containing expense class");
-    testLookupFundId(context, "AFRICAHIST:Elec", false);
-  }
-
-  @Test
-  public final void testShouldReturnNullFundIfFundIdNotFound(TestContext context) {
-    logger.info("Begin: Testing if no fund id is returned if looked up by non-existent fund code");
-    testLookupFundId(context, "NONEXISTENT", true);
-  }
-
-  private void testLookupFundId(TestContext context, String fundCode, boolean shouldReturnNull) {
-
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(PostGobiOrdersHelper.FUNDS_ENDPOINT) && req.query().contains("AFRICAHIST")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_funds.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_funds.json");
-      }
-    });
-
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultFunds");
-      PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(
-        GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), null, okapiHeaders,
-        vertx.getOrCreateContext());
-      pgoh.lookupFundId(fundCode)
-        .thenAccept(id -> {
-          if (shouldReturnNull) {
-            context.assertNull(id);
-          } else {
-            context.assertNotNull(id);
-          }
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
-  }
-
 }
