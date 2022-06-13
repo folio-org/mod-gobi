@@ -2,7 +2,7 @@ package org.folio.gobi;
 
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_ACQUISITION_METHOD_IDS;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_BILL_TO;
+import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_CONFIG_ADDRESS;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_CONTRIBUTOR_NAME_TYPE_ID;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_EXPENSE_CLASS_ID;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_FUND_ID;
@@ -13,7 +13,6 @@ import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_MOCK;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_ORGANIZATION;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_PREFIX;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_PRODUCT_ID_TYPE;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_SHIP_TO;
 import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_SUFFIX;
 import static org.folio.rest.mappings.model.DataSource.Translation.SEPARATE_ISBN_QUALIFIER;
 import static org.folio.rest.mappings.model.DataSource.Translation.TO_BOOLEAN;
@@ -49,8 +48,7 @@ public class FieldMappingTranslatorResolver {
 
     methodTranslatorsMap.put(LOOKUP_ORGANIZATION, lookupService::lookupOrganization);
     methodTranslatorsMap.put(LOOKUP_PRODUCT_ID_TYPE, lookupService::lookupProductIdType);
-    methodTranslatorsMap.put(LOOKUP_BILL_TO, lookupService::lookupConfigAddress);
-    methodTranslatorsMap.put(LOOKUP_SHIP_TO, lookupService::lookupConfigAddress);
+    methodTranslatorsMap.put(LOOKUP_CONFIG_ADDRESS, lookupService::lookupConfigAddress);
 
     methodTranslatorsMap.put(LOOKUP_PREFIX, lookupService::lookupPrefix);
     methodTranslatorsMap.put(LOOKUP_SUFFIX, lookupService::lookupSuffix);
