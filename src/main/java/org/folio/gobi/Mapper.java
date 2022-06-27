@@ -694,8 +694,7 @@ public class Mapper {
 
       Optional.ofNullable(mappings.get(Mapping.Field.RECEIVING_WORKFLOW))
         .ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(checkinItemsFlag -> Optional.ofNullable(gobiReceivingFlowType.get(checkinItemsFlag))
-                                                  .ifPresent(pol::setCheckinItems))
+          .thenAccept(checkinItemsFlag -> mapCheckinItemsFlag(checkinItemsFlag).ifPresent(pol::setCheckinItems))
           .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PACKAGE_DESIGNATION))
@@ -714,6 +713,13 @@ public class Mapper {
             return null;
           })));
     });
+  }
+
+  private Optional<Boolean> mapCheckinItemsFlag(Object checkinItemsFlag) {
+    return Optional.ofNullable(checkinItemsFlag)
+                    .map(String.class::cast)
+                    .map(String::toUpperCase)
+                    .map(gobiReceivingFlowType::get);
   }
 
   private Optional<Boolean> mapIsPackageToBoolean(Object isPackage) {
