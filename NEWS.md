@@ -1,6 +1,22 @@
-## 2.4.0 Unreleased
+## 2.5.0 Unreleased
 
-## 2.3.0 Unreleased
+## 2.4.0 Released
+Major changes in this release related to removing usage of VertxCompletableFuture, adding few PO/POL fields to GOBI configuration 
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.3.0...v2.4.0)
+
+### Stories
+* [MODGOBI-154] (https://issues.folio.org/browse/MODGOBI-154) Remove usage of VertxCompletableFuture
+* [MODGOBI-152] (https://issues.folio.org/browse/MODGOBI-152) Add additional PO/POL fields to GOBI configuration mapping
+* [MODGOBI-132] (https://issues.folio.org/browse/MODGOBI-132) Adjust GOBI mapping for subaccount to perform lookup
+* [MODGOBI-129] (https://issues.folio.org/browse/MODGOBI-129) Add acquisition unit and internal note fields to GOBI configuration mapping
+
+### Bug fixes
+* [MODGOBI-163] (https://issues.folio.org/browse/MODGOBI-163) Fail to create GOBI order for fundId
+* [MODGOBI-150] (https://issues.folio.org/browse/MODGOBI-150) Fix asynchronous CompletableFuture flows in the DataSourceResolver
+
+
+## 2.3.0 Released
 
 Major changes in this release related to allow mapping for expense classes
 
