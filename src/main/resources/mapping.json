@@ -762,8 +762,7 @@
             }
           ],
           "description": "Method to translate the specified type"
-        }
-      },
+        },
         "translateDefault": {
           "type": "boolean",
           "description": "Whether or not to translate the default value"
@@ -793,6 +792,7 @@
             "type": "string",
             "description": "GOBI field name"
           }
+        }
       }
     }
   },
