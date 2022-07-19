@@ -601,6 +601,17 @@
             </configuration>
           </execution>
           <execution>
+            <id>acq-models-gobi</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/ramls/acq-models/mod-gobi/schemas</sourceDirectory>
+              <targetPackage>org.folio.rest.acq.model</targetPackage>
+              <generateBuilders>true</generateBuilders>
+            </configuration>
+          </execution>
+          <execution>
             <id>mappings-models</id>
             <goals>
               <goal>generate</goal>
