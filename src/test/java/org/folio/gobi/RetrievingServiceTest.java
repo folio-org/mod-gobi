@@ -1,35 +1,34 @@
 package org.folio.gobi;
 
-import java.util.List;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import static org.junit.Assert.assertFalse;
 
 @RunWith(VertxUnitRunner.class)
 public class RetrievingServiceTest {
 
-  private RetrievingService retrievingService = new RetrievingService();
+  private final RetrievingService retrievingService = new RetrievingService();
 
   @Test
   public final void givenCollectionMappingFields() {
-    List fields = retrievingService.retrieveFields();
-    assertFalse(fields.isEmpty());
+    JsonArray fields = retrievingService.retrieveFields();
+    assertFalse(fields.getList().isEmpty());
   }
 
   @Test
   public final void givenCollectionMappingTranslators() {
-    List translators = retrievingService.retrieveTranslators();
-    assertFalse(translators.isEmpty());
+    JsonArray translators = retrievingService.retrieveTranslators();
+    assertFalse(translators.getList().isEmpty());
   }
 
   @Test
   public final void givenCollectionMappingTypes() {
-    List types = retrievingService.retrieveFields();
-    assertFalse(types.isEmpty());
+    JsonArray types = retrievingService.retrieveFields();
+    assertFalse(types.getList().isEmpty());
   }
 
 

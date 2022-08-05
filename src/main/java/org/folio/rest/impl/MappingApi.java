@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.json.JsonArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.RetrievingService;
@@ -16,6 +17,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import org.folio.rest.mappings.model.OrderMappings;
 
 public class MappingApi implements GobiOrdersMappings {
 
@@ -30,10 +32,10 @@ public class MappingApi implements GobiOrdersMappings {
   public void getGobiOrdersMappingsFields(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
     Context vertxContext) {
     try {
-      List fields = retrievingService.retrieveFields();
-      asyncResultHandler.handle(Future.succeededFuture(Response.ok(fields, APPLICATION_JSON).build()));
+      JsonArray fields = retrievingService.retrieveFields();
+      asyncResultHandler.handle(Future.succeededFuture(Response.ok(fields.getList(), APPLICATION_JSON).build()));
     } catch (Exception e) {
-      logger.error("Error when getting mappings fields" + e.getMessage());
+      logger.error(String.format("Error when getting mappings fields %s", e.getMessage()));
       asyncResultHandler.handle(Future.succeededFuture(Response.serverError().build()));
     }
   }
@@ -42,10 +44,10 @@ public class MappingApi implements GobiOrdersMappings {
   public void getGobiOrdersMappingsTranslators(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
     Context vertxContext) {
     try {
-      List translators = retrievingService.retrieveTranslators();
-      asyncResultHandler.handle(Future.succeededFuture(Response.ok(translators, APPLICATION_JSON).build()));
+      JsonArray translators = retrievingService.retrieveTranslators();
+      asyncResultHandler.handle(Future.succeededFuture(Response.ok(translators.getList(), APPLICATION_JSON).build()));
     } catch (Exception e) {
-      logger.error("Error when getting mappings translators" + e.getMessage());
+      logger.error(String.format("Error when getting mappings translators %s", e.getMessage()));
       asyncResultHandler.handle(Future.succeededFuture(Response.serverError().build()));
     }
   }
@@ -54,10 +56,10 @@ public class MappingApi implements GobiOrdersMappings {
   public void getGobiOrdersMappingsTypes(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
     Context vertxContext) {
     try {
-      List types = retrievingService.retrieveMappingsTypes();
+      List<OrderMappings.OrderType> types = retrievingService.retrieveMappingsTypes();
       asyncResultHandler.handle(Future.succeededFuture(Response.ok(types, APPLICATION_JSON).build()));
     } catch (Exception e) {
-      logger.error("Error when getting mappings types" + e.getMessage());
+      logger.error(String.format("Error when getting mappings types %s", e.getMessage()));
       asyncResultHandler.handle(Future.succeededFuture(Response.serverError().build()));
     }
   }
