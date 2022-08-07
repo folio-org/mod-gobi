@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.jaxrs.model.Mapping;
+import org.folio.rest.jaxrs.model.OrderMappings;
 
 import io.vertx.core.json.JsonObject;
 

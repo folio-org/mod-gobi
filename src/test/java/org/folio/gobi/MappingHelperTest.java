@@ -1,14 +1,14 @@
 package org.folio.gobi;
 
 import static java.util.stream.Collectors.groupingBy;
-import static org.folio.rest.mappings.model.Mapping.Field.ACCESS_PROVIDER;
-import static org.folio.rest.mappings.model.Mapping.Field.BILL_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.EXPENSE_CLASS;
-import static org.folio.rest.mappings.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.mappings.model.Mapping.Field.PREFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.SHIP_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.SUFFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.TITLE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.ACCESS_PROVIDER;
+import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXPENSE_CLASS;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.TITLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,9 +26,9 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.OrderMappings;
-import org.folio.rest.mappings.model.OrderMappings.OrderType;
+import org.folio.rest.jaxrs.model.Mapping;
+import org.folio.rest.jaxrs.model.OrderMappings;
+import org.folio.rest.jaxrs.model.OrderMappings.OrderType;
 import org.junit.Before;
 import org.junit.Test;
 

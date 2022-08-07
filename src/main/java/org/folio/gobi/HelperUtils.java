@@ -10,6 +10,11 @@ import org.folio.gobi.exceptions.HttpException;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import javax.ws.rs.Path;
+
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
 public class HelperUtils {
 
   public static final String CONTRIBUTOR_NAME_TYPES = "contributorNameTypes";
@@ -87,6 +92,9 @@ public class HelperUtils {
   public static String getVendAccountFromOrgAccountsList(String vendorAccountNo, List<String> orgAccountNoList) {
     return orgAccountNoList.stream().filter(account->
      normalizeSubAccout(account).equals(vendorAccountNo)).findFirst().map(Object::toString).orElse("");
+  }
+  public static String getEndpoint(Class<?> clazz) {
+    return clazz.getAnnotation(Path.class).value();
   }
 
 }

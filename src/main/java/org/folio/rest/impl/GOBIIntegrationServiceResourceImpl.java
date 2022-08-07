@@ -19,13 +19,14 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+import static org.folio.rest.core.RestClient.X_OKAPI_URL;
+
 public class GOBIIntegrationServiceResourceImpl implements Gobi {
 
   private static final Logger logger = LogManager.getLogger(GOBIIntegrationServiceResourceImpl.class);
   private static final String GET_DATA = "<test>GET - OK</test>";
   private static final String POST_DATA = "<test>POST - OK</test>";
 
-  public static final String OKAPI_HEADER_URL = "X-Okapi-Url";
 
 
   @Override
@@ -60,7 +61,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
   }
 
   public static HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {
-    final String okapiURL = okapiHeaders.getOrDefault(OKAPI_HEADER_URL, "");
+    final String okapiURL = okapiHeaders.getOrDefault(X_OKAPI_URL, "");
     final String tenantId = TenantTool.calculateTenantId(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TENANT));
 
     return HttpClientFactory.getHttpClient(okapiURL, tenantId);

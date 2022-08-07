@@ -1,20 +1,18 @@
 package org.folio.gobi;
 
-import static org.folio.rest.mappings.model.Mapping.Field.BILL_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.EXCHANGE_RATE;
-import static org.folio.rest.mappings.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.mappings.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
-import static org.folio.rest.mappings.model.Mapping.Field.PREFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.SHIP_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.SUFFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.URL;
+import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXCHANGE_RATE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNotNull;
 
 import java.io.InputStream;
 import java.util.EnumMap;
@@ -33,8 +31,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
-import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.jaxrs.model.Mapping;
+import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.After;
 import org.junit.Before;

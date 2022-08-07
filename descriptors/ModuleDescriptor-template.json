@@ -7,35 +7,95 @@
       "version": "1.11",
       "handlers": [
         {
-          "methods": ["GET"],
+          "methods": [
+            "GET"
+          ],
           "pathPattern": "/gobi/validate",
-          "permissionsRequired": ["gobi.item.post"]
+          "permissionsRequired": [
+            "gobi.item.post"
+          ]
         },
         {
-          "methods": ["POST"],
+          "methods": [
+            "POST"
+          ],
           "pathPattern": "/gobi/validate",
-          "permissionsRequired": ["gobi.item.post"]
+          "permissionsRequired": [
+            "gobi.item.post"
+          ]
         },
         {
-          "methods": ["POST"],
+          "methods": [
+            "POST"
+          ],
           "pathPattern": "/gobi/orders",
-          "permissionsRequired": ["gobi.item.post"],
+          "permissionsRequired": [
+            "gobi.item.post"
+          ],
           "modulePermissions": [
-            "acquisitions-units.units.collection.get",
-            "orders.item.post",
-            "orders.collection.get",
-            "orders.item.get",
-            "orders.item.put",
-            "inventory-storage.contributor-name-types.collection.get",
-            "inventory-storage.material-types.collection.get",
-            "inventory-storage.locations.collection.get",
-            "inventory-storage.identifier-types.collection.get",
-            "organizations-storage.organizations.collection.get",
-            "configuration.entries.collection.get",
-            "finance.funds.collection.get",
-            "finance.expense-classes.collection.get",
-            "orders.acquisition-methods.collection.get",
-            "orders.item.approve"
+            "configuration.entries.collection.get"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "custom-mapping",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/gobi/orders/custom-mappings",
+          "permissionsRequired": [
+          ],
+          "modulePermissions": [
+            "configuration.entries.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
+          "permissionsRequired": [
+          ],
+          "modulePermissions": [
+            "configuration.entries.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/gobi/orders/custom-mappings",
+          "permissionsRequired": [
+          ],
+          "modulePermissions": [
+            "configuration.entries.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "PUT"
+          ],
+          "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
+          "permissionsRequired": [
+          ],
+          "modulePermissions": [
+            "configuration.entries.collection.get"
+          ]
+        },
+        {
+          "methods": [
+            "DELETE"
+          ],
+          "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
+          "permissionsRequired": [
+          ],
+          "modulePermissions": [
+            "configuration.entries.collection.get"
+
           ]
         }
       ]
@@ -108,11 +168,18 @@
     "dockerArgs": {
       "HostConfig": {
         "Memory": 357913941,
-        "PortBindings": { "8081/tcp": [ { "HostPort": "%p" } ] }
+        "PortBindings": {
+          "8081/tcp": [
+            {
+              "HostPort": "%p"
+            }
+          ]
+        }
       }
     },
     "env": [
-      { "name": "JAVA_OPTIONS",
+      {
+        "name": "JAVA_OPTIONS",
         "value": "-XX:MaxRAMPercentage=66.0"
       }
     ]
