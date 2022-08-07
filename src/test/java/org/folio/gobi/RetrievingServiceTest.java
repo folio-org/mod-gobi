@@ -2,11 +2,14 @@ package org.folio.gobi;
 
 import static org.junit.Assert.assertFalse;
 
+import org.folio.rest.mappings.model.OrderMappings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class RetrievingServiceTest {
@@ -27,9 +30,7 @@ public class RetrievingServiceTest {
 
   @Test
   public final void givenCollectionMappingTypes() {
-    JsonArray types = retrievingService.retrieveFields();
-    assertFalse(types.getList().isEmpty());
+    List<OrderMappings.OrderType> types = retrievingService.retrieveMappingsTypes();
+    assertFalse(types.isEmpty());
   }
-
-
 }
