@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "gobi",
-      "version": "1.11",
+      "version": "1.12",
       "handlers": [
         {
           "methods": ["GET"],
@@ -37,6 +37,21 @@
             "orders.acquisition-methods.collection.get",
             "orders.item.approve"
           ]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/gobi/orders/mappings/fields",
+          "permissionsRequired": ["gobi.mappings.fields.collection.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/gobi/orders/mappings/translators",
+          "permissionsRequired": ["gobi.mappings.translators.collection.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/gobi/orders/mappings/types",
+          "permissionsRequired": ["gobi.mappings.types.collection.get"]
         }
       ]
     }
@@ -98,7 +113,20 @@
       "displayName": "gobi - all permissions",
       "description": "Entire set of permissions needed to use gobi",
       "subPermissions": [
-        "gobi.item.post"
+        "gobi.item.post",
+        "gobi.mappings.fields.collection.get",
+        "gobi.mappings.translators.collection.get",
+        "gobi.mappings.types.collection.get"
+      ]
+    },
+    {
+      "permissionName": "gobi.orders.mappings.all",
+      "displayName": "gobi mappings - all permissions",
+      "description": "Entire set of permissions needed to use gobi mappings",
+      "subPermissions": [
+        "gobi.mappings.fields.collection.get",
+        "gobi.mappings.translators.collection.get",
+        "gobi.mappings.types.collection.get"
       ]
     }
   ],

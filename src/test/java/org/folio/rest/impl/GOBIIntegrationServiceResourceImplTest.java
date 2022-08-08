@@ -95,10 +95,10 @@ public class GOBIIntegrationServiceResourceImplTest {
 
 
   // private final int serverPort = NetworkUtils.nextFreePort();
-  private final Header TENANT_HEADER = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
-  private final Header TOKEN_HEADER = new Header("X-Okapi-Token",
+  public static final Header TENANT_HEADER = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
+  public static final Header TOKEN_HEADER = new Header("X-Okapi-Token",
       "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
-  private final Header URL_HEADER = new Header("X-Okapi-Url", "http://localhost:" + MOCK_PORT);
+  public static final Header URL_HEADER = new Header("X-Okapi-Url", "http://localhost:" + MOCK_PORT);
   private final Header CONTENT_TYPE_HEADER_XML = new Header("Content-Type", "application/xml");
 
   // API paths

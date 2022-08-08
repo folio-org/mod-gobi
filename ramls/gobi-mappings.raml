@@ -1,0 +1,58 @@
+#%RAML 1.0
+title: GOBI® (Global Online Bibliographic Information) Integration
+baseUri: https://github.com/folio-org/mod-gobi
+protocols: [ HTTPS ]
+version: v1
+
+documentation:
+  - title: GOBI® (Global Online Bibliographic Information) Integration
+    content: |
+      GOBI® (Global Online Bibliographic Information) is the leading web-based
+      acquisitions tool for finding, ordering and managing e-books and print
+      books for libraries. This module allows GOBI initiated orders to be
+      fulfilled by FOLIO.
+
+types:
+  mapping-fields: !include acq-models/mod-gobi/schemas/folio_order_fields.json
+  mapping-translators: !include acq-models/mod-gobi/schemas/folio_order_translators.json
+
+/gobi/orders/mappings:
+  /fields:
+    displayName: Folio fields allowable for mapping
+    description: Folio fields allowable for mapping
+    get:
+      description: Get list of Folio fields
+      responses:
+        200:
+          description: "Returns a list of fields"
+          body:
+            application/json:
+              type: mapping-fields
+              example:
+                strict: false
+                value: !include acq-models/mod-gobi/examples/folio_order_fields.sample
+  /translators:
+    displayName: Gobi fields to Folio fields translators
+    description: Gobi fields to Folio fields translators
+    get:
+      description: Get list of Gobi fields to Folio fields translators
+      responses:
+        200:
+          description: "Returns a list of translators"
+          body:
+            application/json:
+              type: mapping-translators
+              example:
+                strict: false
+                value: !include acq-models/mod-gobi/examples/folio_order_translators.sample
+  /types:
+    displayName: The types of the GOBI order
+    description: The types of the GOBI order
+    get:
+      description: Get list of types of the GOBI order
+      responses:
+        200:
+          description: "Returns a list of types"
+          body:
+            application/json:
+              type: string
