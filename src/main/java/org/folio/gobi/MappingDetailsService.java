@@ -18,11 +18,11 @@ public class MappingDetailsService {
   private static final Logger logger = LogManager.getLogger(MappingDetailsService.class);
   private JsonObject mappingsProperties;
 
-  private final String PROPERTIES = "properties";
-  private final String DATA_SOURCE = "dataSource";
-  private final String TRANSLATION = "translation";
-  private final String JAVA_ENUMS = "javaEnums";
-  private final String FIELD = "field";
+  private final static String PROPERTIES = "properties";
+  private final static String DATA_SOURCE = "dataSource";
+  private final static String TRANSLATION = "translation";
+  private final static String JAVA_ENUMS = "javaEnums";
+  private final static String FIELD = "field";
 
   public MappingDetailsService() {
     URL mappingJson = ClassLoader.getSystemClassLoader().getResource("mapping.json");
