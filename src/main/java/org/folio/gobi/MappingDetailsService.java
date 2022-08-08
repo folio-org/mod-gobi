@@ -13,33 +13,37 @@ import org.folio.rest.mappings.model.OrderMappings;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class RetrieveMappingDetailsService {
+public class MappingDetailsService {
 
-  private static final Logger logger = LogManager.getLogger(RetrieveMappingDetailsService.class);
-  private JsonObject mappings;
+  private static final Logger logger = LogManager.getLogger(MappingDetailsService.class);
+  private JsonObject mappingsProperties;
 
-  public RetrieveMappingDetailsService() {
+  private final String PROPERTIES = "properties";
+  private final String DATA_SOURCE = "dataSource";
+  private final String TRANSLATION = "translation";
+  private final String JAVA_ENUMS = "javaEnums";
+  private final String FIELD = "field";
+
+  public MappingDetailsService() {
     URL mappingJson = ClassLoader.getSystemClassLoader().getResource("mapping.json");
     try (InputStream mappingJsonStream = mappingJson.openStream()) {
       String jsonString = new String(mappingJsonStream.readAllBytes(), StandardCharsets.UTF_8);
-      mappings = new JsonObject(jsonString);
+      mappingsProperties = new JsonObject(jsonString).getJsonObject(PROPERTIES);
     } catch (IOException e) {
       logger.error(String.format("Exception when reading a mappingJson file %s", e.getMessage()));
     }
   }
 
   public JsonArray retrieveTranslators() {
-    return mappings.getJsonObject("properties")
-      .getJsonObject("dataSource")
-      .getJsonObject("properties")
-      .getJsonObject("translation")
-      .getJsonArray("javaEnums");
+    return mappingsProperties.getJsonObject(DATA_SOURCE)
+      .getJsonObject(PROPERTIES)
+      .getJsonObject(TRANSLATION)
+      .getJsonArray(JAVA_ENUMS);
   }
 
   public JsonArray retrieveFields() {
-    return mappings.getJsonObject("properties")
-      .getJsonObject("field")
-      .getJsonArray("javaEnums");
+    return mappingsProperties.getJsonObject(FIELD)
+      .getJsonArray(JAVA_ENUMS);
   }
 
   public List<OrderMappings.OrderType> retrieveMappingsTypes() {
