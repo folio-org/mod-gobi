@@ -13,12 +13,12 @@ import org.folio.rest.mappings.model.OrderMappings;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class RetrievingService {
+public class RetrieveMappingDetailsService {
 
-  private static final Logger logger = LogManager.getLogger(RetrievingService.class);
+  private static final Logger logger = LogManager.getLogger(RetrieveMappingDetailsService.class);
   private JsonObject mappings;
 
-  public RetrievingService() {
+  public RetrieveMappingDetailsService() {
     URL mappingJson = ClassLoader.getSystemClassLoader().getResource("mapping.json");
     try (InputStream mappingJsonStream = mappingJson.openStream()) {
       String jsonString = new String(mappingJsonStream.readAllBytes(), StandardCharsets.UTF_8);

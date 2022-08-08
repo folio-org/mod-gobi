@@ -12,25 +12,25 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
-public class RetrievingServiceTest {
+public class RetrieveMappingDetailsServiceTest {
 
-  private final RetrievingService retrievingService = new RetrievingService();
+  private final RetrieveMappingDetailsService retrieveMappingDetailsService = new RetrieveMappingDetailsService();
 
   @Test
   public final void givenCollectionMappingFields() {
-    JsonArray fields = retrievingService.retrieveFields();
+    JsonArray fields = retrieveMappingDetailsService.retrieveFields();
     assertFalse(fields.getList().isEmpty());
   }
 
   @Test
   public final void givenCollectionMappingTranslators() {
-    JsonArray translators = retrievingService.retrieveTranslators();
+    JsonArray translators = retrieveMappingDetailsService.retrieveTranslators();
     assertFalse(translators.getList().isEmpty());
   }
 
   @Test
   public final void givenCollectionMappingTypes() {
-    List<OrderMappings.OrderType> types = retrievingService.retrieveMappingsTypes();
+    List<OrderMappings.OrderType> types = retrieveMappingDetailsService.retrieveMappingsTypes();
     assertFalse(types.isEmpty());
   }
 }
