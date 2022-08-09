@@ -4,10 +4,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.rest.acq.model.Field;
+import org.folio.rest.acq.model.FolioOrderFields;
+import org.folio.rest.acq.model.FolioOrderTranslators;
+import org.folio.rest.acq.model.Translator;
 import org.folio.rest.mappings.model.OrderMappings;
 
 import io.vertx.core.json.JsonArray;
@@ -24,6 +29,10 @@ public class MappingDetailsService {
   private static final String JAVA_ENUMS = "javaEnums";
   private static final String FIELD = "field";
 
+  private static final String NAME = "name";
+  private static final String TITLE = "title";
+  private static final String DESCRIPTION = "description";
+
   public MappingDetailsService() {
     URL mappingJson = ClassLoader.getSystemClassLoader().getResource("mapping.json");
     try (InputStream mappingJsonStream = mappingJson.openStream()) {
@@ -34,16 +43,48 @@ public class MappingDetailsService {
     }
   }
 
-  public JsonArray retrieveTranslators() {
-    return mappingsProperties.getJsonObject(DATA_SOURCE)
+  public FolioOrderTranslators retrieveTranslators() {
+    JsonArray translatorsArray = mappingsProperties.getJsonObject(DATA_SOURCE)
       .getJsonObject(PROPERTIES)
       .getJsonObject(TRANSLATION)
       .getJsonArray(JAVA_ENUMS);
+
+    List<Translator> translators = new ArrayList<>();
+    translatorsArray.stream().forEach(translatorObject -> {
+      JsonObject translatorJsonObject = JsonObject.mapFrom(translatorObject);
+      Translator translator = new Translator()
+        .withName(translatorJsonObject.getString(NAME))
+        .withTranslator(translatorJsonObject.getString(TITLE))
+        .withDescription(translatorJsonObject.getString(DESCRIPTION));
+      translators.add(translator);
+    });
+
+    FolioOrderTranslators folioOrderTranslators = new FolioOrderTranslators()
+      .withTranslators(translators)
+      .withTotalRecords(translators.size());
+
+    return folioOrderTranslators;
   }
 
-  public JsonArray retrieveFields() {
-    return mappingsProperties.getJsonObject(FIELD)
+  public FolioOrderFields retrieveFields() {
+    JsonArray fieldsArray = mappingsProperties.getJsonObject(FIELD)
       .getJsonArray(JAVA_ENUMS);
+
+    List<Field> fields = new ArrayList<>();
+    fieldsArray.stream().forEach(fieldsObject -> {
+      JsonObject fieldsJsonObject = JsonObject.mapFrom(fieldsObject);
+      Field field = new Field()
+        .withName(fieldsJsonObject.getString(NAME))
+        .withPath(fieldsJsonObject.getString(TITLE))
+        .withDescription(fieldsJsonObject.getString(DESCRIPTION));
+      fields.add(field);
+    });
+
+    FolioOrderFields folioOrderFields = new FolioOrderFields()
+      .withFields(fields)
+      .withTotalRecords(fields.size());
+
+    return folioOrderFields;
   }
 
   public List<OrderMappings.OrderType> retrieveMappingsTypes() {

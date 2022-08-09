@@ -2,14 +2,15 @@ package org.folio.gobi;
 
 import static org.junit.Assert.assertFalse;
 
+import java.util.List;
+
+import org.folio.rest.acq.model.FolioOrderFields;
+import org.folio.rest.acq.model.FolioOrderTranslators;
 import org.folio.rest.mappings.model.OrderMappings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class MappingDetailsServiceTest {
@@ -18,14 +19,14 @@ public class MappingDetailsServiceTest {
 
   @Test
   public final void givenCollectionMappingFields() {
-    JsonArray fields = mappingDetailsService.retrieveFields();
-    assertFalse(fields.getList().isEmpty());
+    FolioOrderFields fields = mappingDetailsService.retrieveFields();
+    assertFalse(fields.getFields().isEmpty());
   }
 
   @Test
   public final void givenCollectionMappingTranslators() {
-    JsonArray translators = mappingDetailsService.retrieveTranslators();
-    assertFalse(translators.getList().isEmpty());
+    FolioOrderTranslators translators = mappingDetailsService.retrieveTranslators();
+    assertFalse(translators.getTranslators().isEmpty());
   }
 
   @Test
