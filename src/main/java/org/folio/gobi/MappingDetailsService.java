@@ -59,11 +59,9 @@ public class MappingDetailsService {
           .withDescription(translatorJsonObject.getString(DESCRIPTION));
       }).collect(Collectors.toList());
 
-    FolioOrderTranslators folioOrderTranslators = new FolioOrderTranslators()
+    return new FolioOrderTranslators()
       .withTranslators(translators)
       .withTotalRecords(translators.size());
-
-    return folioOrderTranslators;
   }
 
   public FolioOrderFields retrieveFields() {
@@ -79,11 +77,9 @@ public class MappingDetailsService {
           .withDescription(fieldsJsonObject.getString(DESCRIPTION));
       }).collect(Collectors.toList());
 
-    FolioOrderFields folioOrderFields = new FolioOrderFields()
+    return new FolioOrderFields()
       .withFields(fields)
       .withTotalRecords(fields.size());
-
-    return folioOrderFields;
   }
 
   public List<OrderMappings.OrderType> retrieveMappingsTypes() {
