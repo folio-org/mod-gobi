@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,15 +50,14 @@ public class MappingDetailsService {
       .getJsonObject(TRANSLATION)
       .getJsonArray(JAVA_ENUMS);
 
-    List<Translator> translators = new ArrayList<>();
-    translatorsArray.stream().forEach(translatorObject -> {
-      JsonObject translatorJsonObject = JsonObject.mapFrom(translatorObject);
-      Translator translator = new Translator()
-        .withName(translatorJsonObject.getString(NAME))
-        .withTranslator(translatorJsonObject.getString(TITLE))
-        .withDescription(translatorJsonObject.getString(DESCRIPTION));
-      translators.add(translator);
-    });
+    List<Translator> translators = translatorsArray.stream()
+      .map(translatorObject -> {
+        JsonObject translatorJsonObject = JsonObject.mapFrom(translatorObject);
+        return new Translator()
+          .withName(translatorJsonObject.getString(NAME))
+          .withTranslator(translatorJsonObject.getString(TITLE))
+          .withDescription(translatorJsonObject.getString(DESCRIPTION));
+      }).collect(Collectors.toList());
 
     FolioOrderTranslators folioOrderTranslators = new FolioOrderTranslators()
       .withTranslators(translators)
@@ -70,15 +70,14 @@ public class MappingDetailsService {
     JsonArray fieldsArray = mappingsProperties.getJsonObject(FIELD)
       .getJsonArray(JAVA_ENUMS);
 
-    List<Field> fields = new ArrayList<>();
-    fieldsArray.stream().forEach(fieldsObject -> {
-      JsonObject fieldsJsonObject = JsonObject.mapFrom(fieldsObject);
-      Field field = new Field()
-        .withName(fieldsJsonObject.getString(NAME))
-        .withPath(fieldsJsonObject.getString(TITLE))
-        .withDescription(fieldsJsonObject.getString(DESCRIPTION));
-      fields.add(field);
-    });
+    List<Field> fields = fieldsArray.stream()
+      .map(fieldsObject -> {
+        JsonObject fieldsJsonObject = JsonObject.mapFrom(fieldsObject);
+        return new Field()
+          .withName(fieldsJsonObject.getString(NAME))
+          .withPath(fieldsJsonObject.getString(TITLE))
+          .withDescription(fieldsJsonObject.getString(DESCRIPTION));
+      }).collect(Collectors.toList());
 
     FolioOrderFields folioOrderFields = new FolioOrderFields()
       .withFields(fields)
