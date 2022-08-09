@@ -2,7 +2,7 @@ package org.folio.gobi;
 
 import static org.junit.Assert.assertFalse;
 
-import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.jaxrs.model.OrderMappings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

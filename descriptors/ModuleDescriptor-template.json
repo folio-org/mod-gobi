@@ -25,15 +25,25 @@
           ]
         },
         {
-          "methods": [
-            "POST"
-          ],
+          "methods": ["POST"],
           "pathPattern": "/gobi/orders",
-          "permissionsRequired": [
-            "gobi.item.post"
-          ],
+          "permissionsRequired": ["gobi.item.post"],
           "modulePermissions": [
-            "configuration.entries.collection.get"
+            "acquisitions-units.units.collection.get",
+            "orders.item.post",
+            "orders.collection.get",
+            "orders.item.get",
+            "orders.item.put",
+            "inventory-storage.contributor-name-types.collection.get",
+            "inventory-storage.material-types.collection.get",
+            "inventory-storage.locations.collection.get",
+            "inventory-storage.identifier-types.collection.get",
+            "organizations-storage.organizations.collection.get",
+            "configuration.entries.collection.get",
+            "finance.funds.collection.get",
+            "finance.expense-classes.collection.get",
+            "orders.acquisition-methods.collection.get",
+            "orders.item.approve"
           ]
         }
       ]
