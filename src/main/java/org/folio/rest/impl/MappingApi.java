@@ -17,7 +17,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.jaxrs.model.OrderMappings;
 
 public class MappingApi implements GobiOrdersMappings {
 
