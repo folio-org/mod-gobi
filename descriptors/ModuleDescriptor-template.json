@@ -243,9 +243,8 @@
       "description": "Entire set of permissions needed to use gobi",
       "subPermissions": [
         "gobi.item.post",
-        "gobi.mappings.fields.collection.get",
-        "gobi.mappings.translators.collection.get",
-        "gobi.mappings.types.collection.get"
+        "gobi.orders.mappings.all",
+        "gobi.custom-mappings.all"
       ]
     },
     {
