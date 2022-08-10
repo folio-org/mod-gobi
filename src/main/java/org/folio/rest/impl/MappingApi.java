@@ -7,17 +7,17 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
-import io.vertx.core.json.JsonArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.RetrieveMappingDetailsService;
+import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.jaxrs.resource.GobiOrdersMappings;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import org.folio.rest.jaxrs.model.OrderMappings;
+import io.vertx.core.json.JsonArray;
 
 public class MappingApi implements GobiOrdersMappings {
 

@@ -10,7 +10,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.jaxrs.resource.GobiOrdersCustomMappings;
 import org.folio.rest.service.GobiCustomMappingsService;
@@ -19,9 +18,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 
-public class GobiOrdersMappingsImpl extends BaseApi implements GobiOrdersCustomMappings {
-  private static final Logger logger = LogManager.getLogger(GobiOrdersMappingsImpl.class);
-  private static final String GOBI_ORDERS_MAPPINGS_LOCATION = getEndpoint(GobiOrdersCustomMappings.class) + "/%s";
+public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersCustomMappings {
+
+  private static final Logger logger = LogManager.getLogger(GobiOrdersCustomMappingsImpl.class);
+  private static final String GOBI_ORDERS_CUSTOM_MAPPINGS_LOCATION = getEndpoint(GobiOrdersCustomMappings.class) + "/%s";
 
   @Override
   public void getGobiOrdersCustomMappings(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders,
@@ -39,7 +39,7 @@ public class GobiOrdersMappingsImpl extends BaseApi implements GobiOrdersCustomM
 
     new GobiCustomMappingsService(okapiHeaders, vertxContext).postCustomMapping(orderMappings)
       .thenAccept(createdCustomMapping -> asyncResultHandler.handle(succeededFuture(buildResponseWithLocation(okapiHeaders.get(X_OKAPI_URL),
-              String.format(GOBI_ORDERS_MAPPINGS_LOCATION, createdCustomMapping.getMappingType().value()), createdCustomMapping))))
+              String.format(GOBI_ORDERS_CUSTOM_MAPPINGS_LOCATION, createdCustomMapping.getMappingType().value()), createdCustomMapping))))
       .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
 
   }

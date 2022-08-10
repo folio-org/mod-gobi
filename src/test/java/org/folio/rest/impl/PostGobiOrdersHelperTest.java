@@ -23,6 +23,7 @@ import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.ResourcePaths;
 import org.folio.rest.gobi.model.GobiResponse;
+import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.tools.utils.BinaryOutStream;
@@ -76,7 +77,7 @@ public class PostGobiOrdersHelperTest {
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(null, asyncResultHandler, null, null);
-    helper.handleError(new CompletionException(new HttpException(400, t)));
+    helper.handleError(new CompletionException(new HttpException(400, t, new Errors())));
   }
 
   public void testHandleErrorGobiPurchaseOrderParserException(TestContext context) {

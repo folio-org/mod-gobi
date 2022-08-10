@@ -25,9 +25,13 @@
           ]
         },
         {
-          "methods": ["POST"],
+          "methods": [
+            "POST"
+          ],
           "pathPattern": "/gobi/orders",
-          "permissionsRequired": ["gobi.item.post"],
+          "permissionsRequired": [
+            "gobi.item.post"
+          ],
           "modulePermissions": [
             "acquisitions-units.units.collection.get",
             "orders.item.post",
@@ -58,6 +62,7 @@
           ],
           "pathPattern": "/gobi/orders/custom-mappings",
           "permissionsRequired": [
+            "gobi.custom-mappings.collection.get"
           ],
           "modulePermissions": [
             "configuration.entries.collection.get"
@@ -69,6 +74,7 @@
           ],
           "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
           "permissionsRequired": [
+            "gobi.custom-mappings.item.get"
           ],
           "modulePermissions": [
             "configuration.entries.collection.get"
@@ -80,9 +86,10 @@
           ],
           "pathPattern": "/gobi/orders/custom-mappings",
           "permissionsRequired": [
+            "gobi.custom-mappings.item.post"
           ],
           "modulePermissions": [
-            "configuration.entries.collection.get"
+            "configuration.entries.item.post"
           ]
         },
         {
@@ -91,9 +98,11 @@
           ],
           "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
           "permissionsRequired": [
+            "gobi.custom-mappings.item.put"
           ],
           "modulePermissions": [
-            "configuration.entries.collection.get"
+            "configuration.entries.collection.get",
+            "configuration.entries.item.put"
           ]
         },
         {
@@ -102,26 +111,39 @@
           ],
           "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
           "permissionsRequired": [
+            "gobi.custom-mappings.item.delete"
           ],
           "modulePermissions": [
-            "configuration.entries.collection.get"
-
+            "configuration.entries.collection.get",
+            "configuration.entries.item.delete"
           ]
         },
         {
-          "methods": ["GET"],
+          "methods": [
+            "GET"
+          ],
           "pathPattern": "/gobi/orders/mappings/fields",
-          "permissionsRequired": ["gobi.mappings.fields.collection.get"]
+          "permissionsRequired": [
+            "gobi.mappings.fields.collection.get"
+          ]
         },
         {
-          "methods": ["GET"],
+          "methods": [
+            "GET"
+          ],
           "pathPattern": "/gobi/orders/mappings/translators",
-          "permissionsRequired": ["gobi.mappings.translators.collection.get"]
+          "permissionsRequired": [
+            "gobi.mappings.translators.collection.get"
+          ]
         },
         {
-          "methods": ["GET"],
+          "methods": [
+            "GET"
+          ],
           "pathPattern": "/gobi/orders/mappings/types",
-          "permissionsRequired": ["gobi.mappings.types.collection.get"]
+          "permissionsRequired": [
+            "gobi.mappings.types.collection.get"
+          ]
         }
       ]
     }
@@ -177,6 +199,43 @@
       "permissionName": "gobi.item.post",
       "displayName": "gobi - post order",
       "description": "Creates an order"
+    },
+    {
+      "permissionName": "gobi.custom-mappings.collection.get",
+      "displayName": "Get collection of gobi custom mappings",
+      "description": "Get collection of gobi custom mappings"
+    },
+    {
+      "permissionName": "gobi.custom-mappings.item.get",
+      "displayName": "Get gobi custom mapping",
+      "description": "Get gobi custom mapping"
+    },
+    {
+      "permissionName": "gobi.custom-mappings.item.post",
+      "displayName": "Create gobi custom mapping",
+      "description": "Create gobi custom mapping"
+    },
+    {
+      "permissionName": "gobi.custom-mappings.item.put",
+      "displayName": "Edit gobi custom mapping",
+      "description": "Edit gobi custom mapping"
+    },
+    {
+      "permissionName": "gobi.custom-mappings.item.delete",
+      "displayName": "Delete gobi custom mapping",
+      "description": "Delete gobi custom mapping"
+    },
+    {
+      "permissionName": "gobi.custom-mappings.all",
+      "displayName": "custom mappings - all permissions",
+      "description": "Entire set of permissions needed to use custom mappings",
+      "subPermissions": [
+        "gobi.custom-mappings.collection.get",
+        "gobi.custom-mappings.item.get",
+        "gobi.custom-mappings.item.post",
+        "gobi.custom-mappings.item.put",
+        "gobi.custom-mappings.item.delete"
+      ]
     },
     {
       "permissionName": "gobi.all",

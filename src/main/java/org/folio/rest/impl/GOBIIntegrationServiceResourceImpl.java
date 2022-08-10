@@ -1,5 +1,7 @@
 package org.folio.rest.impl;
 
+import static org.folio.rest.core.RestClient.X_OKAPI_URL;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -18,8 +20,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-
-import static org.folio.rest.core.RestClient.X_OKAPI_URL;
 
 public class GOBIIntegrationServiceResourceImpl implements Gobi {
 

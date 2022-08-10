@@ -17,7 +17,7 @@ public class RetrieveMappingDetailsService {
 
   private static final Logger logger = LogManager.getLogger(RetrieveMappingDetailsService.class);
   private JsonObject mappings;
-  private final static String MAPPING_JSON_PATH = "ramls/acq-models/mod-gobi/schemas/mapping.json";
+  private static final String MAPPING_JSON_PATH = "ramls/acq-models/mod-gobi/schemas/mapping.json";
 
   public RetrieveMappingDetailsService() {
     URL mappingJson = ClassLoader.getSystemClassLoader().getResource(MAPPING_JSON_PATH);

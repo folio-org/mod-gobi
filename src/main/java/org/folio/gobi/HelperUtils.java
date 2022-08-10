@@ -5,15 +5,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 
+import javax.ws.rs.Path;
+
 import org.apache.commons.lang3.StringUtils;
 import org.folio.gobi.exceptions.HttpException;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import javax.ws.rs.Path;
-
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 public class HelperUtils {
 

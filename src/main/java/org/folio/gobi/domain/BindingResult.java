@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Mapping;
-;
 
 public class BindingResult<T> {
   private Map<Mapping.Field, Error> errors = new ConcurrentHashMap<>();
