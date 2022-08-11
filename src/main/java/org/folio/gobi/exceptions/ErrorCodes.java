@@ -6,7 +6,7 @@ public enum ErrorCodes {
 
   GENERIC_ERROR_CODE("genericError", "Generic error"),
   CONFLICT("conflict", "Conflict when updating a record"),
-  ORDER_MAPPINGS_RECORD_NOT_FOUND("order_mappings_record_not_found", "Order mappings record not found"),
+  ORDER_MAPPINGS_RECORD_NOT_FOUND("order_mappings_record_not_found", "Custom mapping record not found"),
   ERROR_READING_DEFAULT_MAPPING_FILE("error_reading_default_mapping_file", "Error reading default mapping file");
 
   private final String code;

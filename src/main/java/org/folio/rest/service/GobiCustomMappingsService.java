@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.logging.log4j.LogManager;
@@ -38,8 +40,8 @@ public class GobiCustomMappingsService {
     this.restClient = new RestClient(okapiHeaders, vertxContext);
   }
 
-  public CompletableFuture<OrderMappingsViewCollection> getCustomMappingListByQuery(String query, int offset, int limit) {
-    query = "configName==GOBI AND configName==orderMappings";
+  public CompletableFuture<OrderMappingsViewCollection> getCustomMappingListByQuery(int offset, int limit) {
+   var query = "configName==GOBI AND configName==orderMappings";
     return restClient.handleGetRequest(CONFIGURATION_ENDPOINT, query, offset, limit)
       .thenApply(this::buildOrderMappingsViewCollectionResponse);
   }
@@ -53,6 +55,7 @@ public class GobiCustomMappingsService {
   private CompletableFuture<JsonObject> getCustomMappingConfigByOrderType(String orderType) {
     String query = String.format(MAPPINGS_BY_ORDER_TYPE_QUERY, orderType);
     return restClient.handleGetRequest(CONFIGURATION_ENDPOINT, query, 0, 1);
+
   }
 
   private OrderMappingsView buildOrderMappingsViewResponse(JsonObject entries, String orderType) {
@@ -109,23 +112,30 @@ public class GobiCustomMappingsService {
 
     } catch (IOException e) {
       logger.error(String.format("Exception when reading a mappingJson file %s", e.getMessage()));
-      // TODO
       throw new HttpException(500, ERROR_READING_DEFAULT_MAPPING_FILE);
     }
   }
 
 
   public CompletableFuture<OrderMappingsView> postCustomMapping(OrderMappings orderMappings) {
-    return restClient.post(CONFIGURATION_ENDPOINT, JsonObject.mapFrom(orderMappings))
-      .thenApply(json -> json.mapTo(OrderMappingsView.class));
+    Config configEntry = buildCustomMappingConfigurationEntry(orderMappings, UUID.randomUUID().toString());
+    return restClient.post(CONFIGURATION_ENDPOINT, JsonObject.mapFrom(configEntry))
+      .thenApply(createdConfig -> {
+        var entry = createdConfig.mapTo(Config.class);
+        var createdOrderMappings = Json.decodeValue(entry.getValue(), OrderMappings.class);
+        return new OrderMappingsView()
+        .withMappingType(OrderMappingsView.MappingType.CUSTOM)
+        .withOrderMappings(createdOrderMappings);});
   }
 
   public CompletableFuture<Void> putCustomMapping(String orderType, OrderMappings orderMappings) {
     return getCustomMappingConfigByOrderType(orderType)
       .thenCompose(configEntries -> {
-        if (!configEntries.isEmpty()) {
+        if (!configEntries.getJsonArray(CONFIG_FIELD).isEmpty()) {
           var config = configEntries.getJsonArray(CONFIG_FIELD).getJsonObject(0).mapTo(Config.class);
-          return restClient.handlePutRequest(CONFIGURATION_ENDPOINT + "/" + config.getId(), JsonObject.mapFrom(orderMappings));
+          Config configEntryForUpdate = buildCustomMappingConfigurationEntry(orderMappings, config.getId());
+
+          return restClient.handlePutRequest(CONFIGURATION_ENDPOINT + "/" + config.getId(), JsonObject.mapFrom(configEntryForUpdate));
         }
         throw new HttpException(404, ORDER_MAPPINGS_RECORD_NOT_FOUND);
       });
@@ -134,11 +144,21 @@ public class GobiCustomMappingsService {
   public CompletableFuture<Void> deleteCustomMapping(String orderType) {
     return getCustomMappingConfigByOrderType(orderType)
       .thenCompose(configEntries -> {
-      if (!configEntries.isEmpty()) {
+      if (!configEntries.getJsonArray(CONFIG_FIELD).isEmpty()) {
         var config = configEntries.getJsonArray(CONFIG_FIELD).getJsonObject(0).mapTo(Config.class);
-        return restClient.delete(CONFIGURATION_ENDPOINT + "/", config.getId());
+        return restClient.delete(CONFIGURATION_ENDPOINT + "/" + config.getId());
       }
       throw new HttpException(404, ORDER_MAPPINGS_RECORD_NOT_FOUND);
     });
+  }
+
+  private Config buildCustomMappingConfigurationEntry(OrderMappings orderMappings, String id) {
+    return new Config()
+      .withId(id)
+      .withModule("GOBI")
+      .withConfigName("orderMappings")
+      .withValue(JsonObject.mapFrom(orderMappings).encode())
+      .withEnabled(true)
+      .withCode("gobi.order." + orderMappings.getOrderType());
   }
 }

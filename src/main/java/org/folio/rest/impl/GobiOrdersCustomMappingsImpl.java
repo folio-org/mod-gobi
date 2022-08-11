@@ -27,7 +27,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   public void getGobiOrdersCustomMappings(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    new GobiCustomMappingsService(okapiHeaders, vertxContext).getCustomMappingListByQuery(query, offset, limit)
+    new GobiCustomMappingsService(okapiHeaders, vertxContext)
+      .getCustomMappingListByQuery(offset, limit)
       .thenAccept(orderMappingsViewCollection -> asyncResultHandler.handle(succeededFuture(buildOkResponse(orderMappingsViewCollection))))
       .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
@@ -37,7 +38,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   public void postGobiOrdersCustomMappings(String lang, OrderMappings orderMappings, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    new GobiCustomMappingsService(okapiHeaders, vertxContext).postCustomMapping(orderMappings)
+    new GobiCustomMappingsService(okapiHeaders, vertxContext)
+      .postCustomMapping(orderMappings)
       .thenAccept(createdCustomMapping -> asyncResultHandler.handle(succeededFuture(buildResponseWithLocation(okapiHeaders.get(X_OKAPI_URL),
               String.format(GOBI_ORDERS_CUSTOM_MAPPINGS_LOCATION, createdCustomMapping.getMappingType().value()), createdCustomMapping))))
       .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
@@ -48,7 +50,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   public void deleteGobiOrdersCustomMappingsByOrderType(String orderType, String lang, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    new GobiCustomMappingsService(okapiHeaders, vertxContext).deleteCustomMapping(orderType)
+    new GobiCustomMappingsService(okapiHeaders, vertxContext)
+      .deleteCustomMapping(orderType)
       .thenAccept(orderMappingsViewCollection -> asyncResultHandler.handle(succeededFuture(buildOkResponse(orderMappingsViewCollection))))
       .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
@@ -57,7 +60,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   public void putGobiOrdersCustomMappingsByOrderType(String orderType, String lang, OrderMappings orderMappings,
       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    new GobiCustomMappingsService(okapiHeaders, vertxContext).putCustomMapping(orderType, orderMappings)
+    new GobiCustomMappingsService(okapiHeaders, vertxContext)
+      .putCustomMapping(orderType, orderMappings)
       .thenAccept(types -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
       .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
@@ -66,7 +70,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   public void getGobiOrdersCustomMappingsByOrderType(String orderType, String lang, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    new GobiCustomMappingsService(okapiHeaders, vertxContext).getCustomMappingByOrderType(orderType)
+    new GobiCustomMappingsService(okapiHeaders, vertxContext)
+      .getCustomMappingByOrderType(orderType)
       .thenAccept(type -> asyncResultHandler.handle(succeededFuture(buildOkResponse(type))))
       .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
   }

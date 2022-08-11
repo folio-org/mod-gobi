@@ -1,6 +1,8 @@
 package org.folio.rest.core;
 
 import static java.util.Objects.nonNull;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.folio.rest.service.GobiCustomMappingsService.SEARCH_ENDPOINT;
@@ -160,20 +162,19 @@ public class RestClient {
     return future;
   }
 
-  public CompletableFuture<Void> delete(String endpointById, String id) {
+  public CompletableFuture<Void> delete(String endpointById) {
     CompletableFuture<Void> future = new FolioVertxCompletableFuture<>(ctx);
-    String endpoint = String.format(endpointById, id);
     if (logger.isDebugEnabled()) {
-      logger.debug(CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpoint);
+      logger.debug(CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpointById);
     }
-    //setDefaultHeaders(client);
+    setDefaultHeaders(httpClient);
 
     try {
-      httpClient.request(HttpMethod.DELETE, endpoint, okapiHeaders)
+      httpClient.request(HttpMethod.DELETE, endpointById, okapiHeaders)
         .thenAccept(this::verifyResponse)
         .handle((aVoid, t) -> {
           if (t != null) {
-            logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, t, HttpMethod.DELETE, endpoint);
+            logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpointById);
             future.completeExceptionally(t.getCause());
           } else {
             future.complete(null);
@@ -181,7 +182,7 @@ public class RestClient {
           return null;
         });
     } catch (Exception e) {
-      logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, e, HttpMethod.DELETE, endpoint);
+      logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpointById);
       future.completeExceptionally(e);
     }
 
@@ -198,11 +199,11 @@ public class RestClient {
     return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query);
   }
 
-  private String encodeQuery(String query) {
+  public String encodeQuery(String query) {
     return URLEncoder.encode(query, StandardCharsets.UTF_8);
   }
 
-  public void verifyResponse(Response response) {
+  private void verifyResponse(Response response) {
     if (!Response.isSuccess(response.getCode())) {
       String errorMsg = response.getError().getString(ERROR_MESSAGE);
       HttpException httpException = getErrorByCode(errorMsg)
@@ -212,10 +213,14 @@ public class RestClient {
     }
   }
 
-  public static Optional<ErrorCodes> getErrorByCode(String errorCode){
+  private Optional<ErrorCodes> getErrorByCode(String errorCode){
     return EnumSet.allOf(ErrorCodes.class).stream()
       .filter(errorCodes -> errorCodes.getCode().equals(errorCode))
       .findAny();
+  }
+
+  private void setDefaultHeaders(HttpClientInterface httpClient) {
+    httpClient.setDefaultHeaders(Collections.singletonMap("Accept", APPLICATION_JSON + ", " + TEXT_PLAIN));
   }
 
 }
