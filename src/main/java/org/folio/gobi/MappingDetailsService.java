@@ -13,7 +13,7 @@ import org.folio.rest.acq.model.Field;
 import org.folio.rest.acq.model.FolioOrderFields;
 import org.folio.rest.acq.model.FolioOrderTranslators;
 import org.folio.rest.acq.model.Translator;
-import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.jaxrs.model.OrderMappings;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -34,7 +34,7 @@ public class MappingDetailsService {
   private static final String DESCRIPTION = "description";
 
   public MappingDetailsService() {
-    URL mappingJson = ClassLoader.getSystemClassLoader().getResource("mapping.json");
+    URL mappingJson = MappingDetailsService.class.getClassLoader().getResource("ramls/acq-models/mod-gobi/schemas/mapping.json");
     try (InputStream mappingJsonStream = mappingJson.openStream()) {
       String jsonString = new String(mappingJsonStream.readAllBytes(), StandardCharsets.UTF_8);
       mappingsProperties = new JsonObject(jsonString).getJsonObject(PROPERTIES);
