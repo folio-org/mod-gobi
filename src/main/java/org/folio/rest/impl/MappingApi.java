@@ -14,7 +14,6 @@ import org.folio.rest.acq.model.FolioOrderFields;
 import org.folio.rest.acq.model.FolioOrderTranslators;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.jaxrs.resource.GobiOrdersMappings;
-import org.folio.rest.jaxrs.model.OrderMappings;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;

@@ -7,7 +7,6 @@ import static org.folio.gobi.LookupService.QUERY;
 import static org.folio.rest.ResourcePaths.CONFIGURATION_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_BY_ID_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_ENDPOINT;
-import static org.folio.rest.impl.GOBIIntegrationServiceResourceImpl.getHttpClient;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
@@ -42,7 +41,6 @@ import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
-import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
