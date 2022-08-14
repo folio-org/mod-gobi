@@ -20,7 +20,7 @@ public class RetrieveMappingDetailsService {
   private static final String MAPPING_JSON_PATH = "ramls/acq-models/mod-gobi/schemas/mapping.json";
 
   public RetrieveMappingDetailsService() {
-    URL mappingJson = ClassLoader.getSystemClassLoader().getResource(MAPPING_JSON_PATH);
+    URL mappingJson = RetrieveMappingDetailsService.class.getClassLoader().getResource(MAPPING_JSON_PATH);
     try (InputStream mappingJsonStream = mappingJson.openStream()) {
       String jsonString = new String(mappingJsonStream.readAllBytes(), StandardCharsets.UTF_8);
       mappings = new JsonObject(jsonString);

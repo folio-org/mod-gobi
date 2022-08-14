@@ -3,30 +3,29 @@ package org.folio.rest.impl;
 import static java.util.UUID.randomUUID;
 import static org.folio.gobi.HelperUtils.CONTRIBUTOR_NAME_TYPES;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
+import static org.folio.rest.utils.TestUtils.checkVertxContextCompletion;
+import static org.folio.rest.utils.TestUtils.getMockData;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,7 +35,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,11 +46,11 @@ import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -73,14 +71,13 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
-@RunWith(VertxUnitRunner.class)
+@ExtendWith(VertxExtension.class)
 public class GOBIIntegrationServiceResourceImplTest {
 
   private static final Logger logger = LogManager.getLogger(GOBIIntegrationServiceResourceImplTest.class);
@@ -155,44 +152,44 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static Vertx vertx;
   private static MockServer mockServer;
 
-  @BeforeClass
-  public static void setUpOnce(TestContext context) {
+  @BeforeAll
+  public static void setUpOnce(VertxTestContext context) throws Throwable {
     vertx = Vertx.vertx();
 
     mockServer = new MockServer(MOCK_PORT);
     mockServer.start(context);
-
     final JsonObject conf = new JsonObject();
     conf.put("http.port", OKAPI_PORT);
 
+    VertxTestContext deploymentContext = new VertxTestContext();
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, context.asyncAssertSuccess());
+    vertx.deployVerticle(RestVerticle.class.getName(), opt, h -> {
+      deploymentContext.completeNow();
+    });
+    checkVertxContextCompletion(deploymentContext);
     RestAssured.port = OKAPI_PORT;
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     logger.info("GOBI Integration Service Test Setup Done using port {}", OKAPI_PORT);
   }
 
-  @AfterClass
-  public static void tearDownOnce(TestContext context) {
+  @AfterAll
+  public static void tearDownOnce(VertxTestContext context) throws Throwable {
     logger.info("GOBI Integration Service Testing Complete");
-    Async async = context.async();
     vertx.close(v -> {
       mockServer.close();
-      async.complete();
+      context.completeNow();
     });
-    async.awaitSuccess();
+    checkVertxContextCompletion(context);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     MockServer.serverRqRs.clear();
   }
 
   @Test
-  public final void testGetGobiValidate(TestContext context) {
+   void testGetGobiValidate() {
     logger.info("Begin: Testing for Get Gobi Validate 200 - valid call");
-
-    final Async asyncLocal = context.async();
 
     RestAssured
       .given()
@@ -204,16 +201,12 @@ public class GOBIIntegrationServiceResourceImplTest {
       .then()
         .statusCode(200).body(Matchers.equalTo("<test>GET - OK</test>"));
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for Get Gobi Validate 200 - valid call");
   }
 
   @Test
-  public final void testPostGobiValidate(TestContext context) {
+  void testPostGobiValidate() {
     logger.info("Begin: Testing for Post Gobi Validate 200 - valid call");
-
-    final Async asyncLocal = context.async();
 
     RestAssured
       .given()
@@ -226,16 +219,12 @@ public class GOBIIntegrationServiceResourceImplTest {
         .contentType("application/xml")
         .statusCode(200).body(Matchers.equalTo("<test>POST - OK</test>"));
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for Post Gobi Validate 200 - valid call");
   }
 
   @Test
-  public final void testPostGobiXMLContent(TestContext context) throws Exception {
+  void testPostGobiXMLContent() throws Exception {
     logger.info("Begin: Testing for 201 - XML content");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
@@ -246,21 +235,17 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
         MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for 201 - XML content");
   }
 
   @Test
-  public final void testPostGobiOrdersPOListedElectronicMonograph(TestContext context) throws Exception {
+  void testPostGobiOrdersPOListedElectronicMonograph() throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed electronic monograph");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
@@ -278,22 +263,18 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for 201 - posted order listed electronic monograph");
   }
 
   @Test
-  public final void testPostGobiOrdersCustomPOListedElectronicSerial(TestContext context) throws Exception {
+  void testPostGobiOrdersCustomPOListedElectronicSerial() throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed electronic serial with custom mappings");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     List<JsonObject> configEntries = MockServer.serverRqRs.get(CONFIGURATION, HttpMethod.GET);
     assertNotNull(configEntries);
@@ -318,22 +299,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for 201 - posted order listed electronic serial");
   }
 
   @Test
-  public final void testPostGobiOrdersPOListedPrintMonograph(TestContext context) throws Exception {
+  void testPostGobiOrdersPOListedPrintMonograph() throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed print monograph");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_PRINT_MONOGRAPH_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Print Monograph has to get the Product type ID so there will be an additional call made
@@ -352,22 +329,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
     assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for 201 - posted order listed print monograph");
   }
 
   @Test
-  public final void testPostGobiOrdersPOListedPrintSerial(TestContext context) throws Exception {
+  void testPostGobiOrdersPOListedPrintSerial() throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed print serial");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_PRINT_SERIAL_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER, VENDOR,
@@ -382,22 +355,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
     assertTrue(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for 201 - posted order listed print serial");
   }
 
   @Test
-  public final void testPostGobiOrdersPOUnlistedPrintMonograph(TestContext context) throws Exception {
+  void testPostGobiOrdersPOUnlistedPrintMonograph() throws Exception {
     logger.info("Begin: Testing for 201 - posted order unlisted print monograph");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_UNLISTED_PRINT_MONOGRAPHPATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(),
@@ -412,22 +381,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
     assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for 201 - posted order unlisted print monograph");
   }
 
   @Test
-  public final void testPostGobiOrdersPOUnlistedPrintSerial(TestContext context) throws Exception {
+  void testPostGobiOrdersPOUnlistedPrintSerial() throws Exception {
     logger.info("Begin: Testing for 201 - posted order unlisted print serial");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_UNLISTED_PRINT_SERIAL_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
@@ -441,15 +406,12 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
     assertTrue(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
-    asyncLocal.complete();
     logger.info("End: Testing for 201 - posted order unlisted print serial");
   }
 
   @Test
-  public final void testPostGobiOrdersPOListedElectronicMonographBadData(TestContext context) throws Exception {
+  void testPostGobiOrdersPOListedElectronicMonographBadData() throws Exception {
     logger.info("Begin: Testing for 400 - posted order listed electronic monograph bad data (missing tag)");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_BAD_DATA_PATH);
 
@@ -463,29 +425,25 @@ public class GOBIIntegrationServiceResourceImplTest {
           .body()
             .as(GobiResponse.class, ObjectMapperType.JAXB);
 
-    context.assertNotNull(error);
-    context.assertNotNull(error.getError());
-    context.assertEquals(CODE_INVALID_XML, error.getError().getCode());
-    context.assertNotNull(error.getError().getMessage());
+    assertNotNull(error);
+    assertNotNull(error.getError());
+    assertEquals(CODE_INVALID_XML, error.getError().getCode());
+    assertNotNull(error.getError().getMessage());
 
     assertTrue(MockServer.serverRqRs.isEmpty());
-
-    asyncLocal.complete();
 
     logger.info("End: Testing for 400 - posted order listed electronic monograph bad data (missing tag)");
   }
 
   @Test
-  public final void testPostContentWithValidOkapiToken(TestContext context) throws Exception {
+  void testPostContentWithValidOkapiToken() throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed print monograph with valid Okapi token");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_PRINT_MONOGRAPH_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     //Listed Print Monograph has Product Id type so there will be an additional call made
@@ -497,22 +455,19 @@ public class GOBIIntegrationServiceResourceImplTest {
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for 201 - posted order listed print monograph");
   }
 
   @Test
-  public final void testPostGobiOrdersFallBackMaterialTypes(TestContext context) throws Exception {
+  void testPostGobiOrdersFallBackMaterialTypes() throws Exception {
     logger.info("Begin: Testing for falling back to the unspecified material id, if a non existent code is sent");
 
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     List<JsonObject> configEntries = MockServer.serverRqRs.get(MATERIAL_TYPES, HttpMethod.GET);
     //2 calls must be made to material types end point, once for non existent and other for unspecified
@@ -525,22 +480,19 @@ public class GOBIIntegrationServiceResourceImplTest {
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for falling back to the unspecified material id, if a non existent code is sent");
   }
 
   @Test
-  public final void testPostGobiOrdersFallBackLocation(TestContext context) throws Exception {
+  void testPostGobiOrdersFallBackLocation() throws Exception {
     logger.info("Begin: Testing for falling back to the first location id, if a non existent code is sent");
 
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     List<JsonObject> configEntries = MockServer.serverRqRs.get(LOCATION, HttpMethod.GET);
     // 2 calls must be made to location end point
@@ -550,22 +502,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for falling back to tthe first location id, if a non existent code is sent");
   }
 
   @Test
-  public final void testPostGobiOrdersFallBackFundDistribution(TestContext context) throws Exception {
+  void testPostGobiOrdersFallBackFundDistribution() throws Exception {
     logger.info("Begin: Testing for falling back to the first fund id, if a non existent code is sent");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     List<JsonObject> configEntries = MockServer.serverRqRs.get(FUNDS, HttpMethod.GET);
     // 2 calls must be made to funds endpoint
@@ -576,20 +524,18 @@ public class GOBIIntegrationServiceResourceImplTest {
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for falling back to the first location id, if a non existent code is sent");
   }
 
   @Test
-  public final void testPostGobiOrdersPopulateAcqUnitDefault(TestContext context) throws Exception {
+  void testPostGobiOrdersPopulateAcqUnitDefault() throws Exception {
     logger.info("Begin: Testing for falling back to the first fund id, if a non existent code is sent");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
@@ -603,16 +549,14 @@ public class GOBIIntegrationServiceResourceImplTest {
 
 
   @Test
-  public final void testPostGobiOrdersFallBackProductType(TestContext context) throws Exception {
+   void testPostGobiOrdersFallBackProductType() throws Exception {
     logger.info("Begin: Testing for falling back to the first product id, if a non existent code is sent");
-
-    final Async asyncLocal = context.async();
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
 
     final GobiResponse order = postOrderSuccess(body, new Header(MOCK_OKAPI_GET_IDENTIFIER_HEADER, MOCK_INSTRUCTION_FAIL_PRODUCTYPE));
 
-    context.assertNotNull(order.getPoLineNumber());
+    assertNotNull(order.getPoLineNumber());
 
     List<JsonObject> identifierTypes = MockServer.serverRqRs.get(IDENTIFIER_TYPES, HttpMethod.GET);
     // 2 calls must be made to identifiers endpoint
@@ -624,13 +568,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
-    asyncLocal.complete();
-
     logger.info("End: Testing for falling back to the first product id, if a non existent code is sent");
   }
 
   @Test
-  public final void testPostGobiOrdersFallBackContributorTypeName() throws Exception {
+   void testPostGobiOrdersFallBackContributorTypeName() throws Exception {
     logger.info("Begin: Testing for falling back to the first random contributor name type, if a non existent code is sent");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
@@ -655,7 +597,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
-  public final void testPostGobiOrdersContributorNameTypeNotAvailable() throws Exception {
+  void testPostGobiOrdersContributorNameTypeNotAvailable() throws Exception {
     logger.info("Begin: Testing contributor is ignored if contributor name type cannot be resolved");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
@@ -679,7 +621,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
-  public final void testPostGobiOrdersNoProductIdTypes() throws Exception {
+  void testPostGobiOrdersNoProductIdTypes() throws Exception {
     logger.info("Begin: Testing for checking if productId is set if there are no productIdTypes in the environment");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
@@ -707,7 +649,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
 
   @Test
-  public final void testPostGobiOrdersNoFundsExist() throws Exception {
+  void testPostGobiOrdersNoFundsExist() throws Exception {
     logger.info("Begin: Testing for checking if FundId is not set if there are no Funds in the environment");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_MONOGRAPH_PATH);
@@ -732,7 +674,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
-  public final void testPostGobiOrdersExistingOrder() throws Exception {
+  void testPostGobiOrdersExistingOrder() throws Exception {
     logger.info("Begin: Testing for 201 - posted order returns existing Order if present");
 
 
@@ -759,7 +701,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
-  public final void testPostGobiOrdersFailedToRetrieveExistingOrder() throws Exception {
+  void testPostGobiOrdersFailedToRetrieveExistingOrder() throws Exception {
     logger.info("Begin: Testing for 201 - Create new Order if retrieving existing Order fails");
 
 
@@ -786,7 +728,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
-  public final void testPostGobiOrdersRetryToOpenOrderFails() throws Exception {
+  void testPostGobiOrdersRetryToOpenOrderFails() throws Exception {
     logger.info("Begin: Testing for 201 - Return existing Order even if it is pending, and retry to Open Fails");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
@@ -818,7 +760,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
 
   @Test
-  public final void testPostGobiOrdersRetryToOpenOrderSuccess() throws Exception {
+  void testPostGobiOrdersRetryToOpenOrderSuccess() throws Exception {
     logger.info("Begin: Testing for 201 - Return existing Order even if it is pending, and retry to Open succeeds");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
@@ -844,7 +786,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
-  public final void testPostGobiOrdersGetExistingPOLineNumberFails() throws Exception {
+   void testPostGobiOrdersGetExistingPOLineNumberFails() throws Exception {
     logger.info("Begin: Testing for 201 - Create new Order, if fetching existing PO Line Number Fails");
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
@@ -869,10 +811,8 @@ public class GOBIIntegrationServiceResourceImplTest {
   }
 
   @Test
-  public final void testPostElectronicMonographISBNQualifierSameField(TestContext context) throws Exception {
+  void testPostElectronicMonographISBNQualifierSameField() throws Exception {
     logger.info("Begin: Testing ISBN and Qualifier on same field");
-
-    final Async asyncLocal = context.async();
 
     Document doc = getDocumentFromXml();
 
@@ -883,17 +823,14 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     postOrderSuccess(toString(doc));
     validateProductIDAndQualifier("9781410352224","(ebook print)");
-    asyncLocal.complete();
 
     logger.info("End: Testing ISBN and Qualifier on same field");
 
   }
 
   @Test
-  public final void testPostElectronicMonographISBNQualifierWithSpaces(TestContext context) throws Exception {
+   void testPostElectronicMonographISBNQualifierWithSpaces() throws Exception {
     logger.info("Begin: Testing ISBN and qualifier with Trailing and Leading spaces");
-
-    final Async asyncLocal = context.async();
 
     Document doc = getDocumentFromXml();
 
@@ -907,16 +844,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     validateProductIDAndQualifier("9781410352224","(ebook print)");
 
-    asyncLocal.complete();
-
     logger.info("End: Testing ISBN and qualifier with Trailing and Leading spaces");
   }
 
   @Test
-  public final void testPostElectronicMonographISBNQualifierSeparateField(TestContext context) throws Exception {
+   void testPostElectronicMonographISBNQualifierSeparateField() throws Exception {
     logger.info("Begin: Testing ISBN and qualifier with Qualifier in a separate field");
-
-    final Async asyncLocal = context.async();
 
     Document doc = getDocumentFromXml();
 
@@ -934,16 +867,12 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     validateProductIDAndQualifier("9781410352224","(print)");
 
-    asyncLocal.complete();
-
     logger.info("End: Testing ISBN and qualifier with Qualifier in a separate field");
   }
 
   @Test
-  public final void testPostElectronicMonographISBNQualifierBothFields(TestContext context) throws Exception {
+   void testPostElectronicMonographISBNQualifierBothFields() throws Exception {
     logger.info("Begin: Testing ISBN and qualifier with Qualifier present in both Fields: Subfield is given precedence");
-
-    final Async asyncLocal = context.async();
 
     Document doc = getDocumentFromXml();
    //4. Test ISBN and qualifier with Qualifier present in both places(subfield and along with product ID)
@@ -959,8 +888,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     postOrderSuccess(toString(doc));
 
     validateProductIDAndQualifier("9781410352224","(print)");
-
-    asyncLocal.complete();
 
     logger.info("End: Testing ISBN and qualifier with Qualifier present in both places");
 
@@ -1135,20 +1062,21 @@ public class GOBIIntegrationServiceResourceImplTest {
         .end(acquisitionMethods.encodePrettily());
     }
 
-    public void start(TestContext context) {
+    public void start(VertxTestContext testContext) throws Throwable {
       logger.info("Starting mock server on port: " + port);
 
       // Setup Mock Server...
       HttpServer server = vertx.createHttpServer();
 
-      final Async async = context.async();
       server.requestHandler(defineRoutes()).listen(port, result -> {
         if (result.failed()) {
           logger.warn("Failure", result.cause());
         }
-        context.assertTrue(result.succeeded());
-        async.complete();
+        assertTrue(result.succeeded());
+        testContext.completeNow();
       });
+      checkVertxContextCompletion(testContext);
+
     }
 
     private void handlePostPurchaseOrder(RoutingContext ctx) {
@@ -1507,21 +1435,6 @@ public class GOBIIntegrationServiceResourceImplTest {
       }
       entries.add(data);
       serverRqRs.put(objName, method, entries);
-    }
-  }
-
-  private static String getMockData(String path) throws IOException {
-    logger.info("Using mock datafile: {}", path);
-    try (InputStream resourceAsStream = GOBIIntegrationServiceResourceImplTest.class.getClassLoader().getResourceAsStream(path)) {
-      if (resourceAsStream != null) {
-        return IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
-      } else {
-        StringBuilder sb = new StringBuilder();
-        try (Stream<String> lines = Files.lines(Paths.get(path))) {
-          lines.forEach(sb::append);
-        }
-        return sb.toString();
-      }
     }
   }
 

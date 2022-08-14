@@ -7,6 +7,7 @@ import static org.folio.gobi.LookupService.QUERY;
 import static org.folio.rest.ResourcePaths.CONFIGURATION_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_BY_ID_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_ENDPOINT;
+import static org.folio.rest.impl.GOBIIntegrationServiceResourceImpl.getHttpClient;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
@@ -69,9 +70,9 @@ public class PostGobiOrdersHelper {
   private final LookupService lookupService;
   private final MappingHelper mappingHelper;
 
-  public PostGobiOrdersHelper(HttpClientInterface httpClient, Handler<AsyncResult<Response>> asyncResultHandler,
+  public PostGobiOrdersHelper(Handler<AsyncResult<Response>> asyncResultHandler,
                               Map<String, String> okapiHeaders, Context ctx) {
-    this.restClient = new RestClient(httpClient, okapiHeaders, ctx);
+    this.restClient = new RestClient(okapiHeaders, ctx);
     this.asyncResultHandler = asyncResultHandler;
     this.lookupService = new LookupService(restClient);
     FieldMappingTranslatorResolver fieldMappingTranslatorResolver = new FieldMappingTranslatorResolver(lookupService);
@@ -79,9 +80,9 @@ public class PostGobiOrdersHelper {
   }
 
 
-  public CompletableFuture<CompositePurchaseOrder> mapToPurchaseOrder(Document doc) {
+  public CompletableFuture<CompositePurchaseOrder> mapToPurchaseOrder(Document doc, Context vertxContext) {
     final OrderMappings.OrderType orderType = getOrderType(doc);
-    FolioVertxCompletableFuture<CompositePurchaseOrder> future = new FolioVertxCompletableFuture<>(restClient.getCtx());
+    FolioVertxCompletableFuture<CompositePurchaseOrder> future = new FolioVertxCompletableFuture<>(vertxContext);
 
       lookupOrderMappings(orderType).thenAccept(ordermappings -> {
        logger.info("Using Mappings {}", ordermappings);
@@ -106,10 +107,10 @@ public class PostGobiOrdersHelper {
       Node node = (Node) xpath.evaluate(
           "//ListedElectronicMonograph|//ListedElectronicSerial|//ListedPrintMonograph|//ListedPrintSerial|//UnlistedPrintMonograph|//UnlistedPrintSerial",
           doc, XPathConstants.NODE);
-      if(node!=null){
+      if (node != null) {
         provided = node.getNodeName();
         orderType = OrderMappings.OrderType.fromValue(provided);
-      }else {
+      } else {
         throw new IllegalArgumentException();
       }
     } catch (Exception e) {
@@ -203,8 +204,7 @@ public class PostGobiOrdersHelper {
   private CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
     FolioVertxCompletableFuture<String> future = new FolioVertxCompletableFuture<>(restClient.getCtx());
     try {
-      restClient.getHttpClient().request(HttpMethod.POST, compPO, ORDERS_ENDPOINT, restClient.getOkapiHeaders())
-        .thenApply(HelperUtils::verifyAndExtractBody)
+      restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
         .thenAccept(body -> {
           logger.info("Response from mod-orders: {}", body.encodePrettily());
           future.complete(body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber"));

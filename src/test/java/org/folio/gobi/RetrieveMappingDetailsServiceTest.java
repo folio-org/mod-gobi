@@ -1,35 +1,32 @@
 package org.folio.gobi;
 
-import static org.junit.Assert.assertFalse;
-
-import org.folio.rest.jaxrs.model.OrderMappings;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.List;
 
-@RunWith(VertxUnitRunner.class)
-public class RetrieveMappingDetailsServiceTest {
+import org.folio.rest.jaxrs.model.OrderMappings;
+import org.junit.jupiter.api.Test;
+
+import io.vertx.core.json.JsonArray;
+
+class RetrieveMappingDetailsServiceTest {
 
   private final RetrieveMappingDetailsService retrieveMappingDetailsService = new RetrieveMappingDetailsService();
 
   @Test
-  public final void givenCollectionMappingFields() {
+  void givenCollectionMappingFields() {
     JsonArray fields = retrieveMappingDetailsService.retrieveFields();
     assertFalse(fields.getList().isEmpty());
   }
 
   @Test
-  public final void givenCollectionMappingTranslators() {
+  void givenCollectionMappingTranslators() {
     JsonArray translators = retrieveMappingDetailsService.retrieveTranslators();
     assertFalse(translators.getList().isEmpty());
   }
 
   @Test
-  public final void givenCollectionMappingTypes() {
+  void givenCollectionMappingTypes() {
     List<OrderMappings.OrderType> types = retrieveMappingDetailsService.retrieveMappingsTypes();
     assertFalse(types.isEmpty());
   }

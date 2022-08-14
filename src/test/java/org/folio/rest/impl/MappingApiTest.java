@@ -3,74 +3,70 @@ package org.folio.rest.impl;
 import static org.folio.rest.impl.GOBIIntegrationServiceResourceImplTest.TENANT_HEADER;
 import static org.folio.rest.impl.GOBIIntegrationServiceResourceImplTest.TOKEN_HEADER;
 import static org.folio.rest.impl.GOBIIntegrationServiceResourceImplTest.URL_HEADER;
+import static org.folio.rest.utils.TestUtils.checkVertxContextCompletion;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.tools.utils.NetworkUtils;
+import org.folio.rest.utils.TestUtils;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.restassured.RestAssured;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
-@RunWith(VertxUnitRunner.class)
+@ExtendWith(VertxExtension.class)
 public class MappingApiTest {
 
   private static final Logger logger = LogManager.getLogger(MappingApiTest.class);
   private final String ROOT_PATH = "/gobi/orders/mappings";
   private static final int OKAPI_PORT = NetworkUtils.nextFreePort();
-  private static final int MOCK_PORT = NetworkUtils.nextFreePort();
   private static Vertx vertx;
-  private static GOBIIntegrationServiceResourceImplTest.MockServer mockServer;
 
-  @BeforeClass
-  public static void setUpOnce(TestContext context) {
+  @BeforeAll
+  public static void setUpOnce(VertxTestContext context) throws Throwable {
     vertx = Vertx.vertx();
-
-    mockServer = new GOBIIntegrationServiceResourceImplTest.MockServer(MOCK_PORT);
-    mockServer.start(context);
 
     final JsonObject conf = new JsonObject();
     conf.put("http.port", OKAPI_PORT);
 
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, context.asyncAssertSuccess());
+    vertx.deployVerticle(RestVerticle.class.getName(), opt, (f)->{
+      context.completeNow();
+    });
+    checkVertxContextCompletion(context);
     RestAssured.port = OKAPI_PORT;
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     logger.info("GOBI Integration Service Test Setup Done using port {}", OKAPI_PORT);
   }
 
-  @AfterClass
-  public static void tearDownOnce(TestContext context) {
+  @AfterAll
+  public static void tearDownOnce(VertxTestContext context) throws Throwable {
     logger.info("GOBI Integration Service Testing Complete");
-    Async async = context.async();
     vertx.close(v -> {
-      mockServer.close();
-      async.complete();
+      context.completeNow();
     });
-    async.awaitSuccess();
+    TestUtils.checkVertxContextCompletion(context);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     GOBIIntegrationServiceResourceImplTest.MockServer.serverRqRs.clear();
   }
 
   @Test
-  public final void testGetGobiOrdersMappingsFields(TestContext context) {
+  void testGetGobiOrdersMappingsFields() {
     logger.info("Begin: Testing for Get Gobi Orders Mappings Fields 200 - valid call");
 
-    final Async asyncLocal = context.async();
     RestAssured
       .given()
       .header(TENANT_HEADER)
@@ -81,16 +77,14 @@ public class MappingApiTest {
       .then()
       .statusCode(200).body(Matchers.notNullValue());
 
-    asyncLocal.complete();
 
     logger.info("End: Testing for Get Gobi Orders Mappings Fields 200 - valid call");
   }
 
   @Test
-  public final void testGetGobiOrdersMappingsTranslators(TestContext context) {
+  final void testGetGobiOrdersMappingsTranslators() {
     logger.info("Begin: Testing for Get Gobi Orders Mappings Translators 200 - valid call");
 
-    final Async asyncLocal = context.async();
     RestAssured
       .given()
       .header(TENANT_HEADER)
@@ -101,16 +95,14 @@ public class MappingApiTest {
       .then()
       .statusCode(200).body(Matchers.notNullValue());
 
-    asyncLocal.complete();
 
     logger.info("End: Testing for Get Gobi Orders Mappings Translators 200 - valid call");
   }
 
   @Test
-  public final void testGetGobiOrdersMappingsTypes(TestContext context) {
+  public final void testGetGobiOrdersMappingsTypes() {
     logger.info("Begin: Testing for Get Gobi Orders Mappings Types 200 - valid call");
 
-    final Async asyncLocal = context.async();
     RestAssured
       .given()
       .header(TENANT_HEADER)
@@ -120,8 +112,6 @@ public class MappingApiTest {
       .get(ROOT_PATH + "/types")
       .then()
       .statusCode(200).body(Matchers.notNullValue());
-
-    asyncLocal.complete();
 
     logger.info("End: Testing for Get Gobi Orders Mappings Types 200 - valid call");
   }

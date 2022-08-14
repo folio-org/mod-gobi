@@ -1,414 +1,189 @@
 package org.folio.gobi;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.folio.rest.utils.TestUtils.getMockData;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.folio.rest.ResourcePaths;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+
 import org.folio.rest.core.RestClient;
-import org.folio.rest.impl.GOBIIntegrationServiceResourceImpl;
-import org.folio.rest.tools.utils.NetworkUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServer;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import org.junit.runner.RunWith;
+import io.vertx.core.json.JsonObject;
 
-@RunWith(VertxUnitRunner.class)
 public class LookupServiceTest {
 
+  @Mock
+  RestClient restClient;
 
-  @Test
-  public final void testSuccessLookupFundIdByFundCodeWithExpenseClass(TestContext context) {
-    testLookupFundId(context, "AFRICAHIST:Elec", false);
+  @BeforeEach
+  public void initMocks() {
+    MockitoAnnotations.openMocks(this);
   }
 
   @Test
-  public final void testShouldReturnNullFundIfFundIdNotFound(TestContext context) {
-    testLookupFundId(context, "NONEXISTENT", true);
+  void testSuccessLookupFundIdByFundCodeWithExpenseClass() throws IOException {
+    var funds = getMockData("PostGobiOrdersHelper/valid_funds.json");
+    LookupService lookupService = new LookupService(restClient);
+
+    doReturn(CompletableFuture.completedFuture(new JsonObject(funds))).when(restClient).handleGetRequest(anyString());
+    var jsonFund = lookupService.lookupFundId("AFRICAHIST:Elec").join();
+    assertNotNull(jsonFund);
   }
 
   @Test
-  public final void testLookupFirstMaterialTypes(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.MATERIAL_TYPES_ENDPOINT) && req.query().contains("*")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_materialType.json");
-      } else {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/empty_materialType.json");
-      }
-    });
+  void testShouldReturnNullFundIfFundIdNotFound() throws IOException {
+    var funds = getMockData("PostGobiOrdersHelper/empty_funds.json");
+    LookupService lookupService = new LookupService(restClient);
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
+    doReturn(CompletableFuture.completedFuture(new JsonObject(funds))).when(restClient).handleGetRequest(anyString());
+    var jsonFund = lookupService.lookupFundId("NONEXISTENT").join();
+    assertNull(jsonFund);
+  }
 
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultMaterialTypes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupMaterialTypeId("unspecified")
-        .thenAccept(list -> {
-          context.assertNotNull(list);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+  @Test
+  void testLookupFirstMaterialTypes() throws IOException {
+    var materialTypes = getMockData("PostGobiOrdersHelper/valid_materialType.json");
+
+    LookupService lookupService = new LookupService(restClient);
+
+    doReturn(CompletableFuture.completedFuture(new JsonObject(materialTypes))).when(restClient).handleGetRequest(anyString());
+    var jsonMaterialTypes = lookupService.lookupMaterialTypeId("unspecified").join();
+    assertNotNull(jsonMaterialTypes);
+
+  }
+
+  @Test
+  void testLookupEmptyMaterialTypes() throws IOException {
+    var materialTypes = getMockData("PostGobiOrdersHelper/empty_materialType.json");
+
+    LookupService lookupService = new LookupService(restClient);
+
+    doReturn(CompletableFuture.completedFuture(new JsonObject(materialTypes))).when(restClient).handleGetRequest(anyString());
+    var jsonMaterialTypes = lookupService.lookupMaterialTypeId("unspecified").join();
+    assertNull(jsonMaterialTypes);
+
   }
 
 
   @Test
-  public final void testSuccessLookupFundId(TestContext context) {
-    testLookupFundId(context, "AFRICAHIST", false);
+  void testSuccessMapLookupExpenseClassId() throws IOException {
+    var expClasses = getMockData("PostGobiOrdersHelper/valid_expenseClasses.json");
+
+    LookupService lookupService = new LookupService(restClient);
+
+    doReturn(CompletableFuture.completedFuture(new JsonObject(expClasses))).when(restClient).handleGetRequest(anyString());
+    var jsonExpClasses = lookupService.lookupExpenseClassId("Elec").join();
+
+    assertNotNull(jsonExpClasses);
+
   }
 
   @Test
-  public final void testSuccessMapLookupExpenseClassId(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.EXPENSE_CLASS_ENDPOINT) && req.query().contains("Elec")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_expenseClasses.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_expenseClasses.json");
-      }
-    });
+  void testShouldReturnNullExpenseClassIdIfExpenseClassNotFound() throws IOException {
+    var suf = getMockData("PostGobiOrdersHelper/empty_expenseClasses.json");
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
+    LookupService lookupService = new LookupService(restClient);
 
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultExpenseClasses");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupExpenseClassId("Elec")
-        .thenAccept(id -> {
-          context.assertNotNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+    doReturn(CompletableFuture.completedFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
+    var jsonSuf = lookupService.lookupExpenseClassId("not_exists").join();
+
+    assertNull(jsonSuf);
   }
 
   @Test
-  public final void testShouldReturnNullExpenseClassIdIfExpenseClassNotFound(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.EXPENSE_CLASS_ENDPOINT) && req.query().contains("Elec")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_expenseClasses.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_expenseClasses.json");
-      }
-    });
+  void testSuccessMapLookupSuffixId() throws IOException {
+    var suf = getMockData("PostGobiOrdersHelper/valid_suffix_collection.json");
+    LookupService lookupService = new LookupService(restClient);
+    doReturn(CompletableFuture.completedFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
+    var jsonSuf = lookupService.lookupSuffix("Suf").join();
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultExpenseClasses");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupExpenseClassId("Prn")
-        .thenAccept(id -> {
-          context.assertNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+    assertNotNull(jsonSuf);
   }
 
   @Test
-  public final void testSuccessMapLookupSuffixId(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.SUFFIXES_ENDPOINT) && req.query().contains("Suf")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_suffix_collection.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_suffixes.json");
-      }
-    });
+  void testShouldReturnNullIdIfSuffixNotFound() throws IOException {
+    var suf = getMockData("PostGobiOrdersHelper/empty_suffixes.json");
+    LookupService lookupService = new LookupService(restClient);
+    doReturn(CompletableFuture.completedFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
+    var jsonSuf = lookupService.lookupSuffix("Suf").join();
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testSuffixes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupSuffix("Suf")
-        .thenAccept(id -> {
-          context.assertNotNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+    assertNull(jsonSuf);
   }
 
   @Test
-  public final void testShouldReturnNullIdIfSuffixNotFound(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.SUFFIXES_ENDPOINT) && req.query().contains("Sdf")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_suffix_collection.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_suffixes.json");
-      }
-    });
+  void testSuccessMapLookupPrefixId() throws IOException {
+    var pref = getMockData("PostGobiOrdersHelper/valid_prefix_collection.json");
+    LookupService lookupService = new LookupService(restClient);
+    doReturn(CompletableFuture.completedFuture(new JsonObject(pref)))
+      .when(restClient).handleGetRequest(anyString());
+    var jsonPref = lookupService.lookupPrefix("pref")      .join();
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testPrefixes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupSuffix("NonValidAddd")
-        .thenAccept(id -> {
-          context.assertNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+    assertNotNull(jsonPref);
   }
 
   @Test
-  public final void testSuccessMapLookupPrefixId(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.PREFIXES_ENDPOINT) && req.query().contains("Pref")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_prefix_collection.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_prefixes.json");
-      }
-    });
+  void testShouldReturnNullIdIfPrefixNotFound() throws IOException {
+    var pref = getMockData("PostGobiOrdersHelper/empty_prefixes.json");
+    LookupService lookupService = new LookupService(restClient);
+    doReturn(CompletableFuture.completedFuture(new JsonObject(pref))).when(restClient)
+      .handleGetRequest(anyString());
+    var jsonPref = lookupService.lookupPrefix("pref")
+      .join();
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
+    assertNull(jsonPref);
 
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testPrefixes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupPrefix("Pref")
-        .thenAccept(id -> {
-          context.assertNotNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
   }
 
   @Test
-  public final void testShouldReturnNullIdIfPrefixNotFound(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.PREFIXES_ENDPOINT) && req.query().contains("Pref")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_prefix_collection.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_prefixes.json");
-      }
-    });
+  void testSuccessMapLookupAddressId() throws IOException {
+    var address = getMockData("PostGobiOrdersHelper/valid_address_collection.json");
+    LookupService lookupService = new LookupService(restClient);
+    doReturn(CompletableFuture.completedFuture(new JsonObject(address)))
+      .when(restClient).handleGetRequest(anyString());
+    var jsonAddress = lookupService.lookupConfigAddress("address").join();
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testSuffixes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupPrefix("NonValidAddd")
-        .thenAccept(id -> {
-          context.assertNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+    assertNotNull(jsonAddress);
   }
 
   @Test
-  public final void testSuccessMapLookupAddressId(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.CONFIGURATION_ENDPOINT) && req.query().contains("Address")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_address_collection.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_address.json");
-      }
-    });
+  void testShouldReturnNullIdIfAddressNotFound() throws IOException {
+    var address = getMockData("PostGobiOrdersHelper/empty_address.json");
+    LookupService lookupService = new LookupService(restClient);
+    doReturn(CompletableFuture.completedFuture(new JsonObject(address)))
+      .when(restClient).handleGetRequest(anyString());
+    var jsonAddress = lookupService.lookupConfigAddress("address").join();
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testPrefixes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupConfigAddress("Address")
-        .thenAccept(id -> {
-          context.assertNotNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+    assertNull(jsonAddress);
   }
 
   @Test
-  public final void testShouldReturnNullIdIfAddressNotFound(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.CONFIGURATION_ENDPOINT) && req.query().contains("Address")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_address_collection.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_address.json");
-      }
-    });
+  void testSuccessMapLookupPoLineId() throws IOException {
+    var poline = getMockData("PostGobiOrdersHelper/valid_po_line_collection.json");
+    LookupService lookupService = new LookupService(restClient);
+    doReturn(CompletableFuture.completedFuture(new JsonObject(poline)))
+      .when(restClient).handleGetRequest(anyString());
+    var jsonPoline = lookupService.lookupLinkedPackage("line").join();
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testSuffixes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupConfigAddress("NonValid")
-        .thenAccept(id -> {
-          context.assertNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+    assertNotNull(jsonPoline);
   }
 
   @Test
-  public final void testSuccessMapLookupPoLineId(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.ORDER_LINES_ENDPOINT) && req.query().contains("343434343")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_po_line_collection.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_po_lines.json");
-      }
-    });
+  void testShouldReturnNullIdIfPoLineNotFound() throws IOException {
 
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
+    var poline = getMockData("PostGobiOrdersHelper/empty_po_lines.json");
+    LookupService lookupService = new LookupService(restClient);
+    doReturn(CompletableFuture.completedFuture(new JsonObject(poline)))
+      .when(restClient).handleGetRequest(anyString());
+    var jsonPoline = lookupService.lookupLinkedPackage("line").join();
 
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testPrefixes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupLinkedPackage("343434343")
-        .thenAccept(id -> {
-          context.assertNotNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
+    assertNull(jsonPoline);
   }
 
-  @Test
-  public final void testShouldReturnNullIdIfPoLineNotFound(TestContext context) {
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.ORDER_LINES_ENDPOINT) && req.query().contains("22222")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_po_line_collection.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_po_lines.json");
-      }
-    });
-
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testSuffixes");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupLinkedPackage("NonValid")
-        .thenAccept(id -> {
-          context.assertNull(id);
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
-  }
-
-  private void testLookupFundId(TestContext context, String fundCode, boolean shouldReturnNull) {
-
-    final Async async = context.async();
-    final Vertx vertx = Vertx.vertx();
-    final HttpServer server = vertx.createHttpServer();
-    server.requestHandler(req -> {
-      if (req.path().equals(ResourcePaths.FUNDS_ENDPOINT) && req.query().contains("AFRICAHIST")) {
-        req.response().setStatusCode(200).sendFile("PostGobiOrdersHelper/valid_funds.json");
-      } else {
-        req.response().setStatusCode(200).sendFile( "PostGobiOrdersHelper/empty_funds.json");
-      }
-    });
-
-    int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
-      context.assertTrue(ar.succeeded());
-
-      Map<String, String> okapiHeaders = new HashMap<>();
-      okapiHeaders.put("X-Okapi-Url", "http://localhost:" + port);
-      okapiHeaders.put("x-okapi-tenant", "testDefaultFunds");
-      RestClient restClient = new RestClient(GOBIIntegrationServiceResourceImpl.getHttpClient(okapiHeaders), okapiHeaders, vertx.getOrCreateContext());
-      LookupService lookupService = new LookupService(restClient);
-      lookupService.lookupFundId(fundCode)
-        .thenAccept(id -> {
-          if (shouldReturnNull) {
-            context.assertNull(id);
-          } else {
-            context.assertNotNull(id);
-          }
-          vertx.close(context.asyncAssertSuccess());
-          async.complete();
-        });
-    });
-  }
 }

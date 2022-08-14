@@ -43,11 +43,6 @@ public class RestClient {
   public static final String X_OKAPI_URL = "X-Okapi-Url";
   private static final String CALLING_ENDPOINT_MSG = "Sending {} {}";
 
-  public RestClient(HttpClientInterface httpClient, Map<String, String> okapiHeaders, Context ctx) {
-    this.httpClient = httpClient;
-    this.ctx = ctx;
-    this.okapiHeaders = okapiHeaders;
-  }
 
   public RestClient(Map<String, String> okapiHeaders, Context ctx) {
     final String okapiURL = okapiHeaders.getOrDefault(X_OKAPI_URL, "");
@@ -56,10 +51,6 @@ public class RestClient {
     this.httpClient = HttpClientFactory.getHttpClient(okapiURL, tenantId);
     this.ctx = ctx;
     this.okapiHeaders = okapiHeaders;
-  }
-
-  public HttpClientInterface getHttpClient() {
-    return httpClient;
   }
 
   public Context getCtx() {

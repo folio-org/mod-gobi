@@ -11,8 +11,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -25,7 +23,6 @@ import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.jaxrs.model.OrderMappingsView;
 import org.folio.rest.jaxrs.model.OrderMappingsViewCollection;
 
-import io.vertx.core.Context;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
@@ -36,8 +33,8 @@ public class GobiCustomMappingsService {
   public static final String MAPPINGS_BY_ORDER_TYPE_QUERY = "module==GOBI AND configName==orderMappings AND code==gobi.order.%s";
   private static final Logger logger = LogManager.getLogger(GobiCustomMappingsService.class);
 
-  public GobiCustomMappingsService(Map<String, String> okapiHeaders, Context vertxContext) {
-    this.restClient = new RestClient(okapiHeaders, vertxContext);
+  public GobiCustomMappingsService(RestClient client) {
+    this.restClient = client;
   }
 
   public CompletableFuture<OrderMappingsViewCollection> getCustomMappingListByQuery(int offset, int limit) {
@@ -75,24 +72,15 @@ public class GobiCustomMappingsService {
   }
 
   private OrderMappingsViewCollection buildOrderMappingsViewCollectionResponse(JsonObject configs) {
-    List<OrderMappings> defaultMappings = loadDefaultMappings();
-    var omvc = new OrderMappingsViewCollection();
-    List<Config> configList = configs.getJsonArray(CONFIG_FIELD)
-      .stream()
-      .map(JsonObject.class::cast)
-      .map(json -> json.mapTo(Config.class))
+    var defaultMappings = loadDefaultMappings().stream()
+      .map(defMap -> new OrderMappingsView()
+        .withMappingType(OrderMappingsView.MappingType.DEFAULT)
+        .withOrderMappings(defMap))
       .collect(toList());
 
-
-  //  final List<Mapping> orderMappingList = orderMapping.getMappings();
-    List<OrderMappingsView> omv = configList.stream()
-      .map(conf -> new OrderMappingsView()
-        .withMappingType(OrderMappingsView.MappingType.CUSTOM)
-        .withOrderMappings(null))
-      .collect(toList());
-
-    omvc.withOrderMappingsViews(omv);
-    return omvc;
+    return new OrderMappingsViewCollection()
+      .withOrderMappingsViews(defaultMappings)
+      .withTotalRecords(defaultMappings.size());
   }
 
   private List<OrderMappings> loadDefaultMappings() {

@@ -41,14 +41,13 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
   public void postGobiOrders(String entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext) {
 
-    HttpClientInterface httpClient = getHttpClient(okapiHeaders);
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders, vertxContext);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, vertxContext);
 
     logger.info("Parsing Request: \n {}", entity);
     helper.parse(entity)
       .thenCompose(gobiPO -> {
         logger.info("Mapping Request...");
-        return helper.mapToPurchaseOrder(gobiPO);
+        return helper.mapToPurchaseOrder(gobiPO, vertxContext);
       })
       .thenCompose(helper::getOrPlaceOrder)
       .thenAccept(poLineNumber -> {
