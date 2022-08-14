@@ -244,6 +244,7 @@
       "subPermissions": [
         "gobi.item.post",
         "gobi.orders.mappings.all",
+        "gobi.custom-mappings.all",
         "gobi.custom-mappings.all"
       ]
     },
