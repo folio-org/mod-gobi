@@ -1,20 +1,14 @@
 package org.folio.rest.impl;
 
-import static org.folio.rest.core.RestClient.X_OKAPI_URL;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.GobiResponseWriter;
-import org.folio.rest.RestVerticle;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.jaxrs.resource.Gobi;
-import org.folio.rest.tools.client.HttpClientFactory;
-import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.rest.tools.utils.BinaryOutStream;
-import org.folio.rest.tools.utils.TenantTool;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -57,13 +51,6 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
         asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(binaryOutStream)));
       })
       .exceptionally(helper::handleError);
-  }
-
-  public static HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {
-    final String okapiURL = okapiHeaders.getOrDefault(X_OKAPI_URL, "");
-    final String tenantId = TenantTool.calculateTenantId(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TENANT));
-
-    return HttpClientFactory.getHttpClient(okapiURL, tenantId);
   }
 
   @Override
