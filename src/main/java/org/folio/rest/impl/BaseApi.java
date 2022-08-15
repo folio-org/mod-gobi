@@ -12,12 +12,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.HttpException;
@@ -104,7 +101,7 @@ public class BaseApi {
       errors = ((HttpException) cause).getErrors();
       List<Error> errorList = errors.getErrors()
         .stream()
-        .map(this::mapToError)
+        .map(error-> new JsonObject(error.getMessage()).mapTo(Error.class))
         .collect(toList());
       errors.setErrors(errorList);
     } else {
@@ -115,21 +112,4 @@ public class BaseApi {
     return errors;
   }
 
-  private Error mapToError(Error error) {
-    if (isErrorMessageJson(error.getMessage())) {
-      return new JsonObject(error.getMessage()).mapTo(Error.class);
-    }
-    return error;
-  }
-
-  public boolean isErrorMessageJson(String errorMessage) {
-    if (!StringUtils.isEmpty(errorMessage)) {
-      Pattern pattern = Pattern.compile("(message).*(code).*(parameters)");
-      Matcher matcher = pattern.matcher(errorMessage);
-      if (matcher.find()) {
-        return matcher.groupCount() == 3;
-      }
-    }
-    return false;
-  }
 }
