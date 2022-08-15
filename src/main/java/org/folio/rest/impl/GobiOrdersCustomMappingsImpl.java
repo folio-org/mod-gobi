@@ -63,7 +63,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
     new GobiCustomMappingsService(rc)
       .putCustomMapping(orderType, orderMappings)
-      .thenAccept(types -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
+      .thenAccept(v -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
       .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
 
@@ -74,7 +74,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
     new GobiCustomMappingsService(rc)
       .getCustomMappingByOrderType(orderType)
-      .thenAccept(type -> asyncResultHandler.handle(succeededFuture(buildOkResponse(type))))
+      .thenAccept(omv -> asyncResultHandler.handle(succeededFuture(buildOkResponse(omv))))
       .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
 
