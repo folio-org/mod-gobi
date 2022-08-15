@@ -93,9 +93,7 @@ public class GobiOrdersCustomMappingsImplTest {
     log.info("GOBI Integration Service Testing Complete");
     Async async = context.async();
 
-    vertx.close(v -> {
-      async.complete();
-    });
+    vertx.close(v -> async.complete());
     async.await();
   }
 
@@ -138,7 +136,7 @@ public class GobiOrdersCustomMappingsImplTest {
   }
 
   @Test
-  public void testDeleteGobiOrdersCustomMappingsByOrderType() throws IOException {
+  public void testDeleteGobiOrdersCustomMappingsByOrderType() {
     WireMock.stubFor(WireMock.get(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
       .willReturn(WireMock.okJson(jsonConfigs)
         .withBody(jsonConfigs)));
@@ -151,6 +149,24 @@ public class GobiOrdersCustomMappingsImplTest {
       .delete("/gobi/orders/custom-mappings/" + LISTED_PRINT_MONOGRAPH)
       .then()
       .statusCode(200)
+      .contentType(APPLICATION_JSON)
+      .body(Matchers.notNullValue());
+  }
+
+  @Test
+  public void testDeleteGobiOrdersCustomMappingsByOrderTypeBadRequest() {
+    WireMock.stubFor(WireMock.get(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
+      .willReturn(WireMock.okJson(jsonConfigs)
+        .withBody(jsonConfigs)));
+
+    WireMock.stubFor(WireMock.delete(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
+      .willReturn(WireMock.badRequest()));
+
+    RestAssured.with()
+      .spec(spec)
+      .delete("/gobi/orders/custom-mappings/" + LISTED_PRINT_MONOGRAPH)
+      .then()
+      .statusCode(400)
       .contentType(APPLICATION_JSON)
       .body(Matchers.notNullValue());
   }
