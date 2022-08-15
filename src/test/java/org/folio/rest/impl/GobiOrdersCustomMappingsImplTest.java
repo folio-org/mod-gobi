@@ -78,7 +78,7 @@ public class GobiOrdersCustomMappingsImplTest {
   }
 
   @Before
-  public void setUpForEach(TestContext context) {
+  public void setUpForEach() {
     spec = new RequestSpecBuilder().setContentType(ContentType.JSON)
       .addHeader("x-okapi-url", "http://localhost:" + wireMockServer.port())
       .addHeader(OKAPI_HEADER_TENANT, "GobiOrdersCustomMappingsImplTest")
@@ -89,7 +89,7 @@ public class GobiOrdersCustomMappingsImplTest {
   }
 
   @AfterClass
-  public static void tearDownOnce(TestContext context) throws Throwable {
+  public static void tearDownOnce(TestContext context) {
     log.info("GOBI Integration Service Testing Complete");
     Async async = context.async();
 

@@ -12,12 +12,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.HttpException;
@@ -26,6 +23,7 @@ import org.folio.rest.jaxrs.model.Errors;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 
 public class BaseApi {
@@ -117,14 +115,13 @@ public class BaseApi {
   }
 
   public boolean isErrorMessageJson(String errorMessage) {
-    if (!StringUtils.isEmpty(errorMessage)) {
-      Pattern pattern = Pattern.compile("(message).*(code).*(parameters)");
-      Matcher matcher = pattern.matcher(errorMessage);
-      if (matcher.find()) {
-        return matcher.groupCount() == 3;
-      }
+    try {
+      new JsonObject(errorMessage);
+      return true;
     }
-    return false;
+    catch (DecodeException e) {
+      return false;
+    }
   }
 
   private Error mapToError(Error error) {
