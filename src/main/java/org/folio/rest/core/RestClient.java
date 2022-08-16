@@ -155,9 +155,7 @@ public class RestClient {
 
   public CompletableFuture<Void> delete(String endpointById) {
     CompletableFuture<Void> future = new FolioVertxCompletableFuture<>(ctx);
-    if (logger.isDebugEnabled()) {
-      logger.debug(CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpointById);
-    }
+    logger.debug(CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpointById);
     setDefaultHeaders(httpClient);
 
     try {
