@@ -1,19 +1,17 @@
 package org.folio.gobi;
 
 import static java.util.stream.Collectors.groupingBy;
-import static org.folio.rest.mappings.model.Mapping.Field.ACCESS_PROVIDER;
-import static org.folio.rest.mappings.model.Mapping.Field.BILL_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.EXPENSE_CLASS;
-import static org.folio.rest.mappings.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.mappings.model.Mapping.Field.PREFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.SHIP_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.SUFFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.TITLE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.folio.rest.jaxrs.model.Mapping.Field.ACCESS_PROVIDER;
+import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXPENSE_CLASS;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.TITLE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,18 +24,19 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.OrderMappings;
-import org.folio.rest.mappings.model.OrderMappings.OrderType;
-import org.junit.Before;
-import org.junit.Test;
+import org.folio.rest.jaxrs.model.Mapping;
+import org.folio.rest.jaxrs.model.OrderMappings;
+import org.folio.rest.jaxrs.model.OrderMappings.OrderType;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import mockit.Mock;
 import mockit.MockUp;
-import org.mockito.Mockito;
 
 public class MappingHelperTest {
 
@@ -61,7 +60,7 @@ public class MappingHelperTest {
   private FieldMappingTranslatorResolver fieldMappingTranslatorResolver = new FieldMappingTranslatorResolver(lookupService);
   private MappingHelper mappingHelper = new MappingHelper(fieldMappingTranslatorResolver);
 
-  @Before
+  @BeforeEach
   public void setUp() {
    logger.info("Begin: SetUp by initializing a default mapping");
 
@@ -74,29 +73,29 @@ public class MappingHelperTest {
 
     JsonObject prefixId = new JsonObject().put("field", PREFIX.value())
       .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData1']/Value").put("translation", "lookupPrefix"));;
+        new JsonObject().put("from", "//LocalData[Description='LocalData1']/Value").put("translation", "lookupPrefix"));
 
     JsonObject suffixId = new JsonObject().put("field", SUFFIX.value())
       .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData2']/Value").put("translation", "lookupSuffix"));;
+        new JsonObject().put("from", "//LocalData[Description='LocalData2']/Value").put("translation", "lookupSuffix"));
     expectedListedPrintMonographJsonObj.put("mappings",
       new JsonArray().add(suffixId));
 
     JsonObject billToId = new JsonObject().put("field", BILL_TO.value())
       .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData3']/Value").put("translation", "lookupConfigAddress"));;
+        new JsonObject().put("from", "//LocalData[Description='LocalData3']/Value").put("translation", "lookupConfigAddress"));
 
     JsonObject shipToId = new JsonObject().put("field", SHIP_TO.value())
       .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData4']/Value").put("translation", "lookupConfigAddress"));;
+        new JsonObject().put("from", "//LocalData[Description='LocalData4']/Value").put("translation", "lookupConfigAddress"));
 
     JsonObject expenseClass = new JsonObject().put("field", EXPENSE_CLASS.value())
       .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData5']/Value").put("translation", "lookupExpenseClassId"));;
+        new JsonObject().put("from", "//LocalData[Description='LocalData5']/Value").put("translation", "lookupExpenseClassId"));
 
     JsonObject linkedPackageId = new JsonObject().put("field", LINKED_PACKAGE.value())
       .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData6']/Value").put("translation", "lookupLinkedPackage"));;
+        new JsonObject().put("from", "//LocalData[Description='LocalData6']/Value").put("translation", "lookupLinkedPackage"));
 
 
     JsonObject combinatorTitle = new JsonObject().put("field", TITLE.value())
@@ -154,34 +153,33 @@ public class MappingHelperTest {
     assertEquals("PRODUCT_ID", mapping2.getField().toString());
   }
 
-  @Test(expected=NullPointerException.class)
-  public void testNullFilePath() {
+  @Test()
+  void testNullFilePath() {
     logger.info("Begin: Testing for failure when default mappings filepath is null");
-    fail(MappingHelper.readMappingsFile(null));
+    Assertions.assertThrows(NullPointerException.class, () -> MappingHelper.readMappingsFile(null));
   }
 
-  @Test(expected=NullPointerException.class)
-  public void testHelperUtilsExtractSubAccount() {
+  @Test()
+  void testHelperUtilsExtractSubAccount() {
     logger.info("Begin: Testing for failure when AccountNo is null");
-    assertNull(HelperUtils.normalizeSubAccout(null));
+    Assertions.assertThrows(NullPointerException.class, () -> HelperUtils.normalizeSubAccout(null));
   }
 
   @Test
-  public void testMapperNodeListMultiply() {
+  void testMapperNodeListMultiply() {
     logger.info("Begin: Testing for null when NodeList is null");
-    assertNull(Mapper.multiply(null));
+    Assertions.assertNull(Mapper.multiply(null));
   }
 
   @Test
-  public void testMapperNodeListConcat() {
+  void testMapperNodeListConcat() {
     logger.info("Begin: Testing for null when NodeList is null");
-    assertNull(Mapper.concat(null));
+    Assertions.assertNull(Mapper.concat(null));
   }
 
   @Test
-  public void testMappingHelperDefaultMappingGetDSMapping1() {
-    logger.info(
-        "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType ListedPrintMonograph");
+  void testMappingHelperDefaultMappingGetDSMapping1() {
+    logger.info("Begin: Testing for default mapping when it returns a DataSource mapping for OrderType ListedPrintMonograph");
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping1 = new LinkedHashMap<>();
     org.folio.gobi.DataSourceResolver dataSource = mappingHelper.getDS(mappingAccessProvider, fieldDataSourceMapping1);
     assertEquals("//PurchaseOption/VendorPOCode", dataSource.from);
@@ -189,7 +187,7 @@ public class MappingHelperTest {
   }
 
   @Test
-  public void testMappingHelperDefaultMappingGetDSMapping2() {
+  void testMappingHelperDefaultMappingGetDSMapping2() {
     logger.info(
         "Begin: Testing for default mapping when it returns a DataSource mapping for OrderType UnlistedPrintMonograph");
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping2 = new LinkedHashMap<>();
@@ -200,12 +198,12 @@ public class MappingHelperTest {
   }
 
   @Test
-  public void readMappingsFile_mappingFileNotFound() {
+  void readMappingsFile_mappingFileNotFound() {
     assertEquals("", MappingHelper.readMappingsFile("errorType"));
   }
 
   @Test
-  public void readMappingsFile_IOException() {
+  void readMappingsFile_IOException() {
     new MockUp<IOUtils>() {
       @Mock
       String toString(final InputStream input, final Charset encoding) throws IOException {
@@ -217,7 +215,7 @@ public class MappingHelperTest {
   }
 
   @Test
-  public void testShouldSuccessMapDiffLookups() {
+  void testShouldSuccessMapDiffLookups() {
     Map<Mapping.Field, List<Mapping>> mappings = actuallistedPrintMappings.getMappings().stream().collect(groupingBy(Mapping::getField));
     org.folio.gobi.DataSourceResolver dataSourcePrefix = mappingHelper.getDS(mappings.get(PREFIX).get(0), fieldDataSourceMapping);
 
@@ -238,7 +236,7 @@ public class MappingHelperTest {
   }
 
   @Test
-  public void testShouldSuccessMapExpenseClass() {
+  void testShouldSuccessMapExpenseClass() {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new LinkedHashMap<>();
     org.folio.gobi.DataSourceResolver dataSource = mappingHelper.getDS(mappingExpenseClass, fieldDataSourceMapping);
     assertEquals("//LocalData[Description='LocalData5']/Value", dataSource.from);

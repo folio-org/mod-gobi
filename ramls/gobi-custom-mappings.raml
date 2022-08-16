@@ -1,0 +1,60 @@
+#%RAML 1.0
+title: GOBI® (Global Online Bibliographic Information) Integration
+baseUri: https://github.com/folio-org/mod-gobi
+protocols: [ HTTPS ]
+version: v1
+
+documentation:
+  - title: GOBI® (Global Online Bibliographic Information) Integration
+    content: |
+      GOBI® (Global Online Bibliographic Information) is the leading web-based
+      acquisitions tool for finding, ordering and managing e-books and print
+      books for libraries. This module allows GOBI initiated orders to be
+      fulfilled by FOLIO.
+types:
+  errors: !include raml-util/schemas/errors.schema
+  order-mappings: !include acq-models/mod-gobi/schemas/order_mappings.json
+  order-mappings-view: !include acq-models/mod-gobi/schemas/order_mappings_view.json
+  order-mappings-view-collection: !include acq-models/mod-gobi/schemas/order_mappings_view_collection.json
+  UUID:
+    type: string
+    pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+
+resourceTypes:
+  collection: !include raml-util/rtypes/collection-with-json-response.raml
+  collection-get: !include raml-util/rtypes/collection-get.raml
+  collection-item: !include raml-util/rtypes/item-collection-with-json-response.raml
+
+
+traits:
+  language: !include raml-util/traits/language.raml
+  pageable: !include raml-util/traits/pageable.raml
+  searchable: !include raml-util/traits/searchable.raml
+  validate: !include raml-util/traits/validation.raml
+
+/gobi/orders/custom-mappings:
+  displayName: Acquisition methods
+  description: Acquisition methods APIs
+  type:
+    collection:
+      exampleCollection: !include acq-models/mod-gobi/examples/orders_mapping.sample
+      exampleItem: !include acq-models/mod-gobi/examples/orders_mapping.sample
+      schemaCollection: order-mappings-view-collection
+      schemaItem: order-mappings
+  get:
+    description: Get list of acquisition methods
+    is: [
+      searchable: { description: "with valid searchable fields: for example code", example: "[\"value\", \"Purchase At Vendor System\", \"=\"]" },
+      pageable
+    ]
+  /{orderType}:
+    uriParameters:
+      orderType:
+        description: The order type
+        type: string
+    displayName: Acquisition method
+    description: Get, Delete or Update a specific acquisition method
+    type:
+      collection-item:
+        exampleItem: !include acq-models/mod-gobi/examples/orders_mapping.sample
+        schema: order-mappings

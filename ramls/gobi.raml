@@ -14,7 +14,7 @@ documentation:
 
 /gobi:
   /validate:
-    displayName: Validate Access to GOBI Inegration service
+    displayName: Validate Access to GOBI Integration service
     description: Validates the user has proper access to the module
     get:
       description: Validates the user has proper access to the module
@@ -23,7 +23,7 @@ documentation:
           description: The user is valid
           body:
             application/xml:
-              example: "<test>GET - OK</test>"          
+              example: "<test>GET - OK</test>"
         401:
           description: Not authorized to perform requested action
           body:

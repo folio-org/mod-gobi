@@ -1,25 +1,25 @@
 package org.folio.gobi;
 
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_ACQUISITION_METHOD_IDS;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_CONFIG_ADDRESS;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_CONTRIBUTOR_NAME_TYPE_ID;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_EXPENSE_CLASS_ID;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_FUND_ID;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_LINKED_PACKAGE;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_LOCATION_ID;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_MATERIAL_TYPE_ID;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_MOCK;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_ORGANIZATION;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_PREFIX;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_PRODUCT_ID_TYPE;
-import static org.folio.rest.mappings.model.DataSource.Translation.LOOKUP_SUFFIX;
-import static org.folio.rest.mappings.model.DataSource.Translation.SEPARATE_ISBN_QUALIFIER;
-import static org.folio.rest.mappings.model.DataSource.Translation.TO_BOOLEAN;
-import static org.folio.rest.mappings.model.DataSource.Translation.TO_DATE;
-import static org.folio.rest.mappings.model.DataSource.Translation.TO_DOUBLE;
-import static org.folio.rest.mappings.model.DataSource.Translation.TO_INTEGER;
-import static org.folio.rest.mappings.model.DataSource.Translation.TRUNCATE_ISBN_QUALIFIER;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ACQUISITION_METHOD_IDS;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_CONFIG_ADDRESS;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_CONTRIBUTOR_NAME_TYPE_ID;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_EXPENSE_CLASS_ID;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_FUND_ID;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_LOCATION_ID;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_MATERIAL_TYPE_ID;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_MOCK;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ORGANIZATION;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_PREFIX;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_PRODUCT_ID_TYPE;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_SUFFIX;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.SEPARATE_ISBN_QUALIFIER;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.TO_BOOLEAN;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.TO_DATE;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.TO_DOUBLE;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.TO_INTEGER;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.TRUNCATE_ISBN_QUALIFIER;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -29,7 +29,7 @@ import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.rest.mappings.model.DataSource;
+import org.folio.rest.jaxrs.model.DataSource;
 
 public class FieldMappingTranslatorResolver {
   private static final Logger logger = LogManager.getLogger(FieldMappingTranslatorResolver.class);

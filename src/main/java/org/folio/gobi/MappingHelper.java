@@ -15,10 +15,8 @@ import org.apache.logging.log4j.Logger;
 import org.folio.gobi.Mapper.NodeCombinator;
 import org.folio.gobi.Mapper.Translation;
 import org.folio.rest.impl.PostGobiOrdersHelper;
-import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.Mapping.Field;
-import org.folio.rest.mappings.model.OrderMappings;
-import org.folio.rest.mappings.model.OrderMappings.OrderType;
+import org.folio.rest.jaxrs.model.Mapping;
+import org.folio.rest.jaxrs.model.OrderMappings;
 import org.w3c.dom.NodeList;
 
 import io.vertx.core.json.Json;
@@ -41,7 +39,7 @@ public class MappingHelper {
     }
   }
 
-  public Map<Mapping.Field, DataSourceResolver> getDefaultMappingForOrderType(OrderType orderType) {
+  public Map<Mapping.Field, DataSourceResolver> getDefaultMappingForOrderType(OrderMappings.OrderType orderType) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
     List<Mapping> mappingsList = defaultMappings.get(orderType).getMappings();
 
@@ -54,14 +52,14 @@ public class MappingHelper {
     return fieldDataSourceMapping;
   }
 
-  public Object getDefaultValue(org.folio.rest.mappings.model.DataSource dataSource,
-      Map<Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping) {
+  public Object getDefaultValue(org.folio.rest.jaxrs.model.DataSource dataSource,
+      Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping) {
     Object ret = null;
     if (dataSource.getDefault() != null) {
       ret = dataSource.getDefault();
     } else if (dataSource.getFromOtherField() != null) {
       String otherField = dataSource.getFromOtherField().value();
-      ret = fieldDataSourceMapping.get(Field.valueOf(otherField));
+      ret = fieldDataSourceMapping.get(Mapping.Field.valueOf(otherField));
     } else if (dataSource.getDefaultMapping() != null) {
       ret = getDS(dataSource.getDefaultMapping(), fieldDataSourceMapping);
     }
@@ -70,13 +68,13 @@ public class MappingHelper {
 
   @SuppressWarnings("unchecked")
   public org.folio.gobi.DataSourceResolver getDS(Mapping mapping,
-      Map<Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping) {
+      Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping) {
 
     Object defaultValue = getDefaultValue(mapping.getDataSource(), fieldDataSourceMapping);
     Boolean translateDefault = mapping.getDataSource().getTranslateDefault();
     String dataSourceFrom = mapping.getDataSource().getFrom();
 
-    org.folio.rest.mappings.model.DataSource.Combinator combinator = mapping.getDataSource().getCombinator();
+    org.folio.rest.jaxrs.model.DataSource.Combinator combinator = mapping.getDataSource().getCombinator();
     NodeCombinator nc = null;
     if (combinator != null) {
       try {
@@ -96,7 +94,7 @@ public class MappingHelper {
       }
     }
 
-    org.folio.rest.mappings.model.DataSource.Translation translation = mapping.getDataSource().getTranslation();
+    org.folio.rest.jaxrs.model.DataSource.Translation translation = mapping.getDataSource().getTranslation();
     Translation<?> t = fieldMappingTranslatorResolver.resolve(translation);
     return org.folio.gobi.DataSourceResolver.builder()
         .withFrom(dataSourceFrom)

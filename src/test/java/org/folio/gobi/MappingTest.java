@@ -1,20 +1,18 @@
 package org.folio.gobi;
 
-import static org.folio.rest.mappings.model.Mapping.Field.BILL_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.EXCHANGE_RATE;
-import static org.folio.rest.mappings.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.mappings.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
-import static org.folio.rest.mappings.model.Mapping.Field.PREFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.SHIP_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.SUFFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.URL;
+import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXCHANGE_RATE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNotNull;
 
 import java.io.InputStream;
 import java.util.EnumMap;
@@ -33,12 +31,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
-import org.folio.rest.mappings.model.Mapping;
-import org.folio.rest.mappings.model.OrderMappings;
+import org.folio.rest.jaxrs.model.Mapping;
+import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.tools.utils.NetworkUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.w3c.dom.Document;
 
@@ -56,7 +55,7 @@ public class MappingTest {
   private int port = NetworkUtils.nextFreePort();
   private Map<String, String> okapiHeaders = new HashMap<>();
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     InputStream data = this.getClass().getClassLoader().getResourceAsStream(testdataPath);
     doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
@@ -64,19 +63,19 @@ public class MappingTest {
     okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
   }
 
   @Test
-  public void testBasicXPath() throws Exception {
+  void testBasicXPath() throws Exception {
     logger.info("begin: Test Mapping - xpath evalutation");
     assertEquals("Hello World", DataSourceResolver.builder().withFrom("//Doo/Dah").build().resolve(doc).get());
     assertEquals("DIT", DataSourceResolver.builder().withFrom("//Bar[@attr='dit']").build().resolve(doc).get());
   }
 
   @Test
-  public void testDefaults() throws Exception {
+  void testDefaults() throws Exception {
     logger.info("begin: Test Mapping - defaults");
     // default to a string literal
     assertEquals("PKD", DataSourceResolver.builder().withFrom("//Doo/Dud").withDefault("PKD").build().resolve(doc).get());
@@ -95,7 +94,7 @@ public class MappingTest {
   }
 
   @Test
-  public void testCombinators() throws Exception {
+  void testCombinators() throws Exception {
     logger.info("begin: Test Mapping - combinators");
 
     assertEquals("DITDATDOT", DataSourceResolver.builder().withFrom("//Bar").build().resolve(doc).get());
@@ -109,7 +108,7 @@ public class MappingTest {
   }
 
   @Test
-  public void testTranslations() throws Exception {
+  void testTranslations() throws Exception {
     logger.info("begin: Test Mapping - translations");
 
     assertEquals("HELLO WORLD",
@@ -120,21 +119,22 @@ public class MappingTest {
         DataSourceResolver.builder().withFrom("//Zip").withTranslation(Mapper::toInteger).build().resolve(doc).get());
   }
 
-  @Test(expected = ExecutionException.class)
-  public void testExceptionInTranslator() throws Exception {
-    DataSourceResolver.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get();
-  }
-
-  @Test(expected = CompletionException.class)
-  public void testExceptionInApplyDefault() throws Exception {
-    logger.info("begin: Test Exception in applyDefault()");
-
-    DataSourceResolver defMapping = DataSourceResolver.builder().withFrom("//Bar[@attr='dat']").build();
-    DataSourceResolver.builder().withDefault(defMapping).build().resolve(null).get();
+  @Test
+  void testExceptionInTranslator() {
+   Assertions.assertThrows(ExecutionException.class, () -> DataSourceResolver.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get());
   }
 
   @Test
-  public final void testSuccessLookupMappingOrdersPOListedPrintMonographWithNewAddedLookupsModGobi152() throws Exception {
+   void testExceptionInApplyDefault() throws Exception {
+    logger.info("begin: Test Exception in applyDefault()");
+    DataSourceResolver defMapping = DataSourceResolver.builder().withFrom("//Bar[@attr='dat']").build();
+
+    Assertions.assertThrows(CompletionException.class,
+      () -> DataSourceResolver.builder().withDefault(defMapping).build().resolve(null).get());
+  }
+
+  @Test
+  void testSuccessLookupMappingOrdersPOListedPrintMonographWithNewAddedLookupsModGobi152() throws Exception {
     //Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();
@@ -185,7 +185,7 @@ public class MappingTest {
   }
 
   @Test
-  public final void shouldCreateOrderInPendingStatusIfErrorsOccurredInTheLookupMappingModGobi152() throws Exception {
+  void shouldCreateOrderInPendingStatusIfErrorsOccurredInTheLookupMappingModGobi152() throws Exception {
     //Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();
@@ -230,7 +230,7 @@ public class MappingTest {
   }
 
   @Test
-  public final void shouldCreateOrderInPendingStatusIfValueNotFoundInTheLookupMappingModGobi152() throws Exception {
+  void shouldCreateOrderInPendingStatusIfValueNotFoundInTheLookupMappingModGobi152() throws Exception {
     //Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();

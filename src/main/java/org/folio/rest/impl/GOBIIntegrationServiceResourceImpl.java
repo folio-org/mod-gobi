@@ -6,13 +6,9 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.GobiResponseWriter;
-import org.folio.rest.RestVerticle;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.jaxrs.resource.Gobi;
-import org.folio.rest.tools.client.HttpClientFactory;
-import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.rest.tools.utils.BinaryOutStream;
-import org.folio.rest.tools.utils.TenantTool;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -25,7 +21,6 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
   private static final String GET_DATA = "<test>GET - OK</test>";
   private static final String POST_DATA = "<test>POST - OK</test>";
 
-  public static final String OKAPI_HEADER_URL = "X-Okapi-Url";
 
 
   @Override
@@ -40,14 +35,13 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
   public void postGobiOrders(String entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext) {
 
-    HttpClientInterface httpClient = getHttpClient(okapiHeaders);
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(httpClient, asyncResultHandler, okapiHeaders, vertxContext);
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, vertxContext);
 
     logger.info("Parsing Request: \n {}", entity);
     helper.parse(entity)
       .thenCompose(gobiPO -> {
         logger.info("Mapping Request...");
-        return helper.mapToPurchaseOrder(gobiPO);
+        return helper.mapToPurchaseOrder(gobiPO, vertxContext);
       })
       .thenCompose(helper::getOrPlaceOrder)
       .thenAccept(poLineNumber -> {
@@ -57,13 +51,6 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
         asyncResultHandler.handle(Future.succeededFuture(PostGobiOrdersResponse.respond201WithApplicationXml(binaryOutStream)));
       })
       .exceptionally(helper::handleError);
-  }
-
-  public static HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {
-    final String okapiURL = okapiHeaders.getOrDefault(OKAPI_HEADER_URL, "");
-    final String tenantId = TenantTool.calculateTenantId(okapiHeaders.get(RestVerticle.OKAPI_HEADER_TENANT));
-
-    return HttpClientFactory.getHttpClient(okapiURL, tenantId);
   }
 
   @Override

@@ -181,7 +181,8 @@
           "dataSource": {
             "from": "//datafield[@tag='020']/subfield[@code='q']",
             "defaultMapping": {
-               "dataSource": {
+              "field": "PRODUCT_QUALIFIER",
+              "dataSource": {
                   "from": "//datafield[@tag='020']/subfield[@code='a']",
                   "translation": "separateISBNQualifier"
                 }

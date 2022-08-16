@@ -1,11 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-gobi</artifactId>
   <version>2.5.0-SNAPSHOT</version>
 
   <name>GOBI Integration</name>
-  <description>GOBI® (Global Online Bibliographic Information) is the leading web-based acquisitions tool for finding, ordering and managing e-books and print books for libraries. This module allows GOBI initiated orders to be fulfilled by FOLIO.</description>
+  <description>GOBI® (Global Online Bibliographic Information) is the leading web-based acquisitions tool for finding, ordering and
+    managing e-books and print books for libraries. This module allows GOBI initiated orders to be fulfilled by FOLIO.
+  </description>
   <url>https://github.com/folio-org/mod-gobi</url>
   <inceptionYear>2018</inceptionYear>
 
@@ -48,12 +51,14 @@
     <jaxb_output_dir>${generated_sources_dir}/jaxb</jaxb_output_dir>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <ramlfiles_util_path>${ramlfiles_path}/raml-util</ramlfiles_util_path>
-    <raml-module-builder.version>34.0.0</raml-module-builder.version>
+    <raml-module-builder.version>35.0.0-SNAPSHOT</raml-module-builder.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <vertx.version>4.3.1</vertx.version>
+    <vertx.version>4.3.2</vertx.version>
     <sonar.exclusions>**/models/**.java, **/domain/**.java, **/completablefuture/FolioVertxCompletableFuture.java</sonar.exclusions>
     <sonar.test.exclusions>**/*Test.java</sonar.test.exclusions>
     <jmockit.version>1.49</jmockit.version>
+    <mod-configuration-client.version>5.8.0</mod-configuration-client.version>
+    <jupiter.version>5.9.0</jupiter.version>
     <log4j.version>2.17.2</log4j.version>
     <argLine />
   </properties>
@@ -103,7 +108,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.7.0</version>
+        <version>${jupiter.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -146,9 +151,9 @@
       <version>${raml-module-builder.version}</version>
     </dependency>
     <dependency>
-      <groupId>me.escoffier.vertx</groupId>
-      <artifactId>vertx-completable-future</artifactId>
-      <version>0.1.2</version>
+      <groupId>org.folio</groupId>
+      <artifactId>mod-configuration-client</artifactId>
+      <version>${mod-configuration-client.version}</version>
     </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>
@@ -165,14 +170,30 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <version>5.1.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock</artifactId>
+      <version>2.27.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -210,8 +231,20 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>4.2.0</version>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>4.6.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.24</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -231,6 +264,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
         <version>3.8.1</version>
         <configuration>
           <release>11</release>
@@ -348,6 +382,7 @@
 
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
         <version>3.1.0</version>
         <executions>
           <execution>
@@ -450,6 +485,7 @@
         api console on IE -->
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
         <version>3.0.0</version>
         <executions>
           <execution>
@@ -609,16 +645,6 @@
               <sourceDirectory>${basedir}/ramls/acq-models/mod-gobi/schemas</sourceDirectory>
               <targetPackage>org.folio.rest.acq.model</targetPackage>
               <generateBuilders>true</generateBuilders>
-            </configuration>
-          </execution>
-          <execution>
-            <id>mappings-models</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <sourceDirectory>${basedir}/src/main/resources</sourceDirectory>
-              <targetPackage>org.folio.rest.mappings.model</targetPackage>
             </configuration>
           </execution>
           <execution>

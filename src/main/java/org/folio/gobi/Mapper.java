@@ -5,11 +5,11 @@ import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
 import static org.folio.gobi.HelperUtils.INVALID_ISBN_PRODUCT_ID_TYPE;
 import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
 import static org.folio.gobi.HelperUtils.extractFundCode;
-import static org.folio.rest.mappings.model.Mapping.Field.BILL_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.mappings.model.Mapping.Field.PREFIX;
-import static org.folio.rest.mappings.model.Mapping.Field.SHIP_TO;
-import static org.folio.rest.mappings.model.Mapping.Field.SUFFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -54,7 +54,7 @@ import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Tags;
 import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.jaxrs.model.Error;
-import org.folio.rest.mappings.model.Mapping;
+import org.folio.rest.jaxrs.model.Mapping;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -488,14 +488,14 @@ public class Mapper {
         .thenAccept(o -> compPo.setDateOrdered((Date) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.SHIP_TO))
+    Optional.ofNullable(mappings.get(SHIP_TO))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(shipToId -> Optional.ofNullable(shipToId)
                                       .ifPresentOrElse(value -> bindingResult.getResult().setShipTo((String) value),
-                                                      () -> addLookupError(Mapping.Field.SHIP_TO, bindingResult)))
+                                                      () -> addLookupError(SHIP_TO, bindingResult)))
         .exceptionally(ex -> {
           Mapper.logException(ex);
-          addLookupError(Mapping.Field.SHIP_TO, bindingResult);
+          addLookupError(SHIP_TO, bindingResult);
           return null;
         })));
 
@@ -506,18 +506,18 @@ public class Mapper {
                                                       () -> addLookupError(BILL_TO, bindingResult)))
         .exceptionally(ex -> {
           Mapper.logException(ex);
-          addLookupError(Mapping.Field.BILL_TO, bindingResult);
+          addLookupError(BILL_TO, bindingResult);
           return null;
         })));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.PREFIX))
+    Optional.ofNullable(mappings.get(PREFIX))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(prefixId -> Optional.ofNullable(prefixId)
                                         .ifPresentOrElse(value -> bindingResult.getResult().setPoNumberPrefix((String) value),
-                                                        () -> addLookupError(Mapping.Field.PREFIX, bindingResult)))
+                                                        () -> addLookupError(PREFIX, bindingResult)))
         .exceptionally(ex -> {
           Mapper.logException(ex);
-          addLookupError(Mapping.Field.PREFIX, bindingResult);
+          addLookupError(PREFIX, bindingResult);
           return null;
         })));
 
@@ -776,9 +776,7 @@ public class Mapper {
 
     Optional.ofNullable(mappings.get(Mapping.Field.EXCHANGE_RATE))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(exchangeRateStr -> {
-          cost.setExchangeRate(Double.parseDouble(String.valueOf(exchangeRateStr)));
-        })
+        .thenAccept(exchangeRateStr -> cost.setExchangeRate(Double.parseDouble(String.valueOf(exchangeRateStr))))
         .exceptionally(Mapper::logException)));
   }
 
@@ -1026,9 +1024,7 @@ public class Mapper {
           }
           else {
               futures.add(vendorAccountField.resolve(doc)
-              .thenAccept(vendorAccNo -> {
-              vendorDetail.setVendorAccount((String) vendorAccNo);
-              })
+              .thenAccept(vendorAccNo -> vendorDetail.setVendorAccount((String) vendorAccNo))
               .exceptionally(Mapper::logException));
           }
          }, () -> futures.add(vendorAccountField.resolve(doc)
