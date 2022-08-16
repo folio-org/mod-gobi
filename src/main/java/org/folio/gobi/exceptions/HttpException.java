@@ -16,7 +16,7 @@ public class HttpException extends RuntimeException {
   private final transient Errors errors;
 
   public HttpException(int code, String message) {
-    super(StringUtils.isNotEmpty(message) ? message : GENERIC_ERROR_CODE.getDescription());
+    super(StringUtils.defaultString(message, GENERIC_ERROR_CODE.getDescription()));
     this.code = code;
     ErrorCodes ec = code == 409 ? CONFLICT : GENERIC_ERROR_CODE;
     this.errors = new Errors()

@@ -134,7 +134,7 @@ public class RestClient {
         .request(HttpMethod.POST, recordData.toBuffer(), endpoint, okapiHeaders)
         .thenApply(HelperUtils::verifyAndExtractBody)
         .handle((body, t) -> {
-          if (t != null) {
+          if (nonNull(t)) {
             logger.error("'POST {}' request failed with error {}. Request body: {}", t.getCause(), endpoint, recordData.encodePrettily());
             future.completeExceptionally(t.getCause());
           } else {
@@ -164,7 +164,7 @@ public class RestClient {
       httpClient.request(HttpMethod.DELETE, endpointById, okapiHeaders)
         .thenAccept(this::verifyResponse)
         .handle((aVoid, t) -> {
-          if (t != null) {
+          if (nonNull(t)) {
             logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpointById);
             future.completeExceptionally(t.getCause());
           } else {

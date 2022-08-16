@@ -106,6 +106,7 @@ public class BaseApi {
         .collect(toList());
 
       errors.setErrors(errorList);
+      errors.setTotalRecords(errorList.size());
     } else {
       errors = new Errors().withErrors(Collections.singletonList(GENERIC_ERROR_CODE.toError()
         .withAdditionalProperty(ERROR_CAUSE, cause.getMessage())))

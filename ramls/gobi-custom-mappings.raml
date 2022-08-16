@@ -37,8 +37,8 @@ traits:
   description: Acquisition methods APIs
   type:
     collection:
-      exampleCollection: !include examples/orders_mapping.sample
-      exampleItem: !include examples/orders_mapping.sample
+      exampleCollection: !include acq-models/mod-gobi/examples/orders_mapping.sample
+      exampleItem: !include acq-models/mod-gobi/examples/orders_mapping.sample
       schemaCollection: order-mappings-view-collection
       schemaItem: order-mappings
   get:
@@ -56,5 +56,5 @@ traits:
     description: Get, Delete or Update a specific acquisition method
     type:
       collection-item:
-        exampleItem: !include examples/orders_mapping.sample
+        exampleItem: !include acq-models/mod-gobi/examples/orders_mapping.sample
         schema: order-mappings
