@@ -174,23 +174,11 @@ public class Mapper {
           contributors.add(contributor);
           pol.setContributors(contributors);
         });
-        setObjectIfPresent(reportingCode, o -> {
-          List<ReportingCode> reportingCodes = new ArrayList<>();
-          reportingCodes.add(reportingCode);
-          pol.setReportingCodes(reportingCodes);
-        });
-        setObjectIfPresent(claim, o -> {
-          List<Claim> claims = new ArrayList<>();
-          claims.add(claim);
-          pol.setClaims(claims);
-        });
-
         setObjectIfPresent(fundDistribution, o -> {
           if (StringUtils.isNotEmpty(fundDistribution.getFundId())) {
             pol.setFundDistribution(Collections.singletonList(fundDistribution));
           }
         });
-
         setObjectIfPresent(tags, o -> pol.setTags(tags));
         setObjectIfPresent(acquisitionMethod, o -> pol.setAcquisitionMethod(acquisitionMethod.getId()));
         future.complete(compPO);
