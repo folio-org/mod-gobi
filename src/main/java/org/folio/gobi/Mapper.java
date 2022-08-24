@@ -1,30 +1,6 @@
 package org.folio.gobi;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
-import static org.folio.gobi.HelperUtils.INVALID_ISBN_PRODUCT_ID_TYPE;
-import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
-import static org.folio.gobi.HelperUtils.extractFundCode;
-import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
-import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
-
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -33,8 +9,6 @@ import org.folio.gobi.domain.BindingResult;
 import org.folio.isbn.IsbnUtil;
 import org.folio.rest.acq.model.Account;
 import org.folio.rest.acq.model.AcquisitionMethod;
-import org.folio.rest.acq.model.Alert;
-import org.folio.rest.acq.model.Claim;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.acq.model.Contributor;
@@ -50,7 +24,6 @@ import org.folio.rest.acq.model.Organization;
 import org.folio.rest.acq.model.Physical;
 import org.folio.rest.acq.model.ProductIdentifier;
 import org.folio.rest.acq.model.ReferenceNumberItem;
-import org.folio.rest.acq.model.ReportingCode;
 import org.folio.rest.acq.model.Tags;
 import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.jaxrs.model.Error;
@@ -58,9 +31,32 @@ import org.folio.rest.jaxrs.model.Mapping;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-
-import io.vertx.core.json.JsonObject;
 import scala.math.BigDecimal;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
+import static org.folio.gobi.HelperUtils.INVALID_ISBN_PRODUCT_ID_TYPE;
+import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
+import static org.folio.gobi.HelperUtils.extractFundCode;
+import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
 
 public class Mapper {
 
@@ -123,10 +119,8 @@ public class Mapper {
     Eresource eresource = new Eresource();
     FundDistribution fundDistribution = new FundDistribution();
     VendorDetail vendorDetail = new VendorDetail();
-    Claim claim = new Claim();
     Physical physical = new Physical();
     Contributor contributor = new Contributor();
-    ReportingCode reportingCode = new ReportingCode();
     License license = new License();
     Tags tags = new Tags();
     AcquisitionMethod acquisitionMethod = new AcquisitionMethod();
@@ -141,7 +135,7 @@ public class Mapper {
     mapLocation(futures, mappings, location, doc);
     mapVendorDetail(futures, mappings, vendorDetail, doc);
     mapContributor(futures, mappings, contributor, doc);
-    mapVendorDependentFields(futures, mappings, eresource, physical, compPO, claim, doc);
+    mapVendorDependentFields(futures, mappings, eresource, physical, compPO, doc);
     mapTags(futures, mappings, tags, doc);
     mapAcquisitionMethod(futures, mappings, acquisitionMethod, doc);
 
@@ -214,7 +208,7 @@ public class Mapper {
    * @param doc
    */
   private void mapVendorDependentFields(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
-    Eresource eresource, Physical physical, CompositePurchaseOrder compPo, Claim claim, Document doc) {
+    Eresource eresource, Physical physical, CompositePurchaseOrder compPo, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
