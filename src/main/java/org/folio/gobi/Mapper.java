@@ -140,11 +140,8 @@ public class Mapper {
     mapFundDistribution(futures, mappings, fundDistribution, doc);
     mapLocation(futures, mappings, location, doc);
     mapVendorDetail(futures, mappings, vendorDetail, doc);
-    mapClaims(futures, mappings, claim, doc);
     mapContributor(futures, mappings, contributor, doc);
-    mapReportingCodes(futures, mappings, reportingCode, doc);
     mapVendorDependentFields(futures, mappings, eresource, physical, compPO, claim, doc);
-    mapLicense(futures, mappings, license, doc);
     mapTags(futures, mappings, tags, doc);
     mapAcquisitionMethod(futures, mappings, acquisitionMethod, doc);
 
@@ -276,11 +273,6 @@ public class Mapper {
                     .toInstant(ZoneOffset.UTC))));
             }
 
-            claim.setGrace(organization.getClaimingInterval());
-            Optional.ofNullable(mappings.get(Mapping.Field.CLAIM_GRACE))
-              .ifPresent(grace -> futures.add(grace.resolve(doc)
-                .thenAccept(claimgrace -> claim.setGrace((Integer) claimgrace))
-                .exceptionally(Mapper::logException)));
           }
         })
         .exceptionally(Mapper::logException)));
@@ -291,18 +283,6 @@ public class Mapper {
     if (!isObjectEmpty(obj)) {
       setter.accept(obj);
     }
-  }
-
-  private void mapReportingCodes(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings, ReportingCode reportingCode, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.REPORTING_DESCRIPTION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> reportingCode.setDescription((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.REPORTING_CODE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> reportingCode.setCode((String) o))
-        .exceptionally(Mapper::logException)));
   }
 
   private void mapContributor(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings, Contributor contributor,
@@ -406,17 +386,6 @@ public class Mapper {
   }
 
 
-  private void mapClaims(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings, Claim claim, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.CLAIMED))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> claim.setClaimed((Boolean) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.CLAIM_SENT))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> claim.setSent((Date) o))
-        .exceptionally(Mapper::logException)));
-  }
 
   private void mapTags(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings, Tags tags, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.TAGS))
@@ -481,11 +450,6 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.WORKFLOW_STATUS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> compPo.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.fromValue((String) o)))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.DATE_ORDERED))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> compPo.setDateOrdered((Date) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(SHIP_TO))
@@ -615,17 +579,6 @@ public class Mapper {
   private void mapPurchaseOrderLine(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     BindingResult<CompositePurchaseOrder> bindingResult, Document doc) {
     Optional.ofNullable(bindingResult.getResult().getCompositePoLines().get(0)).ifPresent(pol -> {
-      Optional.ofNullable(mappings.get(Mapping.Field.ALERTS))
-        .ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(o -> {
-        Alert alert = new Alert();
-        alert.setAlert((String) o);
-        List<Alert> alerts = new ArrayList<>();
-        alerts.add(alert);
-        pol.setAlerts(alerts);
-        })
-        .exceptionally(Mapper::logException)));
-
       Optional.ofNullable(mappings.get(Mapping.Field.CANCELLATION_RESTRICTION))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> pol.setCancellationRestriction((Boolean) o))
@@ -659,11 +612,6 @@ public class Mapper {
       Optional.ofNullable(mappings.get(Mapping.Field.PUBLISHER))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> pol.setPublisher((String) o))
-        .exceptionally(Mapper::logException)));
-
-      Optional.ofNullable(mappings.get(Mapping.Field.PURCHASE_ORDER_ID))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setPurchaseOrderId((String) o))
         .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.RECEIPT_DATE))
@@ -875,24 +823,6 @@ public class Mapper {
         .exceptionally(Mapper::logException)));
   }
 
-  private void mapLicense(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings, License license,
-    Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_CODE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> license.setCode((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_DESCRIPTION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> license.setDescription((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.LICENSE_REFERENCE))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> license.setReference((String) o))
-        .exceptionally(Mapper::logException)));
-  }
-
   private void mapFundDistribution(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     FundDistribution fundDistribution, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.FUND_ID))
@@ -913,10 +843,6 @@ public class Mapper {
                   .setValue((Double) percentage))
                 .exceptionally(Mapper::logException)));
 
-            Optional.ofNullable(mappings.get(Mapping.Field.ENCUMBRANCE))
-              .ifPresent(encumbranceIdField -> futures.add(encumbranceIdField.resolve(doc)
-                .thenAccept(encumbranceIdObject -> fundDistribution.setEncumbrance((String) encumbranceIdObject))
-                .exceptionally(Mapper::logException)));
           }
         })
         .exceptionally(Mapper::logException)));
@@ -981,11 +907,6 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_INSTRUCTIONS))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> vendorDetail.setInstructions((String) o))
-        .exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.NOTE_FROM_VENDOR))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> vendorDetail.setNoteFromVendor((String) o))
         .exceptionally(Mapper::logException)));
 
     ReferenceNumberItem referenceNumber = new ReferenceNumberItem()
