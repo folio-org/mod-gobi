@@ -1,6 +1,28 @@
 package org.folio.gobi;
 
-import io.vertx.core.json.JsonObject;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
+import static org.folio.gobi.HelperUtils.INVALID_ISBN_PRODUCT_ID_TYPE;
+import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
+import static org.folio.gobi.HelperUtils.extractFundCode;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -31,30 +53,9 @@ import org.folio.rest.jaxrs.model.Mapping;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+
+import io.vertx.core.json.JsonObject;
 import scala.math.BigDecimal;
-
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
-import static org.folio.gobi.HelperUtils.INVALID_ISBN_PRODUCT_ID_TYPE;
-import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
-import static org.folio.gobi.HelperUtils.extractFundCode;
-import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
 
 public class Mapper {
 

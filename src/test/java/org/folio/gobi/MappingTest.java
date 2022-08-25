@@ -1,6 +1,30 @@
 package org.folio.gobi;
 
-import io.vertx.core.json.Json;
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXCHANGE_RATE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.eq;
+
+import java.io.InputStream;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.rest.acq.model.CompositePoLine;
@@ -15,29 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.w3c.dom.Document;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.InputStream;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import static org.folio.rest.jaxrs.model.Mapping.Field.EXCHANGE_RATE;
-import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
-import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.eq;
+import io.vertx.core.json.Json;
 
 public class MappingTest {
 

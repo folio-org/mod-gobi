@@ -1,10 +1,24 @@
 package org.folio.gobi;
 
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import mockit.Mock;
-import mockit.MockUp;
+import static java.util.stream.Collectors.groupingBy;
+import static org.folio.rest.jaxrs.model.Mapping.Field.ACCESS_PROVIDER;
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXPENSE_CLASS;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.TITLE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,24 +30,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.stream.Collectors.groupingBy;
-import static org.folio.rest.jaxrs.model.Mapping.Field.ACCESS_PROVIDER;
-import static org.folio.rest.jaxrs.model.Mapping.Field.EXPENSE_CLASS;
-import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
-import static org.folio.rest.jaxrs.model.Mapping.Field.TITLE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import mockit.Mock;
+import mockit.MockUp;
 
 public class MappingHelperTest {
 
