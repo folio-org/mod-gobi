@@ -170,8 +170,6 @@ public class MappingTest {
     assertThat(pol.getOrderFormat(), is(CompositePoLine.OrderFormat.PHYSICAL_RESOURCE));
     assertThat(compPO.getPoNumberSuffix(), equalTo(sufId));
     assertThat(compPO.getPoNumberPrefix(), equalTo(prefId));
-    assertThat(compPO.getBillTo(), equalTo(vendorId));
-    assertThat(compPO.getShipTo(), equalTo(vendorId));
     assertThat(pol.getPackagePoLineId(), equalTo(packageId));
     assertThat(pol.getCost().getExchangeRate(), equalTo(exchangeRate));
   }
