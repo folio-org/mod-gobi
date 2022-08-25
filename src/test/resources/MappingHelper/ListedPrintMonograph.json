@@ -30,20 +30,6 @@
           }
         },
         {
-          "field": "SHIP_TO",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData4']/Value",
-            "translation": "lookupConfigAddress"
-          }
-        },
-        {
-          "field": "BILL_TO",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData3']/Value",
-            "translation": "lookupConfigAddress"
-          }
-        },
-        {
           "field": "SUFFIX",
           "dataSource": {
             "from": "//LocalData[Description='LocalData2']/Value",

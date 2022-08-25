@@ -134,7 +134,7 @@ public class MappingHelperTest {
     mappingCombinatorNotExist.getDataSource().setCombinator(null);
 
     mapping2 = mappingsList2.get(0);
-    assertEquals(8, mappingsList1.size());
+    assertEquals(6, mappingsList1.size());
     assertEquals(2, mappingsList2.size());
     assertEquals(Mapping.Field.ACCESS_PROVIDER.value(), mappingAccessProvider.getField().toString());
     assertEquals(EXPENSE_CLASS.value(), mappingExpenseClass.getField().toString());
