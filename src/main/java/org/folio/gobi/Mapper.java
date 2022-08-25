@@ -100,7 +100,7 @@ public class Mapper {
   }
 
   private void mapPurchaseOrderWorkflow(BindingResult<CompositePurchaseOrder> bindingResult) {
-    EnumSet<Mapping.Field> pendingSet = EnumSet.of(BILL_TO, SHIP_TO,LINKED_PACKAGE, SUFFIX, PREFIX);
+    EnumSet<Mapping.Field> pendingSet = EnumSet.of(BILL_TO, SHIP_TO, LINKED_PACKAGE, SUFFIX, PREFIX);
     List<Error> errors = bindingResult.getAllErrors();
     if (CollectionUtils.isNotEmpty(bindingResult.getAllErrors())) {
       boolean isPendingStatus = pendingSet.stream().anyMatch(errors::contains);

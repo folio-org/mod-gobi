@@ -153,6 +153,7 @@ public class MappingTest {
     String actualListedPrintJson = MappingHelper.readMappingsFile(MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
             .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
+
     String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
     String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
     String suffixFrom = fieldMappingMap.get(SUFFIX).get(0).getDataSource().getFrom();
@@ -201,6 +202,7 @@ public class MappingTest {
     String actualListedPrintJson = MappingHelper.readMappingsFile(MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
+
     String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
     String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
     String suffixFrom = fieldMappingMap.get(SUFFIX).get(0).getDataSource().getFrom();
