@@ -5,8 +5,10 @@ import static org.folio.gobi.HelperUtils.FUND_CODE_EXPENSE_CLASS_SEPARATOR;
 import static org.folio.gobi.HelperUtils.INVALID_ISBN_PRODUCT_ID_TYPE;
 import static org.folio.gobi.HelperUtils.extractExpenseClassFromFundCode;
 import static org.folio.gobi.HelperUtils.extractFundCode;
+import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
 import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
 
 import java.time.LocalDateTime;
@@ -98,7 +100,7 @@ public class Mapper {
   }
 
   private void mapPurchaseOrderWorkflow(BindingResult<CompositePurchaseOrder> bindingResult) {
-    EnumSet<Mapping.Field> pendingSet = EnumSet.of(LINKED_PACKAGE, SUFFIX, PREFIX);
+    EnumSet<Mapping.Field> pendingSet = EnumSet.of(BILL_TO, SHIP_TO,LINKED_PACKAGE, SUFFIX, PREFIX);
     List<Error> errors = bindingResult.getAllErrors();
     if (CollectionUtils.isNotEmpty(bindingResult.getAllErrors())) {
       boolean isPendingStatus = pendingSet.stream().anyMatch(errors::contains);
@@ -432,6 +434,28 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> compPo.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.fromValue((String) o)))
         .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(SHIP_TO))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(shipToId -> Optional.ofNullable(shipToId)
+                                      .ifPresentOrElse(value -> bindingResult.getResult().setShipTo((String) value),
+                                                      () -> addLookupError(SHIP_TO, bindingResult)))
+        .exceptionally(ex -> {
+          Mapper.logException(ex);
+          addLookupError(SHIP_TO, bindingResult);
+          return null;
+        })));
+
+    Optional.ofNullable(mappings.get(BILL_TO))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(billToId -> Optional.ofNullable(billToId)
+                                      .ifPresentOrElse(value -> bindingResult.getResult().setBillTo((String) value),
+                                                      () -> addLookupError(BILL_TO, bindingResult)))
+        .exceptionally(ex -> {
+          Mapper.logException(ex);
+          addLookupError(BILL_TO, bindingResult);
+          return null;
+        })));
 
     Optional.ofNullable(mappings.get(PREFIX))
       .ifPresent(field -> futures.add(field.resolve(doc)

@@ -2,9 +2,11 @@ package org.folio.gobi;
 
 import static java.util.stream.Collectors.groupingBy;
 import static org.folio.rest.jaxrs.model.Mapping.Field.ACCESS_PROVIDER;
+import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.EXPENSE_CLASS;
 import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
 import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
 import static org.folio.rest.jaxrs.model.Mapping.Field.TITLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,6 +81,14 @@ public class MappingHelperTest {
     expectedListedPrintMonographJsonObj.put("mappings",
       new JsonArray().add(suffixId));
 
+    JsonObject billToId = new JsonObject().put("field", BILL_TO.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//LocalData[Description='LocalData3']/Value").put("translation", "lookupConfigAddress"));
+
+    JsonObject shipToId = new JsonObject().put("field", SHIP_TO.value())
+      .put("dataSource",
+        new JsonObject().put("from", "//LocalData[Description='LocalData4']/Value").put("translation", "lookupConfigAddress"));
+
     JsonObject expenseClass = new JsonObject().put("field", EXPENSE_CLASS.value())
       .put("dataSource",
         new JsonObject().put("from", "//LocalData[Description='LocalData5']/Value").put("translation", "lookupExpenseClassId"));
@@ -94,7 +104,7 @@ public class MappingHelperTest {
 
     expectedListedPrintMonographJsonObj.put("mappings",
       new JsonArray().add(accessProvider).add(combinatorTitle).add(linkedPackageId).add(expenseClass)
-                        .add(suffixId).add(prefixId));
+                        .add(shipToId).add(billToId).add(suffixId).add(prefixId));
 
     String expectedListedPrintMonographJson = expectedListedPrintMonographJsonObj.toString();
 
@@ -135,7 +145,7 @@ public class MappingHelperTest {
     mappingCombinatorNotExist.getDataSource().setCombinator(null);
 
     mapping2 = mappingsList2.get(0);
-    assertEquals(6, mappingsList1.size());
+    assertEquals(8, mappingsList1.size());
     assertEquals(2, mappingsList2.size());
     assertEquals(Mapping.Field.ACCESS_PROVIDER.value(), mappingAccessProvider.getField().toString());
     assertEquals(EXPENSE_CLASS.value(), mappingExpenseClass.getField().toString());
@@ -214,6 +224,12 @@ public class MappingHelperTest {
     org.folio.gobi.DataSourceResolver dataSourceSuffix = mappingHelper.getDS(mappings.get(SUFFIX).get(0), fieldDataSourceMapping);
     assertEquals("//LocalData[Description='LocalData2']/Value", dataSourceSuffix.from);
     assertNotNull(dataSourceSuffix.translation);
+    org.folio.gobi.DataSourceResolver dataSourceBillTo = mappingHelper.getDS(mappings.get(BILL_TO).get(0),fieldDataSourceMapping);
+    assertEquals("//LocalData[Description='LocalData3']/Value", dataSourceBillTo.from);
+    assertNotNull(dataSourceBillTo.translation);
+    org.folio.gobi.DataSourceResolver dataSourceShipTo = mappingHelper.getDS(mappings.get(SHIP_TO).get(0), fieldDataSourceMapping);
+    assertEquals("//LocalData[Description='LocalData4']/Value", dataSourceShipTo.from);
+    assertNotNull(dataSourceShipTo.translation);
     org.folio.gobi.DataSourceResolver dataSourceLinkedPackage = mappingHelper.getDS(mappings.get(LINKED_PACKAGE).get(0), fieldDataSourceMapping);
     assertNotNull(dataSourceLinkedPackage.translation);
     assertEquals("//LocalData[Description='LocalData6']/Value", dataSourceLinkedPackage.from);
