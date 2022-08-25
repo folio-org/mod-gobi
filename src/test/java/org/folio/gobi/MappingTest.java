@@ -241,7 +241,6 @@ public class MappingTest {
     String vendorId = UUID.randomUUID().toString();
     Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupMock(eq("GOBI"));
 
-
     InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
