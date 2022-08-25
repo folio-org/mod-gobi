@@ -1,32 +1,6 @@
 package org.folio.gobi;
 
-import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
-import static org.folio.rest.jaxrs.model.Mapping.Field.EXCHANGE_RATE;
-import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
-import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.eq;
-
-import java.io.InputStream;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import io.vertx.core.json.Json;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.rest.acq.model.CompositePoLine;
@@ -41,7 +15,29 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.w3c.dom.Document;
 
-import io.vertx.core.json.Json;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.InputStream;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXCHANGE_RATE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.eq;
 
 public class MappingTest {
 
@@ -154,16 +150,12 @@ public class MappingTest {
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
             .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
-    String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
-    String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
     String suffixFrom = fieldMappingMap.get(SUFFIX).get(0).getDataSource().getFrom();
     String prefixFrom = fieldMappingMap.get(PREFIX).get(0).getDataSource().getFrom();
     String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).get(0).getDataSource().getFrom();
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
@@ -203,16 +195,12 @@ public class MappingTest {
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
-    String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
-    String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
     String suffixFrom = fieldMappingMap.get(SUFFIX).get(0).getDataSource().getFrom();
     String prefixFrom = fieldMappingMap.get(PREFIX).get(0).getDataSource().getFrom();
     String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).get(0).getDataSource().getFrom();
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
@@ -248,16 +236,12 @@ public class MappingTest {
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
-    String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
-    String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
     String suffixFrom = fieldMappingMap.get(SUFFIX).get(0).getDataSource().getFrom();
     String prefixFrom = fieldMappingMap.get(PREFIX).get(0).getDataSource().getFrom();
     String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).get(0).getDataSource().getFrom();
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
     mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());

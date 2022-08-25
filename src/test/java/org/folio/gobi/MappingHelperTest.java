@@ -1,26 +1,10 @@
 package org.folio.gobi;
 
-import static java.util.stream.Collectors.groupingBy;
-import static org.folio.rest.jaxrs.model.Mapping.Field.ACCESS_PROVIDER;
-import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
-import static org.folio.rest.jaxrs.model.Mapping.Field.EXPENSE_CLASS;
-import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
-import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
-import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
-import static org.folio.rest.jaxrs.model.Mapping.Field.TITLE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import mockit.Mock;
+import mockit.MockUp;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,11 +16,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import mockit.Mock;
-import mockit.MockUp;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.groupingBy;
+import static org.folio.rest.jaxrs.model.Mapping.Field.ACCESS_PROVIDER;
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXPENSE_CLASS;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.TITLE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class MappingHelperTest {
 
@@ -81,14 +78,6 @@ public class MappingHelperTest {
     expectedListedPrintMonographJsonObj.put("mappings",
       new JsonArray().add(suffixId));
 
-    JsonObject billToId = new JsonObject().put("field", BILL_TO.value())
-      .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData3']/Value").put("translation", "lookupConfigAddress"));
-
-    JsonObject shipToId = new JsonObject().put("field", SHIP_TO.value())
-      .put("dataSource",
-        new JsonObject().put("from", "//LocalData[Description='LocalData4']/Value").put("translation", "lookupConfigAddress"));
-
     JsonObject expenseClass = new JsonObject().put("field", EXPENSE_CLASS.value())
       .put("dataSource",
         new JsonObject().put("from", "//LocalData[Description='LocalData5']/Value").put("translation", "lookupExpenseClassId"));
@@ -104,7 +93,7 @@ public class MappingHelperTest {
 
     expectedListedPrintMonographJsonObj.put("mappings",
       new JsonArray().add(accessProvider).add(combinatorTitle).add(linkedPackageId).add(expenseClass)
-                        .add(shipToId).add(billToId).add(suffixId).add(prefixId));
+                        .add(suffixId).add(prefixId));
 
     String expectedListedPrintMonographJson = expectedListedPrintMonographJsonObj.toString();
 
@@ -224,12 +213,6 @@ public class MappingHelperTest {
     org.folio.gobi.DataSourceResolver dataSourceSuffix = mappingHelper.getDS(mappings.get(SUFFIX).get(0), fieldDataSourceMapping);
     assertEquals("//LocalData[Description='LocalData2']/Value", dataSourceSuffix.from);
     assertNotNull(dataSourceSuffix.translation);
-    org.folio.gobi.DataSourceResolver dataSourceBillTo = mappingHelper.getDS(mappings.get(BILL_TO).get(0),fieldDataSourceMapping);
-    assertEquals("//LocalData[Description='LocalData3']/Value", dataSourceBillTo.from);
-    assertNotNull(dataSourceBillTo.translation);
-    org.folio.gobi.DataSourceResolver dataSourceShipTo = mappingHelper.getDS(mappings.get(SHIP_TO).get(0), fieldDataSourceMapping);
-    assertEquals("//LocalData[Description='LocalData4']/Value", dataSourceShipTo.from);
-    assertNotNull(dataSourceShipTo.translation);
     org.folio.gobi.DataSourceResolver dataSourceLinkedPackage = mappingHelper.getDS(mappings.get(LINKED_PACKAGE).get(0), fieldDataSourceMapping);
     assertNotNull(dataSourceLinkedPackage.translation);
     assertEquals("//LocalData[Description='LocalData6']/Value", dataSourceLinkedPackage.from);
