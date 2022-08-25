@@ -94,7 +94,7 @@ public class Mapper {
         return null;
       });
 
-  return future;
+    return future;
   }
 
   private void mapPurchaseOrderWorkflow(BindingResult<CompositePurchaseOrder> bindingResult) {
