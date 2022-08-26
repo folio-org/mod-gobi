@@ -41,7 +41,6 @@ import org.folio.rest.acq.model.Cost.DiscountType;
 import org.folio.rest.acq.model.Details;
 import org.folio.rest.acq.model.Eresource;
 import org.folio.rest.acq.model.FundDistribution;
-import org.folio.rest.acq.model.License;
 import org.folio.rest.acq.model.Location;
 import org.folio.rest.acq.model.Ongoing;
 import org.folio.rest.acq.model.Organization;
@@ -122,7 +121,6 @@ public class Mapper {
     VendorDetail vendorDetail = new VendorDetail();
     Physical physical = new Physical();
     Contributor contributor = new Contributor();
-    License license = new License();
     Tags tags = new Tags();
     AcquisitionMethod acquisitionMethod = new AcquisitionMethod();
     CompositePurchaseOrder compPO = bindingResult.getResult();
@@ -151,7 +149,6 @@ public class Mapper {
 
         setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
         setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
-        setObjectIfPresent(license, o -> eresource.setLicense((License) o));
         if (pol.getOrderFormat().equals(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE)) {
           setObjectIfPresent(eresource, o -> pol.setEresource((Eresource) o));
         } else {
