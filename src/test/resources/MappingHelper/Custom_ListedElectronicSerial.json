@@ -59,14 +59,6 @@
           }
         },
         {
-          "field": "CLAIMED",
-          "dataSource": {
-            "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "COLLECTION",
           "dataSource": {
             "default": "false",
@@ -79,13 +71,6 @@
           "dataSource": {
             "from": "//ListPrice/Currency",
             "default": "USD"
-          }
-        },
-        {
-          "field": "DATE_ORDERED",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
           }
         },
         {
@@ -161,12 +146,6 @@
           "field": "NOTES",
           "dataSource": {
             "from": "//OrderNotes"
-          }
-        },
-        {
-          "field": "NOTE_FROM_VENDOR",
-          "dataSource": {
-            "from": "//PurchaseOption/VendorCode"
           }
         },
         {
@@ -263,18 +242,6 @@
           }
         },
         {
-          "field": "REPORTING_DESCRIPTION",
-          "dataSource": {
-            "default": "Test Data"
-          }
-        },
-        {
-          "field": "REPORTING_CODE",
-          "dataSource": {
-            "default": "TestReportingCode"
-          }
-        },
-        {
           "field": "ASSIGNED_TO",
           "dataSource": {
             "default": "5980020f-6c3a-41e1-a16c-f449f0d8af71"
@@ -294,12 +261,6 @@
         },
         {
           "field": "SELECTOR",
-          "dataSource": {
-            "default": "Test Data"
-          }
-        },
-        {
-          "field": "ALERTS",
           "dataSource": {
             "default": "Test Data"
           }
@@ -329,12 +290,6 @@
             "default" : "*",
             "translation": "lookupLocationId",
             "translateDefault": true
-          }
-        },
-        {
-          "field": "LICENSE_CODE",
-          "dataSource": {
-            "default": "Test Data"
           }
         },
         {
