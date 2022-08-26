@@ -31,14 +31,6 @@
           }
         },
         {
-          "field": "CLAIMED",
-          "dataSource": {
-            "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "COLLECTION",
           "dataSource": {
             "default": "false",
@@ -66,13 +58,6 @@
           "dataSource": {
             "from": "//ListPrice/Currency",
             "default": "USD"
-          }
-        },
-        {
-          "field": "DATE_ORDERED",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
           }
         },
         {
@@ -129,12 +114,6 @@
             "default": "unspecified",
             "translation": "lookupMaterialTypeId",
             "translateDefault": true
-          }
-        },
-        {
-          "field": "NOTE_FROM_VENDOR",
-          "dataSource": {
-            "from": "//PurchaseOption/VendorCode"
           }
         },
         {
