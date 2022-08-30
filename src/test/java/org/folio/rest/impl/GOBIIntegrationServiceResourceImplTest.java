@@ -281,7 +281,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
-              VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, ACQUISITION_UNITS));
+              VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
 
     // Make sure the mappings from custom configuration were used
     assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
