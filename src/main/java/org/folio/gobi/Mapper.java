@@ -485,25 +485,21 @@ public class Mapper {
   private void mapAcquisitionUnits(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     CompositePurchaseOrder compPo, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
-      .ifPresent(v -> {
-        Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
-          .ifPresentOrElse(d -> {
-            var vendorAccountDatasource = mappings.get(Mapping.Field.VENDOR_ACCOUNT);
-            if (vendorAccountDatasource != null) {
-              futures.add(vendorAccountDatasource.resolve(doc)
-                .thenAccept(acq -> {
-                  compPo.setAcqUnitIds((List<String>) acq);
-                  System.out.println("compo1 "+compPo.getAcqUnitIds());
-                }).exceptionally(Mapper::logException));
-            }
-          }, () -> Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
-            .ifPresent(field -> futures.add(field.resolve(doc)
-              .thenAccept(o -> {
-                compPo.setAcqUnitIds((Collections.singletonList((String) o)));
-                System.out.println("compo2 " + compPo.getAcqUnitIds());
-              })
-              .exceptionally(Mapper::logException))));
-      });
+      .ifPresent(v -> Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
+        .ifPresentOrElse(d -> {
+          var vendorAccountDatasource = mappings.get(Mapping.Field.VENDOR_ACCOUNT);
+          if (vendorAccountDatasource != null) {
+            futures.add(vendorAccountDatasource.resolve(doc)
+              .thenAccept(acq -> {
+                compPo.setAcqUnitIds((List<String>) acq);
+              }).exceptionally(Mapper::logException));
+          }
+        }, () -> Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
+          .ifPresent(field -> futures.add(field.resolve(doc)
+            .thenAccept(o -> {
+              compPo.setAcqUnitIds((Collections.singletonList((String) o)));
+            })
+            .exceptionally(Mapper::logException)))));
 
   }
 
