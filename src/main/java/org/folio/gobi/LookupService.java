@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.rest.acq.model.Account;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.Organization;
@@ -120,7 +121,7 @@ public class LookupService {
   public CompletableFuture<Organization> lookupOrganization(String vendorCode) {
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode));
     String endpoint = String.format(GET_ORGANIZATION_ENDPOINT + QUERY, query);
-
+    System.out.println("query is--"+query);
     return restClient.handleGetRequest(endpoint)
       .thenApply(resp ->
         Optional.ofNullable(resp.getJsonArray("organizations"))
@@ -237,6 +238,16 @@ public class LookupService {
       });
 
   }
+  public CompletableFuture<Object> lookupAcquisitionUnitByAccount(String data) {
+    CompletableFuture<Object> acqIds = lookupOrganization("GOBI").thenApply(org -> org.getAccounts().stream()
+      .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout(data)))
+      .findFirst()
+      .map(Account::getAcqUnitIds)
+      .orElse(null));
+    return acqIds;
+  }
+
+
 
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
     final String query = HelperUtils.encodeValue(String.format(CONFIGURATION_ADDRESS_QUERY, shipToName));
@@ -349,4 +360,6 @@ public class LookupService {
     logger.info("Mocking the data lookup for: {}", data);
     return CompletableFuture.completedFuture(UUID.randomUUID().toString());
   }
+
+
 }

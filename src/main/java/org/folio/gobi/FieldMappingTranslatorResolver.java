@@ -1,7 +1,9 @@
 package org.folio.gobi;
 
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ACQUISITION_METHOD_IDS;
-import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME;
+//import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ACQUISITION_UNIT_BY_ACCOUNT;
+import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ACQUISITION_UNIT_DEFAULT;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_CONFIG_ADDRESS;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_CONTRIBUTOR_NAME_TYPE_ID;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_EXPENSE_CLASS_ID;
@@ -41,7 +43,8 @@ public class FieldMappingTranslatorResolver {
     methodTranslatorsMap.put(LOOKUP_CONTRIBUTOR_NAME_TYPE_ID, lookupService::lookupContributorNameTypeId);
     methodTranslatorsMap.put(LOOKUP_EXPENSE_CLASS_ID, lookupService::lookupExpenseClassId);
     methodTranslatorsMap.put(LOOKUP_ACQUISITION_METHOD_IDS, lookupService::lookupAcquisitionMethodId);
-    methodTranslatorsMap.put(LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME, lookupService::lookupAcquisitionUnitDefault);
+    methodTranslatorsMap.put(LOOKUP_ACQUISITION_UNIT_DEFAULT, lookupService::lookupAcquisitionUnitDefault);
+    methodTranslatorsMap.put(LOOKUP_ACQUISITION_UNIT_BY_ACCOUNT, lookupService::lookupAcquisitionUnitByAccount);
     methodTranslatorsMap.put(LOOKUP_LOCATION_ID, lookupService::lookupLocationId);
     methodTranslatorsMap.put(LOOKUP_MATERIAL_TYPE_ID, lookupService::lookupMaterialTypeId);
     methodTranslatorsMap.put(LOOKUP_FUND_ID, lookupService::lookupFundId);
