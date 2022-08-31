@@ -1,5 +1,21 @@
 package org.folio.gobi;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.rest.acq.model.Account;
+import org.folio.rest.acq.model.AcquisitionMethod;
+import org.folio.rest.acq.model.AcquisitionsUnit;
+import org.folio.rest.acq.model.Organization;
+import org.folio.rest.core.RestClient;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
@@ -17,26 +33,6 @@ import static org.folio.rest.ResourcePaths.MATERIAL_TYPES_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDER_LINES_ENDPOINT;
 import static org.folio.rest.ResourcePaths.PREFIXES_ENDPOINT;
 import static org.folio.rest.ResourcePaths.SUFFIXES_ENDPOINT;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.folio.rest.acq.model.Account;
-import org.folio.rest.acq.model.AcquisitionMethod;
-import org.folio.rest.acq.model.AcquisitionsUnit;
-import org.folio.rest.acq.model.Organization;
-import org.folio.rest.core.RestClient;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 public class LookupService {
   private static final Logger logger = LogManager.getLogger(LookupService.class);
@@ -62,6 +58,8 @@ public class LookupService {
   public static final String PO_LINES = "poLines";
   public static final String ID = "id";
   public static final String NAME = "name";
+  public static final String ORGANIZATION_NAME = "GOBI";
+
 
   private final RestClient restClient;
 
@@ -244,7 +242,7 @@ public class LookupService {
 
   public CompletableFuture<Object> lookupAcquisitionUnitIdsByAccount(String data) {
 
-    return lookupOrganization("GOBI").thenApply(org -> org.getAccounts().stream()
+    return lookupOrganization(ORGANIZATION_NAME).thenApply(org -> org.getAccounts().stream()
       .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout(data)))
       .findFirst()
       .map(Account::getAcqUnitIds)

@@ -488,10 +488,12 @@ public class Mapper {
       .ifPresent(field ->
       futures.add(field.resolve(doc)
         .thenAccept(o -> {
-          if(o instanceof String)
-          compPo.setAcqUnitIds(Collections.singletonList((String) o));
-          else
-          System.out.println("Hello1"+compPo.getAcqUnitIds());
+          if(o instanceof String) {
+            compPo.setAcqUnitIds(Collections.singletonList((String) o));
+          }
+          else {
+            compPo.setAcqUnitIds((List<String>) o);
+          }
         }).exceptionally(Mapper::logException)));
 
   }
