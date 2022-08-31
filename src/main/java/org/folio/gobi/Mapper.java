@@ -484,9 +484,8 @@ public class Mapper {
 
   private void mapAcquisitionUnits(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     CompositePurchaseOrder compPo, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
-      .ifPresent(v -> Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
-        .ifPresentOrElse(d -> {
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
+      .ifPresentOrElse(data -> {
           var vendorAccountDatasource = mappings.get(Mapping.Field.VENDOR_ACCOUNT);
           if (vendorAccountDatasource != null) {
             futures.add(vendorAccountDatasource.resolve(doc)
@@ -494,15 +493,14 @@ public class Mapper {
                 compPo.setAcqUnitIds((List<String>) acq);
               }).exceptionally(Mapper::logException));
           }
-        }, () -> Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
-          .ifPresent(field -> futures.add(field.resolve(doc)
-            .thenAccept(o -> {
-              compPo.setAcqUnitIds((Collections.singletonList((String) o)));
-            })
-            .exceptionally(Mapper::logException)))));
-
+      },()->Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
+      .ifPresent(field ->
+      futures.add(field.resolve(doc)
+        .thenAccept(o -> {
+          compPo.setAcqUnitIds((Collections.singletonList((String) o)));
+        }).exceptionally(Mapper::logException)))
+      );
   }
-
 
   private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     BindingResult<CompositePurchaseOrder> bindingResult, Document doc) {

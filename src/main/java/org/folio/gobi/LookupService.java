@@ -238,14 +238,17 @@ public class LookupService {
       });
 
   }
+
   public CompletableFuture<Object> lookupAcquisitionUnitIdsByAccount(String data) {
     CompletableFuture<Object> acqIds = lookupOrganization("GOBI").thenApply(org -> org.getAccounts().stream()
       .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout(data)))
       .findFirst()
       .map(Account::getAcqUnitIds)
       .orElse(null));
+
     return acqIds;
   }
+
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
     final String query = HelperUtils.encodeValue(String.format(CONFIGURATION_ADDRESS_QUERY, shipToName));
     String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
