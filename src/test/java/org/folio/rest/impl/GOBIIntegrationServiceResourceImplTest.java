@@ -280,14 +280,13 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(configEntries);
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
-              VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, ACQUISITION_UNITS));
 
     // Make sure the mappings from custom configuration were used
     assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+     verifyRequiredFieldsAreMapped(compPO);
     assertEquals("Description from Custom Mapping", compPO.getCompositePoLines().get(0).getPoLineDescription());
     // verify if the currency specified in the request is used
     assertEquals("GBP", compPO.getCompositePoLines().get(0).getCost().getCurrency());
@@ -985,6 +984,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(poLine.getOrderFormat());
     assertNotNull(poLine.getSource());
     assertNotNull(poLine.getTitleOrPackage());
+    assertNotNull(compPO.getAcqUnitIds());
     if (!poLine.getContributors().isEmpty()) {
       poLine.getContributors().forEach(contributor -> {
         assertNotNull(contributor.getContributor());
@@ -1047,7 +1047,9 @@ public class GOBIIntegrationServiceResourceImplTest {
       JsonObject acquisitionMethods = new JsonObject();
 
       try {
+        if (ctx.request().query().contains("name")) {
           acquisitionMethods = new JsonObject(getMockData(VALID_ACQUISITION_UNITS));
+        }
       } catch (IOException e) {
         acquisitionMethods = new JsonObject();
       }
