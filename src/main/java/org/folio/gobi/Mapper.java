@@ -484,6 +484,11 @@ public class Mapper {
 
   private void mapAcquisitionUnits(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     CompositePurchaseOrder compPo, Document doc) {
+    Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
+      .ifPresent(field ->
+      futures.add(field.resolve(doc)
+        .thenAccept(o -> compPo.setAcqUnitIds((Collections.singletonList((String) o)))).exceptionally(Mapper::logException)));
+
     Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
       .ifPresent(data -> {
           var vendorAccountDatasource = mappings.get(Mapping.Field.VENDOR_ACCOUNT);
@@ -492,10 +497,6 @@ public class Mapper {
               .thenAccept(acq -> compPo.setAcqUnitIds((List<String>) acq)).exceptionally(Mapper::logException));
           }
       });
-      Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
-      .ifPresent(field ->
-      futures.add(field.resolve(doc)
-        .thenAccept(o -> compPo.setAcqUnitIds((Collections.singletonList((String) o)))).exceptionally(Mapper::logException)));
 
   }
 
