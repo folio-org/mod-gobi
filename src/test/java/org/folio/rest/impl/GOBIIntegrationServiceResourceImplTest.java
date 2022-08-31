@@ -1047,9 +1047,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       JsonObject acquisitionMethods = new JsonObject();
 
       try {
-        if (ctx.request().query().contains("name")) {
           acquisitionMethods = new JsonObject(getMockData(VALID_ACQUISITION_UNITS));
-        }
       } catch (IOException e) {
         acquisitionMethods = new JsonObject();
       }

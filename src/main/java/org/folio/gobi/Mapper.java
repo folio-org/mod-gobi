@@ -487,16 +487,12 @@ public class Mapper {
     Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
       .ifPresent(field ->
       futures.add(field.resolve(doc)
-        .thenAccept(o -> compPo.setAcqUnitIds((Collections.singletonList((String) o)))).exceptionally(Mapper::logException)));
-
-    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR_ACCOUNT))
-      .ifPresent(data -> {
-          var vendorAccountDatasource = mappings.get(Mapping.Field.VENDOR_ACCOUNT);
-          if (vendorAccountDatasource != null) {
-            futures.add(vendorAccountDatasource.resolve(doc)
-              .thenAccept(acq -> compPo.setAcqUnitIds((List<String>) acq)).exceptionally(Mapper::logException));
-          }
-      });
+        .thenAccept(o -> {
+          if(o instanceof String)
+          compPo.setAcqUnitIds(Collections.singletonList((String) o));
+          else
+          System.out.println("Hello1"+compPo.getAcqUnitIds());
+        }).exceptionally(Mapper::logException)));
 
   }
 

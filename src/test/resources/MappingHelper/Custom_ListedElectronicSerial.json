@@ -17,15 +17,6 @@
       }
     },
     {
-      "field": "VENDOR_ACCOUNT",
-      "dataSource": {
-        "from": "//SubAccount",
-        "default": 0,
-        "translation": "lookupAcquisitionUnitIdsByAccount",
-        "translateDefault": true
-      }
-    },
-    {
       "field": "ACQUISITION_METHOD",
       "dataSource": {
         "default": "Purchase At Vendor System"

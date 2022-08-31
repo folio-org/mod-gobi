@@ -18,6 +18,9 @@ import static org.folio.rest.ResourcePaths.ORDER_LINES_ENDPOINT;
 import static org.folio.rest.ResourcePaths.PREFIXES_ENDPOINT;
 import static org.folio.rest.ResourcePaths.SUFFIXES_ENDPOINT;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
