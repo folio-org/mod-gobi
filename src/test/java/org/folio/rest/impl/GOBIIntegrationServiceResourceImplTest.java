@@ -296,6 +296,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNull(compPO.getCompositePoLines().get(0).getPhysical());
 
     verifyRequiredFieldsAreMapped(compPO);
+    assertFalse(compPO.getAcqUnitIds().isEmpty());
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for 201 - posted order listed electronic serial");
@@ -984,7 +985,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(poLine.getOrderFormat());
     assertNotNull(poLine.getSource());
     assertNotNull(poLine.getTitleOrPackage());
-    assertNotNull(compPO.getAcqUnitIds());
     if (!poLine.getContributors().isEmpty()) {
       poLine.getContributors().forEach(contributor -> {
         assertNotNull(contributor.getContributor());
