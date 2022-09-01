@@ -280,14 +280,13 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(configEntries);
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
-              VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, ACQUISITION_UNITS));
 
     // Make sure the mappings from custom configuration were used
     assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
-    CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+     verifyRequiredFieldsAreMapped(compPO);
     assertEquals("Description from Custom Mapping", compPO.getCompositePoLines().get(0).getPoLineDescription());
     // verify if the currency specified in the request is used
     assertEquals("GBP", compPO.getCompositePoLines().get(0).getCost().getCurrency());
@@ -297,6 +296,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNull(compPO.getCompositePoLines().get(0).getPhysical());
 
     verifyRequiredFieldsAreMapped(compPO);
+    assertFalse(compPO.getAcqUnitIds().isEmpty());
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for 201 - posted order listed electronic serial");

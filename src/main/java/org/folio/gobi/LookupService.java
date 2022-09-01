@@ -26,11 +26,11 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.rest.acq.model.Account;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.Organization;
 import org.folio.rest.core.RestClient;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -58,6 +58,8 @@ public class LookupService {
   public static final String PO_LINES = "poLines";
   public static final String ID = "id";
   public static final String NAME = "name";
+  public static final String ORGANIZATION_NAME = "GOBI";
+
 
   private final RestClient restClient;
 
@@ -220,7 +222,7 @@ public class LookupService {
       });
   }
 
-  public CompletableFuture<String> lookupAcquisitionUnitDefault(String data) {
+  public CompletableFuture<String> lookupAcquisitionUnitIdsByName(String data) {
     String query = HelperUtils.encodeValue(String.format(CQL_NAME_STRING_FMT + CHECK_ACQ_UNIT_IS_NOT_DELETED, data));
     String endpoint = String.format(ACQUISITION_UNIT_ENDPOINT + QUERY, query);
 
@@ -236,6 +238,15 @@ public class LookupService {
         return null;
       });
 
+  }
+
+  public CompletableFuture<Object> lookupAcquisitionUnitIdsByAccount(String data) {
+
+    return lookupOrganization(ORGANIZATION_NAME).thenApply(org -> org.getAccounts().stream()
+      .filter(acc -> acc.getAccountNo().equals(HelperUtils.normalizeSubAccout(data)))
+      .findFirst()
+      .map(Account::getAcqUnitIds)
+      .orElse(null));
   }
 
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {

@@ -484,35 +484,18 @@ public class Mapper {
 
   private void mapAcquisitionUnits(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     CompositePurchaseOrder compPo, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.LOOKUP_ACQUISITION_UNIT_DEFAULT_ACQ_UNIT_NAME))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> compPo.setAcqUnitIds((Collections.singletonList((String) o))))
-        .exceptionally(Mapper::logException)));
+    Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
+      .ifPresent(field ->
+      futures.add(field.resolve(doc)
+        .thenAccept(o -> {
+          if(o instanceof String) {
+            compPo.setAcqUnitIds(Collections.singletonList((String) o));
+          }
+          else {
+            compPo.setAcqUnitIds((List<String>) o);
+          }
+        }).exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.LOOKUP_ACQUISITION_UNIT_BY_VENDOR_ACC_NUMBER))
-      .ifPresent(v -> {
-        var vendorDatasource = mappings.get(Mapping.Field.VENDOR);
-        var vendorAccountDatasource = mappings.get(Mapping.Field.LOOKUP_ACQUISITION_UNIT_BY_VENDOR_ACC_NUMBER);
-        if (vendorDatasource != null && vendorAccountDatasource != null) {
-          futures.add(vendorDatasource.resolve(doc)
-            .thenCompose(organizations -> vendorAccountDatasource.resolve(doc)
-              .thenApply(vendorAccount -> {
-                List<String> acqIds = new ArrayList<>();
-                var org = (Organization) organizations;
-                if (org != null) {
-                  acqIds = org.getAccounts()
-                    .stream()
-                    .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout((String) vendorAccount)))
-                    .findFirst()
-                    .map(Account::getAcqUnitIds)
-                    .orElse(null);
-                }
-                return acqIds;
-              })
-              .thenAccept(compPo::setAcqUnitIds)
-              .exceptionally(Mapper::logException)));
-        }
-      });
   }
 
   private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
