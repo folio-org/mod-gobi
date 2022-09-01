@@ -243,7 +243,7 @@ public class LookupService {
   public CompletableFuture<Object> lookupAcquisitionUnitIdsByAccount(String data) {
 
     return lookupOrganization(ORGANIZATION_NAME).thenApply(org -> org.getAccounts().stream()
-      .filter(acc -> acc.getAccountNo().equals(data))
+      .filter(acc -> acc.getAccountNo().equals(HelperUtils.normalizeSubAccout(data)))
       .findFirst()
       .map(Account::getAcqUnitIds)
       .orElse(null));
