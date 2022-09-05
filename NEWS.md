@@ -1,5 +1,15 @@
 ## 2.5.0 Unreleased
 
+## 2.4.1 (Morning Glory R2 2022) Released
+Major changes in this release related to improving the schema for gobi mappings
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.4.0...v2.4.1)
+
+### Bug fixes
+* [MODGOBI-167] (https://issues.folio.org/browse/MODGOBI-167) Remove unusable fields from mapping
+* [MODGOBI-166] (https://issues.folio.org/browse/MODGOBI-166) Move acq unit mapping logic in model to the translation object
+
+
 ## 2.4.0 Released
 Major changes in this release related to removing usage of VertxCompletableFuture, adding few PO/POL fields to GOBI configuration 
 
