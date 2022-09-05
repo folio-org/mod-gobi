@@ -16,14 +16,6 @@
           }
         },
         {
-          "field": "CLAIMED",
-          "dataSource": {
-            "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "COLLECTION",
           "dataSource": {
             "default": "false",
@@ -35,13 +27,6 @@
           "field": "CURRENCY",
           "dataSource": {
             "default": "USD"
-          }
-        },
-        {
-          "field": "DATE_ORDERED",
-          "dataSource": {
-            "from": "//OrderPlaced",
-            "translation": "toDate"
           }
         },
         {
