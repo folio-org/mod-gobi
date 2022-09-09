@@ -35,7 +35,9 @@
             "finance.funds.collection.get",
             "finance.expense-classes.collection.get",
             "orders.acquisition-methods.collection.get",
-            "orders.item.approve"
+            "orders.item.approve",
+            "orders.acquisitions-units-assignments.assign",
+            "orders.acquisitions-units-assignments.manage"
           ]
         }
       ]

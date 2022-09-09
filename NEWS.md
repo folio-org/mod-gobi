@@ -1,5 +1,14 @@
 ## 2.5.0 Unreleased
 
+## 2.4.2 (Morning Glory R2 2022) Released
+Major changes in this release related to fix issue with acquisition permissions
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.4.1...v2.4.2)
+
+### Bug fixes
+* [MODGOBI-172] (https://issues.folio.org/browse/MODGOBI-172) Resolve permission issue with Edge user for GOBI
+
+
 ## 2.4.1 (Morning Glory R2 2022) Released
 Major changes in this release related to improving the schema for gobi mappings
 
