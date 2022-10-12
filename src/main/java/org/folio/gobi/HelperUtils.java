@@ -3,13 +3,12 @@ package org.folio.gobi;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.CompletionException;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import javax.ws.rs.Path;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.gobi.exceptions.HttpException;
-
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -26,18 +25,6 @@ public class HelperUtils {
 
   public static String truncate(String message, int limit) {
     return (message != null && limit > 0) ? message.substring(0, Math.min(message.length(), limit)) : message;
-  }
-
-  public static JsonObject verifyAndExtractBody(org.folio.rest.tools.client.Response response) {
-    if (response == null) {
-      throw new CompletionException(new NullPointerException("response is null"));
-    }
-
-    if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
-      throw new CompletionException(new HttpException(response.getCode(), response.getError().toString()));
-    }
-
-    return response.getBody();
   }
 
   public static String extractLocationId(JsonObject obj) {
@@ -67,6 +54,7 @@ public class HelperUtils {
     if (jsonArray == null || jsonArray.size() == 0) {
       return null;
     }
+
     JsonObject item = jsonArray.getJsonObject(0);
     if (item == null) {
       return null;
@@ -95,4 +83,14 @@ public class HelperUtils {
     return clazz.getAnnotation(Path.class).value();
   }
 
+  /**
+   * To be used in {@link CompletableFuture#whenComplete(BiConsumer)}.
+   */
+  public static <R> BiConsumer<? super R, ? super Throwable> logError(Logger logger, String msg) {
+    return (r, t) -> {
+      if (t != null) {
+        logger.error(msg, t);
+      }
+    };
+  }
 }

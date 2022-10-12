@@ -12,8 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.HttpException;
@@ -22,7 +20,7 @@ import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.jaxrs.model.OrderMappingsView;
 import org.folio.rest.jaxrs.model.OrderMappingsViewCollection;
-
+import io.vertx.core.Future;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
@@ -37,19 +35,19 @@ public class GobiCustomMappingsService {
     this.restClient = client;
   }
 
-  public CompletableFuture<OrderMappingsViewCollection> getCustomMappingListByQuery(int offset, int limit) {
+  public Future<OrderMappingsViewCollection> getCustomMappingListByQuery(int offset, int limit) {
    var query = "configName==GOBI AND configName==orderMappings";
     return restClient.handleGetRequest(CONFIGURATION_ENDPOINT, query, offset, limit)
-      .thenApply(this::buildOrderMappingsViewCollectionResponse);
+      .map(this::buildOrderMappingsViewCollectionResponse);
   }
 
-  public CompletableFuture<OrderMappingsView> getCustomMappingByOrderType(String orderType) {
+  public Future<OrderMappingsView> getCustomMappingByOrderType(String orderType) {
     return getCustomMappingConfigByOrderType(orderType)
-      .thenApply(configs -> buildOrderMappingsViewResponse(configs, orderType));
+      .map(configs -> buildOrderMappingsViewResponse(configs, orderType));
 
   }
 
-  private CompletableFuture<JsonObject> getCustomMappingConfigByOrderType(String orderType) {
+  private Future<JsonObject> getCustomMappingConfigByOrderType(String orderType) {
     String query = String.format(MAPPINGS_BY_ORDER_TYPE_QUERY, orderType);
     return restClient.handleGetRequest(CONFIGURATION_ENDPOINT, query, 0, 1);
 
@@ -105,20 +103,21 @@ public class GobiCustomMappingsService {
   }
 
 
-  public CompletableFuture<OrderMappingsView> postCustomMapping(OrderMappings orderMappings) {
+  public Future<OrderMappingsView> postCustomMapping(OrderMappings orderMappings) {
     Config configEntry = buildCustomMappingConfigurationEntry(orderMappings, UUID.randomUUID().toString());
     return restClient.post(CONFIGURATION_ENDPOINT, JsonObject.mapFrom(configEntry))
-      .thenApply(createdConfig -> {
+      .map(createdConfig -> {
         var entry = createdConfig.mapTo(Config.class);
         var createdOrderMappings = Json.decodeValue(entry.getValue(), OrderMappings.class);
         return new OrderMappingsView()
         .withMappingType(OrderMappingsView.MappingType.CUSTOM)
-        .withOrderMappings(createdOrderMappings);});
+        .withOrderMappings(createdOrderMappings);
+      });
   }
 
-  public CompletableFuture<Void> putCustomMapping(String orderType, OrderMappings orderMappings) {
+  public Future<Void> putCustomMapping(String orderType, OrderMappings orderMappings) {
     return getCustomMappingConfigByOrderType(orderType)
-      .thenCompose(configEntries -> {
+      .compose(configEntries -> {
         if (!configEntries.getJsonArray(CONFIG_FIELD).isEmpty()) {
           var config = configEntries.getJsonArray(CONFIG_FIELD).getJsonObject(0).mapTo(Config.class);
           Config configEntryForUpdate = buildCustomMappingConfigurationEntry(orderMappings, config.getId());
@@ -129,9 +128,9 @@ public class GobiCustomMappingsService {
       });
   }
 
-  public CompletableFuture<Void> deleteCustomMapping(String orderType) {
+  public Future<Void> deleteCustomMapping(String orderType) {
     return getCustomMappingConfigByOrderType(orderType)
-      .thenCompose(configEntries -> {
+      .compose(configEntries -> {
       if (!configEntries.getJsonArray(CONFIG_FIELD).isEmpty()) {
         var config = configEntries.getJsonArray(CONFIG_FIELD).getJsonObject(0).mapTo(Config.class);
         return restClient.delete(CONFIGURATION_ENDPOINT + "/" + config.getId());

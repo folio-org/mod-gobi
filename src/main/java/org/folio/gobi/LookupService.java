@@ -77,7 +77,7 @@ public class LookupService {
     logger.info("Received location is {}", location);
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
     String endpoint = String.format(LOCATIONS_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(locations -> {
         String locationId = HelperUtils.extractLocationId(locations);
         if (StringUtils.isEmpty(locationId)) {
@@ -101,7 +101,7 @@ public class LookupService {
   public CompletableFuture<String> lookupMaterialTypeId(String materialTypeCode) {
     String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, materialTypeCode));
     String endpoint = String.format(MATERIAL_TYPES_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(materialTypes -> {
         String materialType = HelperUtils.extractMaterialTypeId(materialTypes);
         if (StringUtils.isEmpty(materialType)) {
@@ -123,7 +123,7 @@ public class LookupService {
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode));
     String endpoint = String.format(GET_ORGANIZATION_ENDPOINT + QUERY, query);
 
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(resp ->
         Optional.ofNullable(resp.getJsonArray("organizations"))
           .flatMap(organizations -> organizations.stream().findFirst())
@@ -139,7 +139,7 @@ public class LookupService {
   public CompletableFuture<String> lookupFundId(String fundCode) {
     String query = HelperUtils.encodeValue(String.format("code==%s", extractFundCode(fundCode)));
     String endpoint = String.format(FUNDS_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(funds -> {
         String fundId = HelperUtils.extractIdOfFirst(funds, "funds");
         if (StringUtils.isEmpty(fundId)) {
@@ -163,7 +163,7 @@ public class LookupService {
     logger.info("Received ProductType is {}", productType);
     String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, productType));
     String endpoint = String.format(IDENTIFIERS_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint).thenCompose(productTypes -> {
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture().thenCompose(productTypes -> {
         String productTypeId = HelperUtils.extractProductTypeId(productTypes);
         if (StringUtils.isEmpty(productTypeId)) {
           // the productType is already a default value in the mappings, so fallback to first one
@@ -187,7 +187,7 @@ public class LookupService {
     logger.info("Received contributorNameType is {}", name);
     String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, name));
     String endpoint = String.format(CONTRIBUTOR_NAME_TYPES_ENDPOINT + QUERY + LIMIT_1, query);
-    return restClient.handleGetRequest(endpoint).thenApply(HelperUtils::extractContributorNameTypeId)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture().thenApply(HelperUtils::extractContributorNameTypeId)
       .thenCompose(typeId -> {
         if (StringUtils.isEmpty(typeId)) {
           if (DEFAULT_LOOKUP_CODE.equals(name)) {
@@ -208,7 +208,7 @@ public class LookupService {
   public CompletableFuture<String> lookupExpenseClassId(String expenseClassCode) {
     String query = HelperUtils.encodeValue(String.format("code==%s", expenseClassCode));
     String endpoint = String.format(EXPENSE_CLASS_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(funds -> {
         String expenseClassId = HelperUtils.extractIdOfFirst(funds, "expenseClasses");
         if (StringUtils.isEmpty(expenseClassId)) {
@@ -226,7 +226,7 @@ public class LookupService {
     String query = HelperUtils.encodeValue(String.format(CQL_NAME_STRING_FMT + CHECK_ACQ_UNIT_IS_NOT_DELETED, data));
     String endpoint = String.format(ACQUISITION_UNIT_ENDPOINT + QUERY, query);
 
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(resp ->
         Optional.ofNullable(resp.getJsonArray("acquisitionsUnits"))
           .flatMap(acquisitionUnits -> acquisitionUnits.stream().findFirst())
@@ -252,7 +252,7 @@ public class LookupService {
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
     final String query = HelperUtils.encodeValue(String.format(CONFIGURATION_ADDRESS_QUERY, shipToName));
     String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(addressConfig ->  {
         JsonArray addressJsonArray = addressConfig.getJsonArray(CONFIGS);
         if(!addressJsonArray.isEmpty()) {
@@ -270,7 +270,7 @@ public class LookupService {
   public CompletableFuture<String> lookupPrefix(String prefixName) {
     final String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, prefixName));
     String endpoint = String.format(PREFIXES_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(prefixes ->  {
         JsonArray prefixesJsonArray = prefixes.getJsonArray(PREFIXES);
         if(!prefixesJsonArray.isEmpty()) {
@@ -288,7 +288,7 @@ public class LookupService {
   public CompletableFuture<String> lookupSuffix(String suffixName) {
     final String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, suffixName));
     String endpoint = String.format(SUFFIXES_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(suffixes ->  {
         JsonArray suffixesJsonArray = suffixes.getJsonArray(SUFFIXES);
         if(!suffixesJsonArray.isEmpty()) {
@@ -306,7 +306,7 @@ public class LookupService {
   public CompletableFuture<String> lookupLinkedPackage(String linkedPackageLineNumber) {
     final String query = HelperUtils.encodeValue(String.format(PO_LINE_NUMBER_QUERY, linkedPackageLineNumber));
     String endpoint = String.format(ORDER_LINES_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(addressConfig ->  {
         JsonArray addressJsonArray = addressConfig.getJsonArray(PO_LINES);
         if(!addressJsonArray.isEmpty()) {
@@ -340,7 +340,7 @@ public class LookupService {
   public CompletableFuture<String> lookupAcquisitionMethodId(String acquisitionMethod) {
     String query = HelperUtils.encodeValue(String.format(ACQ_METHODS_QUERY, acquisitionMethod));
     String endpoint = String.format(ACQUISITION_METHOD_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(acquisitionMethods -> {
         Map<String, AcquisitionMethod> acqMethods = acquisitionMethods.getJsonArray(ACQ_METHODS_NAME).stream()
           .map(obj -> ((JsonObject) obj).mapTo(AcquisitionMethod.class))

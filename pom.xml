@@ -51,7 +51,7 @@
     <jaxb_output_dir>${generated_sources_dir}/jaxb</jaxb_output_dir>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <ramlfiles_util_path>${ramlfiles_path}/raml-util</ramlfiles_util_path>
-    <raml-module-builder.version>35.0.0-SNAPSHOT</raml-module-builder.version>
+    <raml-module-builder.version>35.0.0</raml-module-builder.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <vertx.version>4.3.2</vertx.version>
     <sonar.exclusions>**/models/**.java, **/domain/**.java, **/completablefuture/FolioVertxCompletableFuture.java</sonar.exclusions>
