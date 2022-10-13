@@ -41,7 +41,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
     helper.parse(entity)
       .thenCompose(gobiPO -> {
         logger.info("Mapping Request...");
-        return helper.mapToPurchaseOrder(gobiPO, vertxContext);
+        return helper.mapToPurchaseOrder(gobiPO);
       })
       .thenCompose(helper::getOrPlaceOrder)
       .thenAccept(poLineNumber -> {

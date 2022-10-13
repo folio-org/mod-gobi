@@ -35,9 +35,8 @@ public class RestClient {
   private final String tenantId;
   public static final String X_OKAPI_URL = "X-Okapi-Url";
   private static final String CALLING_ENDPOINT_MSG = "Sending {} {}";
-  private static final ErrorConverter ERROR_CONVERTER = ErrorConverter.createFullBody(result -> {
-    return new HttpException(result.response().statusCode(), result.response().bodyAsString());
-  });
+  private static final ErrorConverter ERROR_CONVERTER = ErrorConverter.createFullBody(
+      result -> new HttpException(result.response().statusCode(), result.response().bodyAsString()));
   private static final ResponsePredicate SUCCESS_RESPONSE_PREDICATE =
       ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, ERROR_CONVERTER);
 

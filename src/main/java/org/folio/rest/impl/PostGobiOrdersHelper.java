@@ -78,7 +78,7 @@ public class PostGobiOrdersHelper {
   }
 
 
-  public CompletableFuture<CompositePurchaseOrder> mapToPurchaseOrder(Document doc, Context vertxContext) {
+  public CompletableFuture<CompositePurchaseOrder> mapToPurchaseOrder(Document doc) {
     final OrderMappings.OrderType orderType = getOrderType(doc);
 
     return lookupOrderMappings(orderType)
@@ -196,7 +196,7 @@ public class PostGobiOrdersHelper {
     try {
       return restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
           .map(body -> {
-            logger.info("Response from mod-orders: {}", () -> body.encodePrettily());
+            logger.info("Response from mod-orders: {}", body::encodePrettily);
             return body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
           })
           .toCompletionStage().toCompletableFuture();

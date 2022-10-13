@@ -86,7 +86,7 @@ public class HelperUtils {
   /**
    * To be used in {@link CompletableFuture#whenComplete(BiConsumer)}.
    */
-  public static <R> BiConsumer<? super R, ? super Throwable> logError(Logger logger, String msg) {
+  public static <R> BiConsumer<R, Throwable> logError(Logger logger, String msg) {
     return (r, t) -> {
       if (t != null) {
         logger.error(msg, t);
