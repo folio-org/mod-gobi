@@ -27,8 +27,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
     new GobiCustomMappingsService(rc)
       .getCustomMappingListByQuery(offset, limit)
-      .thenAccept(orderMappingsViewCollection -> asyncResultHandler.handle(succeededFuture(buildOkResponse(orderMappingsViewCollection))))
-      .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
+      .onSuccess(orderMappingsViewCollection -> asyncResultHandler.handle(succeededFuture(buildOkResponse(orderMappingsViewCollection))))
+      .onFailure(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
 
 
@@ -39,10 +39,9 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
     new GobiCustomMappingsService(rc)
       .postCustomMapping(orderMappings)
-      .thenAccept(createdCustomMapping -> asyncResultHandler.handle(succeededFuture(buildResponseWithLocation(okapiHeaders.get(X_OKAPI_URL),
+      .onSuccess(createdCustomMapping -> asyncResultHandler.handle(succeededFuture(buildResponseWithLocation(okapiHeaders.get(X_OKAPI_URL),
               String.format(GOBI_ORDERS_CUSTOM_MAPPINGS_LOCATION, createdCustomMapping.getMappingType().value()), createdCustomMapping))))
-      .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
-
+      .onFailure(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
 
   @Override
@@ -52,8 +51,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
     new GobiCustomMappingsService(rc)
       .deleteCustomMapping(orderType)
-      .thenAccept(orderMappingsViewCollection -> asyncResultHandler.handle(succeededFuture(buildOkResponse(orderMappingsViewCollection))))
-      .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
+      .onSuccess(orderMappingsViewCollection -> asyncResultHandler.handle(succeededFuture(buildOkResponse(orderMappingsViewCollection))))
+      .onFailure(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
 
   @Override
@@ -63,8 +62,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
     new GobiCustomMappingsService(rc)
       .putCustomMapping(orderType, orderMappings)
-      .thenAccept(v -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
-      .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
+      .onSuccess(v -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
+      .onFailure(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
 
   @Override
@@ -74,8 +73,8 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
     new GobiCustomMappingsService(rc)
       .getCustomMappingByOrderType(orderType)
-      .thenAccept(omv -> asyncResultHandler.handle(succeededFuture(buildOkResponse(omv))))
-      .exceptionally(fail -> handleErrorResponse(asyncResultHandler, fail));
+      .onSuccess(omv -> asyncResultHandler.handle(succeededFuture(buildOkResponse(omv))))
+      .onFailure(fail -> handleErrorResponse(asyncResultHandler, fail));
   }
 
 }

@@ -7,9 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -27,7 +24,6 @@ import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.ResourcePaths;
-import org.folio.rest.core.RestClient;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.Mapping;
@@ -38,8 +34,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;
@@ -54,15 +48,12 @@ import io.vertx.junit5.VertxTestContext;
 public class PostGobiOrdersHelperTest {
 
   private static final Logger logger = LogManager.getLogger(PostGobiOrdersHelperTest.class);
-  @Mock
-  RestClient restClient;
   Map<String, String> okapiHeaders = new HashMap<>();
 
   private Unmarshaller jaxbUnmarshaller;
 
   @BeforeEach
   public void setUp() throws Exception {
-    MockitoAnnotations.openMocks(this);
     jaxbUnmarshaller = JAXBContext.newInstance(GobiResponse.class).createUnmarshaller();
   }
 
@@ -291,10 +282,8 @@ public class PostGobiOrdersHelperTest {
 
   @Test
   public final void testLookupDefaultOrderMappings() {
-
-    PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(null, okapiHeaders, Vertx.vertx().getOrCreateContext());
-
-    doThrow(new HttpException(500, "Unreachable Endpoint")).when(restClient).handleGetRequest(anyString());
+    var headers = Map.of("X-Okapi-Url", "http://invalid");
+    PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(null, headers, Vertx.vertx().getOrCreateContext());
 
     logger.info("Begin: Testing for Order Mappings to fetch default mappings if configuration Call fails");
     var map = pgoh.lookupOrderMappings(OrderMappings.OrderType.LISTED_ELECTRONIC_MONOGRAPH).join();

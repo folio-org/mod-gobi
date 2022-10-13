@@ -1,5 +1,6 @@
 package org.folio.gobi;
 
+import static io.vertx.core.Future.succeededFuture;
 import static org.folio.rest.utils.TestUtils.getMockData;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -7,8 +8,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-
 import org.folio.rest.core.RestClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ public class LookupServiceTest {
     var funds = getMockData("PostGobiOrdersHelper/valid_funds.json");
     LookupService lookupService = new LookupService(restClient);
 
-    doReturn(CompletableFuture.completedFuture(new JsonObject(funds))).when(restClient).handleGetRequest(anyString());
+    doReturn(succeededFuture(new JsonObject(funds))).when(restClient).handleGetRequest(anyString());
     var jsonFund = lookupService.lookupFundId("AFRICAHIST:Elec").join();
     assertNotNull(jsonFund);
   }
@@ -42,7 +41,7 @@ public class LookupServiceTest {
     var funds = getMockData("PostGobiOrdersHelper/empty_funds.json");
     LookupService lookupService = new LookupService(restClient);
 
-    doReturn(CompletableFuture.completedFuture(new JsonObject(funds))).when(restClient).handleGetRequest(anyString());
+    doReturn(succeededFuture(new JsonObject(funds))).when(restClient).handleGetRequest(anyString());
     var jsonFund = lookupService.lookupFundId("NONEXISTENT").join();
     assertNull(jsonFund);
   }
@@ -53,7 +52,7 @@ public class LookupServiceTest {
 
     LookupService lookupService = new LookupService(restClient);
 
-    doReturn(CompletableFuture.completedFuture(new JsonObject(materialTypes))).when(restClient).handleGetRequest(anyString());
+    doReturn(succeededFuture(new JsonObject(materialTypes))).when(restClient).handleGetRequest(anyString());
     var jsonMaterialTypes = lookupService.lookupMaterialTypeId("unspecified").join();
     assertNotNull(jsonMaterialTypes);
 
@@ -65,7 +64,7 @@ public class LookupServiceTest {
 
     LookupService lookupService = new LookupService(restClient);
 
-    doReturn(CompletableFuture.completedFuture(new JsonObject(materialTypes))).when(restClient).handleGetRequest(anyString());
+    doReturn(succeededFuture(new JsonObject(materialTypes))).when(restClient).handleGetRequest(anyString());
     var jsonMaterialTypes = lookupService.lookupMaterialTypeId("unspecified").join();
     assertNull(jsonMaterialTypes);
 
@@ -78,7 +77,7 @@ public class LookupServiceTest {
 
     LookupService lookupService = new LookupService(restClient);
 
-    doReturn(CompletableFuture.completedFuture(new JsonObject(expClasses))).when(restClient).handleGetRequest(anyString());
+    doReturn(succeededFuture(new JsonObject(expClasses))).when(restClient).handleGetRequest(anyString());
     var jsonExpClasses = lookupService.lookupExpenseClassId("Elec").join();
 
     assertNotNull(jsonExpClasses);
@@ -91,7 +90,7 @@ public class LookupServiceTest {
 
     LookupService lookupService = new LookupService(restClient);
 
-    doReturn(CompletableFuture.completedFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
+    doReturn(succeededFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
     var jsonSuf = lookupService.lookupExpenseClassId("not_exists").join();
 
     assertNull(jsonSuf);
@@ -101,7 +100,7 @@ public class LookupServiceTest {
   void testSuccessMapLookupSuffixId() throws IOException {
     var suf = getMockData("PostGobiOrdersHelper/valid_suffix_collection.json");
     LookupService lookupService = new LookupService(restClient);
-    doReturn(CompletableFuture.completedFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
+    doReturn(succeededFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
     var jsonSuf = lookupService.lookupSuffix("Suf").join();
 
     assertNotNull(jsonSuf);
@@ -111,7 +110,7 @@ public class LookupServiceTest {
   void testShouldReturnNullIdIfSuffixNotFound() throws IOException {
     var suf = getMockData("PostGobiOrdersHelper/empty_suffixes.json");
     LookupService lookupService = new LookupService(restClient);
-    doReturn(CompletableFuture.completedFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
+    doReturn(succeededFuture(new JsonObject(suf))).when(restClient).handleGetRequest(anyString());
     var jsonSuf = lookupService.lookupSuffix("Suf").join();
 
     assertNull(jsonSuf);
@@ -121,7 +120,7 @@ public class LookupServiceTest {
   void testSuccessMapLookupPrefixId() throws IOException {
     var pref = getMockData("PostGobiOrdersHelper/valid_prefix_collection.json");
     LookupService lookupService = new LookupService(restClient);
-    doReturn(CompletableFuture.completedFuture(new JsonObject(pref)))
+    doReturn(succeededFuture(new JsonObject(pref)))
       .when(restClient).handleGetRequest(anyString());
     var jsonPref = lookupService.lookupPrefix("pref")      .join();
 
@@ -132,7 +131,7 @@ public class LookupServiceTest {
   void testShouldReturnNullIdIfPrefixNotFound() throws IOException {
     var pref = getMockData("PostGobiOrdersHelper/empty_prefixes.json");
     LookupService lookupService = new LookupService(restClient);
-    doReturn(CompletableFuture.completedFuture(new JsonObject(pref))).when(restClient)
+    doReturn(succeededFuture(new JsonObject(pref))).when(restClient)
       .handleGetRequest(anyString());
     var jsonPref = lookupService.lookupPrefix("pref")
       .join();
@@ -145,7 +144,7 @@ public class LookupServiceTest {
   void testSuccessMapLookupAddressId() throws IOException {
     var address = getMockData("PostGobiOrdersHelper/valid_address_collection.json");
     LookupService lookupService = new LookupService(restClient);
-    doReturn(CompletableFuture.completedFuture(new JsonObject(address)))
+    doReturn(succeededFuture(new JsonObject(address)))
       .when(restClient).handleGetRequest(anyString());
     var jsonAddress = lookupService.lookupConfigAddress("address").join();
 
@@ -156,7 +155,7 @@ public class LookupServiceTest {
   void testShouldReturnNullIdIfAddressNotFound() throws IOException {
     var address = getMockData("PostGobiOrdersHelper/empty_address.json");
     LookupService lookupService = new LookupService(restClient);
-    doReturn(CompletableFuture.completedFuture(new JsonObject(address)))
+    doReturn(succeededFuture(new JsonObject(address)))
       .when(restClient).handleGetRequest(anyString());
     var jsonAddress = lookupService.lookupConfigAddress("address").join();
 
@@ -167,7 +166,7 @@ public class LookupServiceTest {
   void testSuccessMapLookupPoLineId() throws IOException {
     var poline = getMockData("PostGobiOrdersHelper/valid_po_line_collection.json");
     LookupService lookupService = new LookupService(restClient);
-    doReturn(CompletableFuture.completedFuture(new JsonObject(poline)))
+    doReturn(succeededFuture(new JsonObject(poline)))
       .when(restClient).handleGetRequest(anyString());
     var jsonPoline = lookupService.lookupLinkedPackage("line").join();
 
@@ -179,7 +178,7 @@ public class LookupServiceTest {
 
     var poline = getMockData("PostGobiOrdersHelper/empty_po_lines.json");
     LookupService lookupService = new LookupService(restClient);
-    doReturn(CompletableFuture.completedFuture(new JsonObject(poline)))
+    doReturn(succeededFuture(new JsonObject(poline)))
       .when(restClient).handleGetRequest(anyString());
     var jsonPoline = lookupService.lookupLinkedPackage("line").join();
 

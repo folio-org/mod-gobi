@@ -1,6 +1,7 @@
 package org.folio.rest.impl;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.folio.gobi.HelperUtils.logError;
 import static org.folio.gobi.LookupService.CONFIGS;
 import static org.folio.gobi.LookupService.FIRST_ELEM;
 import static org.folio.gobi.LookupService.QUERY;
@@ -22,7 +23,6 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.completablefuture.FolioVertxCompletableFuture;
 import org.folio.gobi.DataSourceResolver;
 import org.folio.gobi.FieldMappingTranslatorResolver;
 import org.folio.gobi.GobiPurchaseOrderParser;
@@ -78,21 +78,16 @@ public class PostGobiOrdersHelper {
   }
 
 
-  public CompletableFuture<CompositePurchaseOrder> mapToPurchaseOrder(Document doc, Context vertxContext) {
+  public CompletableFuture<CompositePurchaseOrder> mapToPurchaseOrder(Document doc) {
     final OrderMappings.OrderType orderType = getOrderType(doc);
-    FolioVertxCompletableFuture<CompositePurchaseOrder> future = new FolioVertxCompletableFuture<>(vertxContext);
 
-      lookupOrderMappings(orderType).thenAccept(ordermappings -> {
-       logger.info("Using Mappings {}", ordermappings);
-        new Mapper(lookupService).map(ordermappings, doc)
-          .thenApply(BindingResult::getResult)
-          .thenAccept(future::complete);
-      }).exceptionally(e -> {
-        logger.error("Exception looking up Order mappings", e);
-        future.completeExceptionally(e);
-        return null;
-      });
-    return future;
+    return lookupOrderMappings(orderType)
+        .thenCompose(ordermappings -> {
+          logger.info("Using Mappings {}", ordermappings);
+          return new Mapper(lookupService).map(ordermappings, doc);
+        })
+        .thenApply(BindingResult::getResult)
+        .whenComplete(logError(logger, "Exception looking up Order mappings"));
   }
 
 
@@ -120,16 +115,14 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<Document> parse(String entity) {
-    FolioVertxCompletableFuture<Document> future = new FolioVertxCompletableFuture<>(restClient.getCtx());
     final GobiPurchaseOrderParser parser = GobiPurchaseOrderParser.getParser();
 
     try {
-      future.complete(parser.parse(entity));
+      return CompletableFuture.completedFuture(parser.parse(entity));
     } catch (GobiPurchaseOrderParserException e) {
       logger.error("Failed to parse GobiPurchaseOrder", e);
-      future.completeExceptionally(e);
+      return CompletableFuture.failedFuture(e);
     }
-    return future;
   }
 
   public CompletableFuture<Map<Mapping.Field, DataSourceResolver>> lookupOrderMappings(OrderMappings.OrderType orderType) {
@@ -140,7 +133,7 @@ public class PostGobiOrdersHelper {
               CONFIGURATION_CODE + orderType));
 
       String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
-      return restClient.handleGetRequest(endpoint)
+      return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
         .thenApply(jo ->  {
           if(!jo.getJsonArray(CONFIGS).isEmpty())
             return extractOrderMappings(orderType, jo);
@@ -148,7 +141,7 @@ public class PostGobiOrdersHelper {
         })
         .exceptionally(t -> {
           logger.error("Exception looking up custom order mappings for tenant", t);
-          String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(restClient.getOkapiHeaders().get(TENANT_HEADER), orderType);
+          String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(restClient.getTenantId(), orderType);
           if(tenantKey!=null) {
             logger.info("Using the cached value of custom mappings");
             return OrderMappingCache.getInstance().getValue(tenantKey);
@@ -167,7 +160,7 @@ public class PostGobiOrdersHelper {
       final OrderMappings.OrderType orderType) {
 
     logger.info("No custom Mappings found for tenant, using default mappings");
-    String tenant = restClient.getOkapiHeaders().get(TENANT_HEADER);
+    String tenant = restClient.getTenantId();
     boolean cacheFound = OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
          OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : mappingHelper.getDefaultMappingForOrderType(orderType);
@@ -179,7 +172,7 @@ public class PostGobiOrdersHelper {
 
   private Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings;
-    String tenant = restClient.getOkapiHeaders().get(TENANT_HEADER);
+    String tenant = restClient.getTenantId();
     String tenantConfigKey=OrderMappingCache.computeKey(tenant, orderType, jo);
 
     if(OrderMappingCache.getInstance().containsKey(tenantConfigKey)){
@@ -200,23 +193,18 @@ public class PostGobiOrdersHelper {
   }
 
   private CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
-    FolioVertxCompletableFuture<String> future = new FolioVertxCompletableFuture<>(restClient.getCtx());
     try {
-      restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
-        .thenAccept(body -> {
-          logger.info("Response from mod-orders: {}", body.encodePrettily());
-          future.complete(body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber"));
-        })
-        .exceptionally(t -> {
-          future.completeExceptionally(t);
-          return null;
-        });
+      return restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
+          .map(body -> {
+            logger.info("Response from mod-orders: {}", body::encodePrettily);
+            return body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
+          })
+          .toCompletionStage().toCompletableFuture();
     } catch (Exception e) {
       String errorMessage = String.format("Exception calling %s on %s", HttpMethod.POST, ORDERS_ENDPOINT);
       logger.error(errorMessage, e);
-      future.completeExceptionally(e);
+      return CompletableFuture.failedFuture(e);
     }
-    return future;
   }
 
 
@@ -244,7 +232,7 @@ public class PostGobiOrdersHelper {
     logger.info("Looking for existing order with Vendor Reference Number: {}", vendorRefNumber);
     String query = HelperUtils.encodeValue(String.format("poLine.vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
     String endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(purchaseOrders -> {
         String orderId = HelperUtils.extractOrderId(purchaseOrders);
         if (StringUtils.isEmpty(orderId)) {
@@ -257,7 +245,7 @@ public class PostGobiOrdersHelper {
           .equals(CompositePurchaseOrder.WorkflowStatus.PENDING)) {
           purchaseOrder.setWorkflowStatus(CompositePurchaseOrder.WorkflowStatus.OPEN);
 
-          return restClient.handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder))
+          return restClient.handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder)).toCompletionStage().toCompletableFuture()
             .exceptionally(e -> {
               logger.error("Retry to OPEN existing Order failed", e);
               return null;
@@ -275,7 +263,7 @@ public class PostGobiOrdersHelper {
   private CompletableFuture<CompositePurchaseOrder> getExistingOrderById(CompositePurchaseOrder compositePurchaseOrder) {
     logger.info("Retrieving existing Order with ID {}", compositePurchaseOrder.getId());
     String endpoint = String.format(ORDERS_BY_ID_ENDPOINT, compositePurchaseOrder.getId());
-    return restClient.handleGetRequest(endpoint)
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(order -> {
         CompositePurchaseOrder compPO = order.mapTo(CompositePurchaseOrder.class);
         String poLineNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getPoLineNumber();
