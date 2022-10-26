@@ -1,4 +1,17 @@
-## 2.5.0 Unreleased
+## 2.6.0 Unreleased
+
+## 2.5.0 - Nolana R3 2022
+Major changes in this release related to implementing GOBI integration user interface and replacing VertxCompletableFuture usage
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.4.0...v2.5.0)
+
+### Stories
+* [MODGOBI-161] (https://issues.folio.org/browse/MODGOBI-161) Define and implement new APIs for retrieving Fields, Translators and mapping Types
+* [MODGOBI-160] (https://issues.folio.org/browse/MODGOBI-160) Create and update the schemas needed for the fields and translators mapping APIs
+* [MODGOBI-176] (https://issues.folio.org/browse/MODGOBI-176) Replace FolioVertxCompletableFuture usage
+* [MODGOBI-175] (https://issues.folio.org/browse/MODGOBI-175) mod-gobi: Upgrade RAML Module Builder
+* [MODGOBI-157] (https://issues.folio.org/browse/MODGOBI-157) Define and implement API for retrieving GOBI mapping configs
+
 
 ## 2.4.0 Released
 Major changes in this release related to removing usage of VertxCompletableFuture, adding few PO/POL fields to GOBI configuration 
