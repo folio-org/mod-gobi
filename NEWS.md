@@ -1,5 +1,15 @@
 ## 2.5.0 Unreleased
 
+
+## 2.4.4 - Released Morning Glory 2022 R2 Hot Fix 1
+The focus of this release was to add copyright notice for FolioVertxCompletableFuture
+
+[Full Changelog](https://github.com/folio-org/mod-invoice/compare/v2.4.3...v2.4.4)
+
+### Stories
+* [FOLIO-3604](https://issues.folio.org/browse/FOLIO-3604) - FolioVertxCompletableFuture copyright violation
+
+
 ## 2.4.3 (Morning Glory R2 2022) Released
 Major changes in this release related to fix issue with acquisition permissions
 
