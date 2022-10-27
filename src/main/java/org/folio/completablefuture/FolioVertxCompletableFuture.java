@@ -11,6 +11,16 @@ import java.util.concurrent.Executor;
 import java.util.function.*;
 
 /**
+ *  * NOTICE:
+ *  <p>
+ *  Original class <a href="https://github.com/cescoffier/vertx-completable-future/blob/vertx-completable-future-0.1.2/src/main/java/me/escoffier/vertx/completablefuture/VertxCompletableFuture.java">VertxCompletableFuture</a>
+ *  had been developed by <a href="https://github.com/cescoffier">Clement Escoffier</a>
+ *  <br/>
+ *  Original class had been copied from the repository above and updated with following changes: <br/>
+ *    1. Renamed the class and related constructors from VertxCompletableFuture to FolioVertxCompletableFuture<br/>
+ *    2. Removed unused methods from "Composite Future implementation" block<br/>
+ *    3. Reformatted the code<br/><br/>
+ *  </p>
  * An implementation of {@link CompletableFuture} for Vert.x.4.x.x  It differs in the way to handle async calls:
  * <p>
  * * {@link FolioVertxCompletableFuture} are attached to a Vert.x {@link Context}
