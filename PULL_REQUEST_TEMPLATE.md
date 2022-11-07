@@ -37,11 +37,10 @@
 
 #### TODOS and Open Questions
 <!-- OPTIONAL
-  - [ ] Use GitHub checklists. When solved, check the box and explain the answer. 
-  - [ ] Check logging.
+- [ ] Use GitHub checklists. When solved, check the box and explain the answer.
 -->
 
-##   Learning
+## Learning
 <!-- OPTIONAL
   Help out not only your reviewer, but also your fellow developer!
   Sometimes there are key pieces of information that you used to come up
@@ -78,6 +77,6 @@ If there are breaking changes, please **STOP** and consider the following:
 - Do PRs exist for these changes?
   - [ ] If so, have they been approved?
 
-Ideally all the PRs involved in breaking changes would be merged in the same day to avoid breaking the folio-testing environment.  Communication is paramount if that is to be achieved, especially as the number of inter-module and inter-team dependencies increase.  
+Ideally all of the PRs involved in breaking changes would be merged in the same day to avoid breaking the folio-testing environment.  Communication is paramount if that is to be achieved, especially as the number of intermodule and inter-team dependencies increase.  
 
 While it's helpful for reviewers to help identify potential problems, ensuring that it's safe to merge is ultimately the responsibility of the PR assignee.
