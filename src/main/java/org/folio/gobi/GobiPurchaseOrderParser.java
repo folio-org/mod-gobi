@@ -74,7 +74,7 @@ public class GobiPurchaseOrderParser {
     } catch (Exception e) {
       final Throwable cause = e.getCause();
       final String message = (cause != null) ? cause.getMessage() : e.getMessage();
-
+      logger.error("Unable to parse Gobi Purchase Order with data: '{}'", data, e);
       throw new GobiPurchaseOrderParserException(message, e);
     }
     return doc;
@@ -145,7 +145,7 @@ public class GobiPurchaseOrderParser {
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
           return buffer.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {
-          logger.error("Exception", e);
+          logger.error("Error when buffering inputStream: '{}'", inputStream, e);
           return null;
         }
       }

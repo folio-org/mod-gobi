@@ -37,10 +37,10 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, vertxContext);
 
-    logger.info("Parsing Request: \n {}", entity);
+    logger.debug("postGobiOrders:: Trying to parse request: \n {}", entity);
     helper.parse(entity)
       .thenCompose(gobiPO -> {
-        logger.info("Mapping Request...");
+        logger.info("postGobiOrders:: Trying to create PO from request: \n {}", gobiPO);
         return helper.mapToPurchaseOrder(gobiPO);
       })
       .thenCompose(helper::getOrPlaceOrder)
