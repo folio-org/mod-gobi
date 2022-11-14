@@ -92,7 +92,9 @@ public class PostGobiOrdersHelper {
 
 
   public static OrderMappings.OrderType getOrderType(Document doc) {
-    logger.debug("getOrderType:: Trying to get order type from '{}'", doc.getDoctype());
+    if (logger.isDebugEnabled()) {
+      logger.debug("getOrderType:: Trying to get order type from '{}'", doc.getDoctype());
+    }
     final XPath xpath = XPathFactory.newInstance().newXPath();
     OrderMappings.OrderType orderType;
 
@@ -122,7 +124,7 @@ public class PostGobiOrdersHelper {
     try {
       return CompletableFuture.completedFuture(parser.parse(entity));
     } catch (GobiPurchaseOrderParserException e) {
-      logger.error("Failed to parse GobiPurchaseOrder: {}", entity, e);
+      logger.error("Failed to parse GobiPurchaseOrder: \n {}", entity, e);
       return CompletableFuture.failedFuture(e);
     }
   }
@@ -251,7 +253,7 @@ public class PostGobiOrdersHelper {
 
           return restClient.handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder)).toCompletionStage().toCompletableFuture()
             .exceptionally(e -> {
-              logger.error("Retry to OPEN existing Order failed", e);
+              logger.error("Retry to OPEN existing Order with id '{}' failed", orderId, e);
               return null;
             })
             .thenApply(v -> true);
@@ -259,7 +261,7 @@ public class PostGobiOrdersHelper {
         return completedFuture(true);
       })
       .exceptionally(t -> {
-        logger.error("Error when looking up for existing Order", t);
+        logger.error("Error looking up for existing Order with id: {}", compPO.getId(), t);
         return false;
       });
   }
@@ -279,7 +281,7 @@ public class PostGobiOrdersHelper {
         return completedFuture(compositePurchaseOrder);
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up for existing PO Line Number: {}", compositePurchaseOrder.getPoNumber(), t);
+        logger.error("Error looking up for existing PO Line Number: {}", compositePurchaseOrder.getPoNumber(), t);
         return compositePurchaseOrder;
       });
 
