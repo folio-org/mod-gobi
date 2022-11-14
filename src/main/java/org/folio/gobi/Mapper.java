@@ -973,18 +973,14 @@ public class Mapper {
   }
 
   public static String multiply(NodeList nodes) {
-    if (nodes != null && nodes.getLength() > 1) {
-      BigDecimal product = null;
-      for (var i = 0; i < nodes.getLength(); i++) {
-        if (product == null) {
-          product = new BigDecimal(nodes.item(i).getTextContent());
-        } else {
-          product = product.multiply(new BigDecimal(nodes.item(i).getTextContent()));
-        }
-      }
-      return String.valueOf(product);
+    if (nodes == null || nodes.getLength() < 1) {
+      return null;
     }
-    return null;
+    BigDecimal product = new BigDecimal(nodes.item(0).getTextContent());
+    for (var i = 1; i < nodes.getLength(); i++) {
+      product = product.multiply(new BigDecimal(nodes.item(i).getTextContent()));
+    }
+    return String.valueOf(product);
   }
 
   public static List<String> splitStringIntoList(String tags, String delimiter) {
