@@ -38,6 +38,7 @@
 #### TODOS and Open Questions
 <!-- OPTIONAL
 - [ ] Use GitHub checklists. When solved, check the box and explain the answer.
+- [ ] Check logging.
 -->
 
 ## Learning
