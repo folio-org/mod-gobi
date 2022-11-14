@@ -22,10 +22,9 @@ class MapperTest {
     assertThat(multiply(), is(nullValue()));
   }
 
-  // TODO: should this be 2.6?
   @Test
   void multiplySingle() {
-    assertThat(multiply("2.6"), is(nullValue()));
+    assertThat(multiply("2.6"), is("2.6"));
   }
 
   @Test
