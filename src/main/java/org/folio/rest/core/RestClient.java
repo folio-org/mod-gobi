@@ -69,14 +69,18 @@ public class RestClient {
    * @param endpoint endpoint
    */
   public Future<Void> handlePutRequest(String endpoint, JsonObject recordData) {
-    logger.debug("Trying to put '{}' object with data: {}", endpoint, recordData.encodePrettily());
+    if (logger.isDebugEnabled()) {
+      logger.debug("Trying to put '{}' object with data: {}", endpoint, recordData.encodePrettily());
+    }
     return webClient.putAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
         .expect(SUCCESS_RESPONSE_PREDICATE).sendJsonObject(recordData)
         .mapEmpty();
   }
 
   public Future<JsonObject> post(String endpoint, JsonObject recordData) {
-    logger.debug("Trying to post '{}' object with body: {}", endpoint, recordData.encodePrettily());
+    if (logger.isDebugEnabled()) {
+      logger.debug("Trying to post '{}' object with body: {}", endpoint, recordData.encodePrettily());
+    }
     return webClient.postAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
         .expect(SUCCESS_RESPONSE_PREDICATE).sendJsonObject(recordData)
         .map(HttpResponse::bodyAsJsonObject);
