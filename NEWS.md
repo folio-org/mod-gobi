@@ -1,46 +1,55 @@
 ## 2.6.0 Unreleased
 
+## 2.5.1 - Nolana R3 2022 Bug Fix
+Major changes in this release are dependency upgrades.
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.5.0...v2.5.1)
+
+### Bug fixes
+* [MODGOBI-184](https://issues.folio.org/browse/MODGOBI-184) RMB 35.0.3, jackson 2.14.0, folio-isbn-util 1.4.0
+* [MODGOBI-182](https://issues.folio.org/browse/MODGOBI-182) BigDecimal multiply without scala
+
 ## 2.5.0 - Nolana R3 2022
 Major changes in this release related to implementing GOBI integration user interface and replacing VertxCompletableFuture usage
 
-[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.4.0...v2.5.0)
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.4.0...v2.5.0)
 
 ### Stories
-* [MODGOBI-161] (https://issues.folio.org/browse/MODGOBI-161) Define and implement new APIs for retrieving Fields, Translators and mapping Types
-* [MODGOBI-160] (https://issues.folio.org/browse/MODGOBI-160) Create and update the schemas needed for the fields and translators mapping APIs
-* [MODGOBI-176] (https://issues.folio.org/browse/MODGOBI-176) Replace FolioVertxCompletableFuture usage
-* [MODGOBI-175] (https://issues.folio.org/browse/MODGOBI-175) mod-gobi: Upgrade RAML Module Builder
-* [MODGOBI-157] (https://issues.folio.org/browse/MODGOBI-157) Define and implement API for retrieving GOBI mapping configs
+* [MODGOBI-161](https://issues.folio.org/browse/MODGOBI-161) Define and implement new APIs for retrieving Fields, Translators and mapping Types
+* [MODGOBI-160](https://issues.folio.org/browse/MODGOBI-160) Create and update the schemas needed for the fields and translators mapping APIs
+* [MODGOBI-176](https://issues.folio.org/browse/MODGOBI-176) Replace FolioVertxCompletableFuture usage
+* [MODGOBI-175](https://issues.folio.org/browse/MODGOBI-175) mod-gobi: Upgrade RAML Module Builder
+* [MODGOBI-157](https://issues.folio.org/browse/MODGOBI-157) Define and implement API for retrieving GOBI mapping configs
 
 
 ## 2.4.0 Released
 Major changes in this release related to removing usage of VertxCompletableFuture, adding few PO/POL fields to GOBI configuration 
 
-[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.3.0...v2.4.0)
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.3.0...v2.4.0)
 
 ### Stories
-* [MODGOBI-154] (https://issues.folio.org/browse/MODGOBI-154) Remove usage of VertxCompletableFuture
-* [MODGOBI-152] (https://issues.folio.org/browse/MODGOBI-152) Add additional PO/POL fields to GOBI configuration mapping
-* [MODGOBI-132] (https://issues.folio.org/browse/MODGOBI-132) Adjust GOBI mapping for subaccount to perform lookup
-* [MODGOBI-129] (https://issues.folio.org/browse/MODGOBI-129) Add acquisition unit and internal note fields to GOBI configuration mapping
+* [MODGOBI-154](https://issues.folio.org/browse/MODGOBI-154) Remove usage of VertxCompletableFuture
+* [MODGOBI-152](https://issues.folio.org/browse/MODGOBI-152) Add additional PO/POL fields to GOBI configuration mapping
+* [MODGOBI-132](https://issues.folio.org/browse/MODGOBI-132) Adjust GOBI mapping for subaccount to perform lookup
+* [MODGOBI-129](https://issues.folio.org/browse/MODGOBI-129) Add acquisition unit and internal note fields to GOBI configuration mapping
 
 ### Bug fixes
-* [MODGOBI-163] (https://issues.folio.org/browse/MODGOBI-163) Fail to create GOBI order for fundId
-* [MODGOBI-150] (https://issues.folio.org/browse/MODGOBI-150) Fix asynchronous CompletableFuture flows in the DataSourceResolver
+* [MODGOBI-163](https://issues.folio.org/browse/MODGOBI-163) Fail to create GOBI order for fundId
+* [MODGOBI-150](https://issues.folio.org/browse/MODGOBI-150) Fix asynchronous CompletableFuture flows in the DataSourceResolver
 
 
 ## 2.3.0 Released
 
 Major changes in this release related to allow mapping for expense classes
 
-[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.2.0...v2.3.0)
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.2.0...v2.3.0)
 
 ### Stories
-* [MODGOBI-149] (https://issues.folio.org/browse/MODGOBI-149) Material Supplier not mapping correctly to GOBI organization type
-* [MODGOBI-139] (https://issues.folio.org/browse/MODGOBI-139) Support expense classes from LocalData fields
+* [MODGOBI-149](https://issues.folio.org/browse/MODGOBI-149) Material Supplier not mapping correctly to GOBI organization type
+* [MODGOBI-139](https://issues.folio.org/browse/MODGOBI-139) Support expense classes from LocalData fields
 
 ### Bug fixes
-* [MODGOBI-144] (https://issues.folio.org/browse/MODGOBI-144) Can not process order with material type in the LocalData1 field
+* [MODGOBI-144](https://issues.folio.org/browse/MODGOBI-144) Can not process order with material type in the LocalData1 field
 
 
 ## 2.2.0 Released

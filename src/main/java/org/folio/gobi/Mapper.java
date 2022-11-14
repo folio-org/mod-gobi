@@ -56,7 +56,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import io.vertx.core.json.JsonObject;
-import scala.math.BigDecimal;
+import java.math.BigDecimal;
 
 public class Mapper {
 
@@ -977,9 +977,9 @@ public class Mapper {
       BigDecimal product = null;
       for (var i = 0; i < nodes.getLength(); i++) {
         if (product == null) {
-          product = BigDecimal.exact(nodes.item(i).getTextContent());
+          product = new BigDecimal(nodes.item(i).getTextContent());
         } else {
-          product = product.$times(BigDecimal.exact(nodes.item(i).getTextContent()));
+          product = product.multiply(new BigDecimal(nodes.item(i).getTextContent()));
         }
       }
       return String.valueOf(product);
