@@ -122,7 +122,7 @@ public class PostGobiOrdersHelper {
     try {
       return CompletableFuture.completedFuture(parser.parse(entity));
     } catch (GobiPurchaseOrderParserException e) {
-      logger.error("Failed to parse GobiPurchaseOrder: \n {}", entity, e);
+      logger.error("Failed to parse GobiPurchaseOrder: {}", entity, e);
       return CompletableFuture.failedFuture(e);
     }
   }

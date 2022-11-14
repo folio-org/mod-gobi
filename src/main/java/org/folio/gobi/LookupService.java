@@ -274,7 +274,7 @@ public class LookupService {
         return null;
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up address ID from configuration", t);
+        logger.error("Exception looking up address ID from configuration with shipToName: {}", shipToName, t);
         return null;
       });
   }
