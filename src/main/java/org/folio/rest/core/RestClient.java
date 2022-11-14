@@ -56,7 +56,10 @@ public class RestClient {
   }
 
   public Future<JsonObject> handleGetRequest(String endpoint) {
-    logger.debug("Trying to get {} object", endpoint);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Trying to get '{}' object", endpoint);
+    }
+
     return webClient.getAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
         .expect(SUCCESS_RESPONSE_PREDICATE).send()
         .map(HttpResponse::bodyAsJsonObject);
@@ -70,10 +73,9 @@ public class RestClient {
    */
   public Future<Void> handlePutRequest(String endpoint, JsonObject recordData) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Trying to update {} object with data: {}", endpoint, recordData.encodePrettily());
-//    }
-//      logger.debug("Sending 'PUT {}' with body: {}", endpoint, recordData.encodePrettily());
+      logger.debug("Trying to update '{}' object with data: {}", endpoint, recordData.encodePrettily());
     }
+
     return webClient.putAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
         .expect(SUCCESS_RESPONSE_PREDICATE).sendJsonObject(recordData)
         .mapEmpty();
@@ -81,8 +83,7 @@ public class RestClient {
 
   public Future<JsonObject> post(String endpoint, JsonObject recordData) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Trying to post {} object with body: {}", endpoint, recordData.encodePrettily());
-//      logger.debug("Sending 'POST {}' with body: {}", endpoint, recordData.encodePrettily());
+      logger.debug("Trying to post '{}' object with body: {}", endpoint, recordData.encodePrettily());
     }
 
     return webClient.postAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
@@ -92,10 +93,7 @@ public class RestClient {
 
   public Future<Void> delete(String endpointById) {
     if (logger.isDebugEnabled()) {
-//      CALLING_ENDPOINT_MSG = "Sending {} {}";
-//      logger.debug(CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpointById);
       logger.debug("Tying to delete with using endpoint: {}", endpointById);
-      logger.debug("Sending 'DELETE {}'", endpointById);
     }
 
     return webClient.deleteAbs(okapiURL + endpointById)

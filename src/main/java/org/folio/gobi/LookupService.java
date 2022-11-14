@@ -88,7 +88,7 @@ public class LookupService {
         return completedFuture(locationId);
       })
       .exceptionally(t -> {
-        logger.error("Error while searching for location: '{}'", location, t);
+        logger.error("Error while searching for location '{}'", location, t);
         return null;
       });
   }
@@ -101,14 +101,14 @@ public class LookupService {
    * @param materialTypeCode
    */
   public CompletableFuture<String> lookupMaterialTypeId(String materialTypeCode) {
-    logger.debug("lookupMaterialTypeId:: Trying to look up materialTypeId by materialType '{}'", materialTypeCode);
+    logger.debug("lookupMaterialTypeId:: Trying to look up materialTypeId by materialTypeCode: {}", materialTypeCode);
     String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, materialTypeCode));
     String endpoint = String.format(MATERIAL_TYPES_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(materialTypes -> {
         String materialType = HelperUtils.extractMaterialTypeId(materialTypes);
         if (StringUtils.isEmpty(materialType)) {
-          logger.warn("lookupMaterialTypeId:: MaterialTypeCode '{}' not found", materialTypeCode);
+          logger.warn("lookupMaterialTypeId:: MaterialTypeCode: {} not found", materialTypeCode);
           if (StringUtils.equalsIgnoreCase(materialTypeCode, UNSPECIFIED_MATERIAL_NAME)) {
             return lookupMaterialTypeId(DEFAULT_LOOKUP_CODE);
           } else {
@@ -119,13 +119,13 @@ public class LookupService {
         return completedFuture(materialType);
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up material-type id", t);
+        logger.error("Exception looking up materialType id with materialTypeCode: {} ", materialTypeCode, t);
         return null;
       });
   }
 
   public CompletableFuture<Organization> lookupOrganization(String vendorCode) {
-    logger.debug("lookupOrganization:: Trying to look up organization by vendorCode '{}'", vendorCode);
+    logger.debug("lookupOrganization:: Trying to look up organization by vendorCode: {}", vendorCode);
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode));
     String endpoint = String.format(GET_ORGANIZATION_ENDPOINT + QUERY, query);
 
@@ -136,27 +136,26 @@ public class LookupService {
           .map(organization -> ((JsonObject) organization).mapTo(Organization.class))
           .orElse(null))
       .exceptionally(t -> {
-        String errorMessage = String.format("Exception looking up Organization which is a vendor with code: %s", vendorCode);
-        logger.error(errorMessage, t);
+        logger.error("Exception looking up Organization which is a vendor with code: {}", vendorCode, t);
         return null;
       });
   }
 
   public CompletableFuture<String> lookupFundId(String fundCode) {
-    logger.debug("lookupFundId:: Trying to look up fundId by fundCode '{}'", fundCode);
+    logger.debug("lookupFundId:: Trying to look up fundId by fundCode: {}", fundCode);
     String query = HelperUtils.encodeValue(String.format("code==%s", extractFundCode(fundCode)));
     String endpoint = String.format(FUNDS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(funds -> {
         String fundId = HelperUtils.extractIdOfFirst(funds, "funds");
         if (StringUtils.isEmpty(fundId)) {
-          logger.warn("lookupFundId:: FundCode '{}' not found", fundCode);
+          logger.warn("lookupFundId:: FundCode: {} not found", fundCode);
           return null;
         }
         return fundId;
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up fund id", t);
+        logger.error("Error when looking up fund id with fundCode: {}", fundCode, t);
         return null;
       });
   }
@@ -168,7 +167,7 @@ public class LookupService {
    * @return UUID of the productId Type
    */
   public CompletableFuture<String> lookupProductIdType(String productType) {
-    logger.debug("Received ProductType is {}", productType);
+    logger.debug("lookupProductIdType: Try to look up productTypeId with productType: {}", productType);
     String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, productType));
     String endpoint = String.format(IDENTIFIERS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture().thenCompose(productTypes -> {
@@ -181,7 +180,7 @@ public class LookupService {
         return completedFuture(productTypeId);
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up productId type UUID", t);
+        logger.error("Error when looking up productId type UUID with productType: {}", productType, t);
         return null;
       });
   }
@@ -209,13 +208,13 @@ public class LookupService {
         return completedFuture(typeId);
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up contributorNameType type UUID", t);
+        logger.error("Exception looking up contributorNameType type UUID with its name: {}", name, t);
         return null;
       });
   }
 
   public CompletableFuture<String> lookupExpenseClassId(String expenseClassCode) {
-    logger.debug("lookupExpenseClassId:: Trying to look up expenseClassId by expenseClassCode '{}'", expenseClassCode);
+    logger.debug("lookupExpenseClassId:: Trying to look up expenseClassId by expenseClassCode: {}", expenseClassCode);
     String query = HelperUtils.encodeValue(String.format("code==%s", expenseClassCode));
     String endpoint = String.format(EXPENSE_CLASS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
@@ -228,13 +227,13 @@ public class LookupService {
         return expenseClassId;
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up expense class id", t);
+        logger.error("Exception looking up expense class id with expenseClassCode: {}", expenseClassCode, t);
         return null;
       });
   }
 
   public CompletableFuture<String> lookupAcquisitionUnitIdsByName(String data) {
-    logger.debug("lookupAcquisitionUnitIdsByName:: Trying to look up acquisitionUnitIds by acquisitionUnitName '{}'", data);
+    logger.debug("lookupAcquisitionUnitIdsByName:: Trying to look up acquisitionUnitIds by acquisitionUnitName: {}", data);
     String query = HelperUtils.encodeValue(String.format(CQL_NAME_STRING_FMT + CHECK_ACQ_UNIT_IS_NOT_DELETED, data));
     String endpoint = String.format(ACQUISITION_UNIT_ENDPOINT + QUERY, query);
 
@@ -245,15 +244,14 @@ public class LookupService {
           .map(organization -> ((JsonObject) organization).mapTo(AcquisitionsUnit.class).getId())
           .orElse(null))
       .exceptionally(t -> {
-        String errorMessage = String.format("Exception looking up Acquisition unit for a vendor with name: %s", data);
-        logger.error(errorMessage, t);
+        logger.error("Exception looking up Acquisition unit for a vendor with name: {}", data, t);
         return null;
       });
 
   }
 
   public CompletableFuture<Object> lookupAcquisitionUnitIdsByAccount(String data) {
-    logger.debug("lookupAcquisitionUnitIdsByAccount:: Trying to look up acquisitionUnitIds by accountNumber '{}'", data);
+    logger.debug("lookupAcquisitionUnitIdsByAccount:: Trying to look up acquisitionUnitIds by accountNumber: {}", data);
     return lookupOrganization(ORGANIZATION_NAME).thenApply(org -> org.getAccounts().stream()
       .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout(data)))
       .findFirst()
@@ -262,7 +260,7 @@ public class LookupService {
   }
 
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
-    logger.debug("lookupConfigAddress:: Trying to look up config address by name '{}'", shipToName);
+    logger.debug("lookupConfigAddress:: Trying to look up config address by name: {}", shipToName);
     final String query = HelperUtils.encodeValue(String.format(CONFIGURATION_ADDRESS_QUERY, shipToName));
     String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
@@ -282,7 +280,7 @@ public class LookupService {
   }
 
   public CompletableFuture<String> lookupPrefix(String prefixName) {
-    logger.debug("lookupPrefix:: Trying to lookup prefix by name '{}'", prefixName);
+    logger.debug("lookupPrefix:: Trying to lookup prefix by name: {}", prefixName);
     final String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, prefixName));
     String endpoint = String.format(PREFIXES_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
@@ -296,13 +294,13 @@ public class LookupService {
         return null;
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up prefix ID", t);
+        logger.error("Exception looking up prefix ID with prefixName: {}", prefixName, t);
         return null;
       });
   }
 
   public CompletableFuture<String> lookupSuffix(String suffixName) {
-    logger.debug("lookupSuffix:: Trying to lookup suffix by name '{}'", suffixName);
+    logger.debug("lookupSuffix:: Trying to lookup suffix by name: {}", suffixName);
     final String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, suffixName));
     String endpoint = String.format(SUFFIXES_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
@@ -316,13 +314,13 @@ public class LookupService {
         return null;
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up suffix ID ", t);
+        logger.error("Exception looking up suffix ID with suffixName: {}", suffixName, t);
         return null;
       });
   }
 
   public CompletableFuture<String> lookupLinkedPackage(String linkedPackageLineNumber) {
-    logger.debug("lookupLinkedPackage:: Trying to lookup linked package by line number '{}'", linkedPackageLineNumber);
+    logger.debug("lookupLinkedPackage:: Trying to lookup linked package by line number: {}", linkedPackageLineNumber);
     final String query = HelperUtils.encodeValue(String.format(PO_LINE_NUMBER_QUERY, linkedPackageLineNumber));
     String endpoint = String.format(ORDER_LINES_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
@@ -336,7 +334,7 @@ public class LookupService {
         return null;
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up address ID from configuration", t);
+        logger.error("Exception looking up address ID from configuration with its number: {}", linkedPackageLineNumber, t);
         return null;
       });
   }
@@ -358,7 +356,7 @@ public class LookupService {
   }
 
   public CompletableFuture<String> lookupAcquisitionMethodId(String acquisitionMethod) {
-    logger.debug("lookupAcquisitionMethodId:: Trying to look up acquisition method id by name '{}'", acquisitionMethod);
+    logger.debug("lookupAcquisitionMethodId:: Trying to look up acquisition method id by name: {}", acquisitionMethod);
     String query = HelperUtils.encodeValue(String.format(ACQ_METHODS_QUERY, acquisitionMethod));
     String endpoint = String.format(ACQUISITION_METHOD_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
@@ -372,7 +370,7 @@ public class LookupService {
           .orElse(acqMethods.get(DEFAULT_ACQ_METHOD_VALUE).getId());
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up acquisition method id '{}'", acquisitionMethod, t);
+        logger.error("Exception looking up acquisition method id with its name: {}", acquisitionMethod, t);
         return null;
       });
   }

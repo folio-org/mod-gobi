@@ -122,7 +122,7 @@ public class PostGobiOrdersHelper {
     try {
       return CompletableFuture.completedFuture(parser.parse(entity));
     } catch (GobiPurchaseOrderParserException e) {
-      logger.error("Failed to parse GobiPurchaseOrder", e);
+      logger.error("Failed to parse GobiPurchaseOrder: {}", entity, e);
       return CompletableFuture.failedFuture(e);
     }
   }
@@ -259,7 +259,7 @@ public class PostGobiOrdersHelper {
         return completedFuture(true);
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up for existing Order", t);
+        logger.error("Error when looking up for existing Order", t);
         return false;
       });
   }
@@ -279,7 +279,7 @@ public class PostGobiOrdersHelper {
         return completedFuture(compositePurchaseOrder);
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up for existing PO Line Number", t);
+        logger.error("Exception looking up for existing PO Line Number: {}", compositePurchaseOrder.getPoNumber(), t);
         return compositePurchaseOrder;
       });
 
