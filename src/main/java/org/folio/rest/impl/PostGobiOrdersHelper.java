@@ -92,9 +92,7 @@ public class PostGobiOrdersHelper {
 
 
   public static OrderMappings.OrderType getOrderType(Document doc) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("getOrderType:: Trying to get order type from '{}'", doc.getDoctype());
-    }
+    logger.debug("getOrderType:: Trying to get order type from '{}'", doc.getDoctype());
     final XPath xpath = XPathFactory.newInstance().newXPath();
     OrderMappings.OrderType orderType;
 
