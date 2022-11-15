@@ -902,7 +902,7 @@ public class Mapper {
          .ifPresentOrElse(organizationAccountNo -> {
          String normalizeOrgAccountNo = HelperUtils.getVendAccountFromOrgAccountsList((String) vendorAccountNo,organizationAccountNo);
           if (!normalizeOrgAccountNo.isEmpty()) {
-              logger.info("mapVendorAccount:: AccountNo matched with subAccount received by GOBI");
+              logger.info("AccountNo matched with subAccount received by GOBI");
               futures.add(CompletableFuture.supplyAsync(() -> normalizeOrgAccountNo)
                 .thenAccept(vendorDetail::setVendorAccount));
           }
