@@ -1,13 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-gobi</artifactId>
   <version>2.6.0-SNAPSHOT</version>
 
   <name>GOBI Integration</name>
-  <description>GOBI® (Global Online Bibliographic Information) is the leading web-based acquisitions tool for finding,
-    ordering and
+  <description>GOBI® (Global Online Bibliographic Information) is the leading web-based acquisitions tool for finding, ordering and
     managing e-books and print books for libraries. This module allows GOBI initiated orders to be fulfilled by FOLIO.
   </description>
   <url>https://github.com/folio-org/mod-gobi</url>
@@ -55,14 +53,13 @@
     <raml-module-builder.version>35.0.3</raml-module-builder.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <vertx.version>4.3.4</vertx.version>
-    <sonar.exclusions>**/models/**.java, **/domain/**.java, **/completablefuture/FolioVertxCompletableFuture.java
-    </sonar.exclusions>
+    <sonar.exclusions>**/models/**.java, **/domain/**.java, **/completablefuture/FolioVertxCompletableFuture.java</sonar.exclusions>
     <sonar.test.exclusions>**/*Test.java</sonar.test.exclusions>
     <jmockit.version>1.49</jmockit.version>
     <mod-configuration-client.version>5.8.0</mod-configuration-client.version>
     <jupiter.version>5.9.0</jupiter.version>
     <log4j.version>2.19.0</log4j.version>
-    <argLine/>
+    <argLine />
   </properties>
 
   <repositories>
@@ -489,14 +486,11 @@
             <phase>prepare-package</phase>
             <configuration>
               <target>
-                <replace token="baseUri: https://github.com/folio-org/mod-gobi"
-                         value="baseUri: http://localhost:${http.port}/apis"
-                         dir="${basedir}/target/classes/apidocs/raml">
-                  <include name="**/*.raml"/>
+                <replace token="baseUri: https://github.com/folio-org/mod-gobi" value="baseUri: http://localhost:${http.port}/apis" dir="${basedir}/target/classes/apidocs/raml">
+                  <include name="**/*.raml" />
                 </replace>
-                <replace token="protocols: [ HTTPS ]" value="protocols: [ HTTP ]"
-                         dir="${basedir}/target/classes/apidocs/raml">
-                  <include name="**/*.raml"/>
+                <replace token="protocols: [ HTTPS ]" value="protocols: [ HTTP ]" dir="${basedir}/target/classes/apidocs/raml">
+                  <include name="**/*.raml" />
                 </replace>
               </target>
             </configuration>
@@ -564,7 +558,7 @@
                   </excludes>
                 </filter>
               </filters>
-              <artifactSet/>
+              <artifactSet />
               <outputFile>${project.build.directory}/${project.artifactId}-fat.jar</outputFile>
             </configuration>
           </execution>
@@ -663,9 +657,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <sourceDirectory>
-                ${basedir}/ramls/acq-models/mod-orders-storage/schemas/acquisition_method_collection.json
-              </sourceDirectory>
+              <sourceDirectory>${basedir}/ramls/acq-models/mod-orders-storage/schemas/acquisition_method_collection.json</sourceDirectory>
               <targetPackage>org.folio.rest.acq.model</targetPackage>
             </configuration>
           </execution>
@@ -675,8 +667,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <sourceDirectory>${basedir}/ramls/acq-models/acquisitions-unit/schemas/acquisitions_unit_collection.json
-              </sourceDirectory>
+              <sourceDirectory>${basedir}/ramls/acq-models/acquisitions-unit/schemas/acquisitions_unit_collection.json</sourceDirectory>
               <targetPackage>org.folio.rest.acq.model</targetPackage>
             </configuration>
           </execution>
