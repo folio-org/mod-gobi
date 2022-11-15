@@ -92,6 +92,7 @@ public class PostGobiOrdersHelper {
 
 
   public static OrderMappings.OrderType getOrderType(Document doc) {
+    logger.debug("getOrderType:: Trying to get order type from '{}'", doc.getDoctype());
     final XPath xpath = XPathFactory.newInstance().newXPath();
     OrderMappings.OrderType orderType;
 
@@ -104,13 +105,14 @@ public class PostGobiOrdersHelper {
         provided = node.getNodeName();
         orderType = OrderMappings.OrderType.fromValue(provided);
       } else {
+        logger.warn("getOrderType:: Could not find order type in provided '{}'", doc.getDoctype());
         throw new IllegalArgumentException();
       }
     } catch (Exception e) {
       logger.error("Cannot determine order type", e);
       throw new IllegalArgumentException("Invalid order type: " + provided);
     }
-    logger.info("Order Type Recieved {}",orderType);
+    logger.info("getOrderType:: Order type is {} received from '{}'", orderType, doc.getDoctype());
     return orderType;
   }
 
@@ -120,7 +122,7 @@ public class PostGobiOrdersHelper {
     try {
       return CompletableFuture.completedFuture(parser.parse(entity));
     } catch (GobiPurchaseOrderParserException e) {
-      logger.error("Failed to parse GobiPurchaseOrder", e);
+      logger.error("Failed to parse GobiPurchaseOrder: {}", entity, e);
       return CompletableFuture.failedFuture(e);
     }
   }
@@ -209,9 +211,10 @@ public class PostGobiOrdersHelper {
 
 
   public CompletableFuture<String> getOrPlaceOrder(CompositePurchaseOrder compPO) {
+    logger.debug("getOrPlaceOrder:: Trying to get order or place it with composite PO, its Line Number: {}", compPO.getPoNumber());
     return checkExistingOrder(compPO).thenCompose(isExisting -> {
       if (Boolean.TRUE.equals(isExisting)) {
-        logger.info("Order already exists, retrieving the PO Line Number: {}", Json.encodePrettily(compPO));
+        logger.info("getOrPlaceOrder:: Order already exists, retrieving the PO Line Number: {}", compPO.getPoNumber());
         return getExistingOrderById(compPO);
       }
       return CompletableFuture.completedFuture(compPO);
@@ -229,13 +232,14 @@ public class PostGobiOrdersHelper {
 
   private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO){
     String vendorRefNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getVendorDetail().getReferenceNumbers().get(FIRST_ELEM).getRefNumber();
-    logger.info("Looking for existing order with Vendor Reference Number: {}", vendorRefNumber);
+    logger.debug("checkExistingOrder:: Trying to look for existing order with Vendor Reference Number: {}", vendorRefNumber);
     String query = HelperUtils.encodeValue(String.format("poLine.vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
     String endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(purchaseOrders -> {
         String orderId = HelperUtils.extractOrderId(purchaseOrders);
         if (StringUtils.isEmpty(orderId)) {
+          logger.warn("checkExistingOrder:: No existing order found with Vendor Reference Number: {}", vendorRefNumber);
           return completedFuture(false);
         }
         CompositePurchaseOrder purchaseOrder = purchaseOrders.getJsonArray("purchaseOrders").getJsonObject(FIRST_ELEM).mapTo(CompositePurchaseOrder.class);
@@ -247,7 +251,7 @@ public class PostGobiOrdersHelper {
 
           return restClient.handlePutRequest(ORDERS_ENDPOINT + "/" + orderId, JsonObject.mapFrom(purchaseOrder)).toCompletionStage().toCompletableFuture()
             .exceptionally(e -> {
-              logger.error("Retry to OPEN existing Order failed", e);
+              logger.error("Retry to OPEN existing Order with id '{}' failed", orderId, e);
               return null;
             })
             .thenApply(v -> true);
@@ -255,26 +259,27 @@ public class PostGobiOrdersHelper {
         return completedFuture(true);
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up for existing Order", t);
+        logger.error("Error looking up for existing Order with id: {}", compPO.getId(), t);
         return false;
       });
   }
 
   private CompletableFuture<CompositePurchaseOrder> getExistingOrderById(CompositePurchaseOrder compositePurchaseOrder) {
-    logger.info("Retrieving existing Order with ID {}", compositePurchaseOrder.getId());
+    logger.debug("getExistingOrderById:: Trying to retrieve existing Order with ID: {}", compositePurchaseOrder.getId());
     String endpoint = String.format(ORDERS_BY_ID_ENDPOINT, compositePurchaseOrder.getId());
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(order -> {
         CompositePurchaseOrder compPO = order.mapTo(CompositePurchaseOrder.class);
         String poLineNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getPoLineNumber();
         if (StringUtils.isEmpty(poLineNumber)) {
+          logger.warn("getExistingOrderById:: No PO Line Number found for existing Order with ID: {}", compositePurchaseOrder.getId());
           return completedFuture(compositePurchaseOrder);
         }
         compositePurchaseOrder.getCompositePoLines().get(FIRST_ELEM).setPoLineNumber(poLineNumber);
         return completedFuture(compositePurchaseOrder);
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up for existing PO Line Number", t);
+        logger.error("Error looking up for existing PO Line Number: {}", compositePurchaseOrder.getPoNumber(), t);
         return compositePurchaseOrder;
       });
 

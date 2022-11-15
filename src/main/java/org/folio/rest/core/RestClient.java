@@ -19,7 +19,6 @@ import org.folio.rest.tools.utils.TenantTool;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -34,7 +33,6 @@ public class RestClient {
   private final String okapiURL;
   private final String tenantId;
   public static final String X_OKAPI_URL = "X-Okapi-Url";
-  private static final String CALLING_ENDPOINT_MSG = "Sending {} {}";
   private static final ErrorConverter ERROR_CONVERTER = ErrorConverter.createFullBody(
       result -> new HttpException(result.response().statusCode(), result.response().bodyAsString()));
   private static final ResponsePredicate SUCCESS_RESPONSE_PREDICATE =
@@ -57,7 +55,7 @@ public class RestClient {
   }
 
   public Future<JsonObject> handleGetRequest(String endpoint) {
-    logger.debug("Calling GET {}", endpoint);
+    logger.debug("Trying to get '{}' object", endpoint);
     return webClient.getAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
         .expect(SUCCESS_RESPONSE_PREDICATE).send()
         .map(HttpResponse::bodyAsJsonObject);
@@ -71,7 +69,7 @@ public class RestClient {
    */
   public Future<Void> handlePutRequest(String endpoint, JsonObject recordData) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Sending 'PUT {}' with body: {}", endpoint, recordData.encodePrettily());
+      logger.debug("Trying to put '{}' object with data: {}", endpoint, recordData.encodePrettily());
     }
     return webClient.putAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
         .expect(SUCCESS_RESPONSE_PREDICATE).sendJsonObject(recordData)
@@ -80,16 +78,15 @@ public class RestClient {
 
   public Future<JsonObject> post(String endpoint, JsonObject recordData) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Sending 'POST {}' with body: {}", endpoint, recordData.encodePrettily());
+      logger.debug("Trying to post '{}' object with body: {}", endpoint, recordData.encodePrettily());
     }
-
     return webClient.postAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
         .expect(SUCCESS_RESPONSE_PREDICATE).sendJsonObject(recordData)
         .map(HttpResponse::bodyAsJsonObject);
   }
 
   public Future<Void> delete(String endpointById) {
-    logger.debug(CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpointById);
+    logger.debug("Tying to delete with using endpoint: {}", endpointById);
     return webClient.deleteAbs(okapiURL + endpointById)
         .putHeaders(okapiHeaders).putHeader("Accept", APPLICATION_JSON + ", " + TEXT_PLAIN)
         .expect(SUCCESS_RESPONSE_PREDICATE).send()
