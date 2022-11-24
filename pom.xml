@@ -56,7 +56,7 @@
     <sonar.exclusions>**/models/**.java, **/domain/**.java, **/completablefuture/FolioVertxCompletableFuture.java</sonar.exclusions>
     <sonar.test.exclusions>**/*Test.java</sonar.test.exclusions>
     <jmockit.version>1.49</jmockit.version>
-    <mod-configuration-client.version>5.8.0</mod-configuration-client.version>
+    <mod-configuration-client.version>5.9.1-SNAPSHOT</mod-configuration-client.version>
     <jupiter.version>5.9.0</jupiter.version>
     <log4j.version>2.19.0</log4j.version>
     <argLine />
