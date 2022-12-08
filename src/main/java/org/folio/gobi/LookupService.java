@@ -20,7 +20,6 @@ import static org.folio.rest.ResourcePaths.SUFFIXES_ENDPOINT;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
