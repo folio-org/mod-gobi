@@ -429,7 +429,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(error.getError());
     assertEquals(CODE_INVALID_XML, error.getError().getCode());
     assertNotNull(error.getError().getMessage());
-
     assertTrue(MockServer.serverRqRs.isEmpty());
 
     logger.info("End: Testing for 400 - posted order listed electronic monograph bad data (missing tag)");
