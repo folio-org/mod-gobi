@@ -10,7 +10,6 @@ import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_FUND_ID;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_LINKED_PACKAGE;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_LOCATION_ID;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_MATERIAL_TYPE_ID;
-import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_MOCK;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_ORGANIZATION;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_PREFIX;
 import static org.folio.rest.jaxrs.model.DataSource.Translation.LOOKUP_PRODUCT_ID_TYPE;
@@ -38,7 +37,6 @@ public class FieldMappingTranslatorResolver {
           new EnumMap<>(DataSource.Translation.class);
 
   public FieldMappingTranslatorResolver(LookupService lookupService) {
-    methodTranslatorsMap.put(LOOKUP_MOCK, lookupService::lookupMock);
     methodTranslatorsMap.put(LOOKUP_CONTRIBUTOR_NAME_TYPE_ID, lookupService::lookupContributorNameTypeId);
     methodTranslatorsMap.put(LOOKUP_EXPENSE_CLASS_ID, lookupService::lookupExpenseClassId);
     methodTranslatorsMap.put(LOOKUP_ACQUISITION_METHOD_IDS, lookupService::lookupAcquisitionMethodId);
