@@ -374,9 +374,4 @@ public class LookupService {
         return null;
       });
   }
-
-  public CompletableFuture<String> lookupMock(String data) {
-    logger.debug("lookupMock:: Trying to lookup mock data '{}'", data);
-    return CompletableFuture.completedFuture(UUID.randomUUID().toString());
-  }
 }
