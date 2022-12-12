@@ -112,20 +112,20 @@ public class MappingTest {
     logger.info("begin: Test Mapping - translations");
 
     assertEquals("HELLO WORLD",
-        DataSourceResolver.builder().withFrom("//Doo/Dah").withTranslation(this::toUpper).build().resolve(doc).get());
+      DataSourceResolver.builder().withFrom("//Doo/Dah").withTranslation(this::toUpper).build().resolve(doc).get());
     assertEquals(1.5d,
-        DataSourceResolver.builder().withFrom("//Zap").withTranslation(Mapper::toDouble).build().resolve(doc).get());
+      DataSourceResolver.builder().withFrom("//Zap").withTranslation(Mapper::toDouble).build().resolve(doc).get());
     assertEquals(90210,
-        DataSourceResolver.builder().withFrom("//Zip").withTranslation(Mapper::toInteger).build().resolve(doc).get());
+      DataSourceResolver.builder().withFrom("//Zip").withTranslation(Mapper::toInteger).build().resolve(doc).get());
   }
 
   @Test
   void testExceptionInTranslator() {
-   Assertions.assertThrows(ExecutionException.class, () -> DataSourceResolver.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get());
+    Assertions.assertThrows(ExecutionException.class, () -> DataSourceResolver.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get());
   }
 
   @Test
-   void testExceptionInApplyDefault() throws Exception {
+  void testExceptionInApplyDefault() throws Exception {
     logger.info("begin: Test Exception in applyDefault()");
     DataSourceResolver defMapping = DataSourceResolver.builder().withFrom("//Bar[@attr='dat']").build();
 
@@ -138,13 +138,13 @@ public class MappingTest {
     //Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupMock(eq("PO_6733180275-1"));
+    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage(eq("PO_6733180275-1"));
     String sufId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupMock(eq("suf"));
+    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix(eq("suf"));
     String prefId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(prefId)).when(lookupService).lookupMock(eq("pref"));
+    Mockito.doReturn(CompletableFuture.completedFuture(prefId)).when(lookupService).lookupPrefix(eq("pref"));
     String vendorId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupMock(eq("GOBI"));
+    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization(eq("GOBI"));
     Double exchangeRate = 2.3;
 
     InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
@@ -152,7 +152,7 @@ public class MappingTest {
 
     String actualListedPrintJson = MappingHelper.readMappingsFile(MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
-            .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
+      .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
     String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
     String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
@@ -162,11 +162,11 @@ public class MappingTest {
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
+    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
+    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
+    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupSuffix).withTranslateDefault(false).build());
+    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupPrefix).withTranslateDefault(false).build());
+    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupLinkedPackage).withTranslateDefault(false).build());
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withDefault("Physical Resource").build());
     mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withFrom(exchangeRateFrom).build());
     //When
@@ -189,12 +189,12 @@ public class MappingTest {
     //Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupMock(eq("PO_6733180275-1"));
+    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage(eq("PO_6733180275-1"));
     String sufId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupMock(eq("suf"));
-    Mockito.doThrow(new CompletionException(new RuntimeException())).when(lookupService).lookupMock(eq("pref"));
+    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix(eq("suf"));
+    Mockito.doThrow(new CompletionException(new RuntimeException())).when(lookupService).lookupPrefix(eq("pref"));
     String vendorId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupMock(eq("GOBI"));
+    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization(eq("GOBI"));
 
     InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
@@ -211,11 +211,11 @@ public class MappingTest {
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
+    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
+    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
+    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupSuffix).withTranslateDefault(false).build());
+    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupPrefix).withTranslateDefault(false).build());
+    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupLinkedPackage).withTranslateDefault(false).build());
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withDefault("Physical Resource").build());
     mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withFrom(exchangeRateFrom).build());
     //When
@@ -234,12 +234,12 @@ public class MappingTest {
     //Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupMock(eq("PO_6733180275-1"));
+    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage(eq("PO_6733180275-1"));
     String sufId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupMock(eq("suf"));
-    Mockito.doReturn(CompletableFuture.completedFuture(null)).when(lookupService).lookupMock(eq("pref"));
+    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix(eq("suf"));
+    Mockito.doReturn(CompletableFuture.completedFuture(null)).when(lookupService).lookupPrefix(eq("pref"));
     String vendorId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupMock(eq("GOBI"));
+    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization(eq("GOBI"));
 
     InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
@@ -256,11 +256,11 @@ public class MappingTest {
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
-    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupMock).withTranslateDefault(false).build());
+    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
+    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
+    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupSuffix).withTranslateDefault(false).build());
+    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupPrefix).withTranslateDefault(false).build());
+    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupLinkedPackage).withTranslateDefault(false).build());
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withDefault("Physical Resource").build());
     mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withFrom(exchangeRateFrom).build());
     //When

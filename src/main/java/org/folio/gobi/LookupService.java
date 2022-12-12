@@ -20,7 +20,6 @@ import static org.folio.rest.ResourcePaths.SUFFIXES_ENDPOINT;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
@@ -373,10 +372,5 @@ public class LookupService {
         logger.error("Exception looking up acquisition method id with its name: {}", acquisitionMethod, t);
         return null;
       });
-  }
-
-  public CompletableFuture<String> lookupMock(String data) {
-    logger.debug("lookupMock:: Trying to lookup mock data '{}'", data);
-    return CompletableFuture.completedFuture(UUID.randomUUID().toString());
   }
 }
