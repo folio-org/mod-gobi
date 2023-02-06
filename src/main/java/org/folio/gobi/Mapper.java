@@ -484,6 +484,7 @@ public class Mapper {
 
   private void mapAcquisitionUnits(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     CompositePurchaseOrder compPo, Document doc) {
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR)).ifPresent(field -> field.resolve(doc));
     Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
       .ifPresent(field ->
       futures.add(field.resolve(doc)

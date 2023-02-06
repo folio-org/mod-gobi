@@ -57,7 +57,7 @@ public class LookupService {
   public static final String PO_LINES = "poLines";
   public static final String ID = "id";
   public static final String NAME = "name";
-  public static final String ORGANIZATION_NAME = "GOBI";
+  private String ORGANIZATION_NAME = "";
 
 
   private final RestClient restClient;
@@ -127,6 +127,7 @@ public class LookupService {
     logger.debug("lookupOrganization:: Trying to look up organization by vendorCode: {}", vendorCode);
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode));
     String endpoint = String.format(GET_ORGANIZATION_ENDPOINT + QUERY, query);
+    ORGANIZATION_NAME = vendorCode;
 
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(resp ->
