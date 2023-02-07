@@ -484,16 +484,24 @@ public class Mapper {
 
   private void mapAcquisitionUnits(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
     CompositePurchaseOrder compPo, Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR)).ifPresent(field -> field.resolve(doc));
-    Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
-      .ifPresent(field ->
-      futures.add(field.resolve(doc)
+
+    Optional.ofNullable(mappings.get(Mapping.Field.VENDOR))
+      .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
-          if(o instanceof String) {
-            compPo.setAcqUnitIds(Collections.singletonList((String) o));
-          }
-          else {
-            compPo.setAcqUnitIds((List<String>) o);
+          if (o != null) {
+            Organization organization = (Organization) o;
+            Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
+              .ifPresent(a ->
+                futures.add(a.resolve(doc)
+                  .thenAccept(accNo -> {
+                    List<String> acqCollection = organization.getAccounts().stream()
+                      .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout(accNo.toString())))
+                      .findFirst()
+                      .map(Account::getAcqUnitIds)
+                      .orElse(null);
+                      compPo.setAcqUnitIds(acqCollection);
+                  })
+                  .exceptionally(Mapper::logException)));
           }
         }).exceptionally(Mapper::logException)));
 

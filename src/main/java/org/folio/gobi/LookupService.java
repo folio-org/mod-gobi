@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.rest.acq.model.Account;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.Organization;
@@ -57,8 +56,6 @@ public class LookupService {
   public static final String PO_LINES = "poLines";
   public static final String ID = "id";
   public static final String NAME = "name";
-  private String ORGANIZATION_NAME = "";
-
 
   private final RestClient restClient;
 
@@ -127,7 +124,6 @@ public class LookupService {
     logger.debug("lookupOrganization:: Trying to look up organization by vendorCode: {}", vendorCode);
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT+CHECK_ORGANIZATION_ISVENDOR, vendorCode));
     String endpoint = String.format(GET_ORGANIZATION_ENDPOINT + QUERY, query);
-    ORGANIZATION_NAME = vendorCode;
 
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(resp ->
@@ -252,11 +248,7 @@ public class LookupService {
 
   public CompletableFuture<Object> lookupAcquisitionUnitIdsByAccount(String data) {
     logger.debug("lookupAcquisitionUnitIdsByAccount:: Trying to look up acquisitionUnitIds by accountNumber: {}", data);
-    return lookupOrganization(ORGANIZATION_NAME).thenApply(org -> org.getAccounts().stream()
-      .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout(data)))
-      .findFirst()
-      .map(Account::getAcqUnitIds)
-      .orElse(null));
+    return CompletableFuture.completedFuture(data);
   }
 
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
