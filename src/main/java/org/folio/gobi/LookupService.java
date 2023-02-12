@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.rest.acq.model.Account;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.Organization;
@@ -57,8 +56,6 @@ public class LookupService {
   public static final String PO_LINES = "poLines";
   public static final String ID = "id";
   public static final String NAME = "name";
-  public static final String ORGANIZATION_NAME = "GOBI";
-
 
   private final RestClient restClient;
 
@@ -249,13 +246,20 @@ public class LookupService {
 
   }
 
+  /**
+   *
+   * Because of the impossibility at the moment to get two values from the xml file,it was decided to bring
+   * the logic of searching for acquisition units by account into the {@link org.folio.gobi.Mapper}.
+   * Because of the uniqueness of the account number only within the organization, we will also need the name of the
+   * organization in addition to the account number. This method will help us get the account number from mapping
+   * using the Mapping.Field.ACQUISITION_UNIT constant.
+   *
+   * @param data organization account number
+   * @return organization account number wrapped in completable future
+   */
   public CompletableFuture<Object> lookupAcquisitionUnitIdsByAccount(String data) {
     logger.debug("lookupAcquisitionUnitIdsByAccount:: Trying to look up acquisitionUnitIds by accountNumber: {}", data);
-    return lookupOrganization(ORGANIZATION_NAME).thenApply(org -> org.getAccounts().stream()
-      .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout(data)))
-      .findFirst()
-      .map(Account::getAcqUnitIds)
-      .orElse(null));
+    return CompletableFuture.completedFuture(data);
   }
 
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
