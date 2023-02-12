@@ -246,6 +246,17 @@ public class LookupService {
 
   }
 
+  /**
+   *
+   * Because of the impossibility at the moment to get two values from the xml file,it was decided to bring
+   * the logic of searching for acquisition units by account into the {@link org.folio.gobi.Mapper}.
+   * Because of the uniqueness of the account number only within the organization, we will also need the name of the
+   * organization in addition to the account number. This method will help us get the account number from mapping
+   * using the Mapping.Field.ACQUISITION_UNIT constant.
+   *
+   * @param data organization account number
+   * @return organization account number wrapped in completable future
+   */
   public CompletableFuture<Object> lookupAcquisitionUnitIdsByAccount(String data) {
     logger.debug("lookupAcquisitionUnitIdsByAccount:: Trying to look up acquisitionUnitIds by accountNumber: {}", data);
     return CompletableFuture.completedFuture(data);
