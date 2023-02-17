@@ -1,4 +1,19 @@
-## 2.6.0 Unreleased
+## 2.7.0 Unreleased
+
+## 2.6.0 Released (Orchid R1 2023)
+Major changes in this release related to updating mapping logic and improvement Logging
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.5.0...v2.6.0)
+
+### Stories
+* [MODGOBI-186](https://issues.folio.org/browse/MODGOBI-186) Remove 'Lookup mock' translator from gobi configuration
+* [MODGOBI-178](https://issues.folio.org/browse/MODGOBI-178) Logging improvement - Configuration
+* [MODGOBI-146](https://issues.folio.org/browse/MODGOBI-146) Logging improvement
+
+### Bug fixes
+* [MODGOBI-188](https://issues.folio.org/browse/MODGOBI-188) Organization lookup hardcoded
+* [MODGOBI-183](https://issues.folio.org/browse/MODGOBI-183) Mapper.multiply ignores a single value
+
 
 ## 2.5.0 - Nolana R3 2022
 Major changes in this release related to implementing GOBI integration user interface and replacing VertxCompletableFuture usage
