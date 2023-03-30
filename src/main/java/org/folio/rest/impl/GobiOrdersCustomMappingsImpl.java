@@ -21,7 +21,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   private static final String GOBI_ORDERS_CUSTOM_MAPPINGS_LOCATION = getEndpoint(GobiOrdersCustomMappings.class) + "/%s";
 
   @Override
-  public void getGobiOrdersCustomMappings(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders,
+  public void getGobiOrdersCustomMappings(String query, String totalRecords, int offset, int limit, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
@@ -33,7 +33,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
 
 
   @Override
-  public void postGobiOrdersCustomMappings(String lang, OrderMappings orderMappings, Map<String, String> okapiHeaders,
+  public void postGobiOrdersCustomMappings(OrderMappings orderMappings, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
@@ -45,7 +45,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   }
 
   @Override
-  public void deleteGobiOrdersCustomMappingsByOrderType(String orderType, String lang, Map<String, String> okapiHeaders,
+  public void deleteGobiOrdersCustomMappingsByOrderType(String orderType, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
@@ -56,7 +56,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   }
 
   @Override
-  public void putGobiOrdersCustomMappingsByOrderType(String orderType, String lang, OrderMappings orderMappings,
+  public void putGobiOrdersCustomMappingsByOrderType(String orderType, OrderMappings orderMappings,
       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
@@ -67,7 +67,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   }
 
   @Override
-  public void getGobiOrdersCustomMappingsByOrderType(String orderType, String lang, Map<String, String> okapiHeaders,
+  public void getGobiOrdersCustomMappingsByOrderType(String orderType, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     RestClient rc = new RestClient(okapiHeaders, vertxContext);
