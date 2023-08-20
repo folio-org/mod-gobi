@@ -9,12 +9,11 @@
       }
     },
     {
-      "field": "ACQUISITION_UNIT",
-      "dataSource": {
-        "from": "//SubAccount",
-        "default": "gobi_acq_unit_name",
-        "translation": "lookupAcquisitionUnitIdsByAccount",
-        "translateDefault": true
+      "field" : "ACQUISITION_UNIT",
+      "dataSource" : {
+        "translation" : "lookupAcquisitionUnitIdsByName",
+        "translateDefault" : true,
+        "default" : "gobi_acq_unit_name"
       }
     },
     {
