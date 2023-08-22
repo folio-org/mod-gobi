@@ -11,6 +11,7 @@ import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -51,12 +52,12 @@ import org.folio.rest.acq.model.Tags;
 import org.folio.rest.acq.model.VendorDetail;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Mapping;
+import org.folio.util.UuidUtil;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 import io.vertx.core.json.JsonObject;
-import java.math.BigDecimal;
 
 public class Mapper {
 
@@ -493,18 +494,26 @@ public class Mapper {
             Optional.ofNullable(mappings.get(Mapping.Field.ACQUISITION_UNIT))
               .ifPresent(a ->
                 futures.add(a.resolve(doc)
-                  .thenAccept(accNo -> {
-                    List<String> acqCollection = organization.getAccounts().stream()
-                      .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout(accNo.toString())))
-                      .findFirst()
-                      .map(Account::getAcqUnitIds)
-                      .orElse(null);
-                      compPo.setAcqUnitIds(acqCollection);
-                  })
+                  .thenAccept(lookupResult -> mapTranslatedAcquisitionsUnit(compPo, organization, lookupResult))
                   .exceptionally(Mapper::logException)));
           }
         }).exceptionally(Mapper::logException)));
+  }
 
+  private void mapTranslatedAcquisitionsUnit(CompositePurchaseOrder compPo, Organization organization, Object lookupResult) {
+    // map value from translator lookupAcquisitionUnitIdsByName
+    if (lookupResult instanceof String && UuidUtil.isUuid((String) lookupResult)) {
+      compPo.setAcqUnitIds(Collections.singletonList((String) lookupResult));
+    }
+    // map value from translator lookupAcquisitionUnitIdsByAccount
+    else if (lookupResult instanceof String) {
+      List<String> acqCollection = organization.getAccounts().stream()
+        .filter(acc -> HelperUtils.normalizeSubAccout(acc.getAccountNo()).equals(HelperUtils.normalizeSubAccout((String) lookupResult)))
+        .findFirst()
+        .map(Account::getAcqUnitIds)
+        .orElse(null);
+      compPo.setAcqUnitIds(acqCollection);
+    }
   }
 
   private void mapPurchaseOrderLineStrings(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,

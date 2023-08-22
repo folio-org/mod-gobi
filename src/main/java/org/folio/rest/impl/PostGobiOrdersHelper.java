@@ -49,7 +49,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 public class PostGobiOrdersHelper {
@@ -82,9 +81,9 @@ public class PostGobiOrdersHelper {
     final OrderMappings.OrderType orderType = getOrderType(doc);
 
     return lookupOrderMappings(orderType)
-        .thenCompose(ordermappings -> {
-          logger.info("Using Mappings {}", ordermappings);
-          return new Mapper(lookupService).map(ordermappings, doc);
+        .thenCompose(orderMappings -> {
+          logger.info("Using Mappings {}", orderMappings);
+          return new Mapper(lookupService).map(orderMappings, doc);
         })
         .thenApply(BindingResult::getResult)
         .whenComplete(logError(logger, "Exception looking up Order mappings"));
@@ -116,7 +115,7 @@ public class PostGobiOrdersHelper {
     return orderType;
   }
 
-  public CompletableFuture<Document> parse(String entity) {
+  public CompletableFuture<Document> parseXML(String entity) {
     final GobiPurchaseOrderParser parser = GobiPurchaseOrderParser.getParser();
 
     try {
@@ -137,9 +136,13 @@ public class PostGobiOrdersHelper {
       String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
       return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
         .thenApply(jo ->  {
-          if(!jo.getJsonArray(CONFIGS).isEmpty())
+          if (!jo.getJsonArray(CONFIGS).isEmpty()) {
+            logger.info("lookupOrderMappings:: Use custom mapping config: \n {}", jo.getJsonArray(CONFIGS).getJsonObject(0).getString("value"));
             return extractOrderMappings(orderType, jo);
-          return getDefaultMappingsFromCache(orderType);
+          } else {
+            logger.info("lookupOrderMappings:: Use default mapping config: \n {}", JsonObject.mapFrom(MappingHelper.getDefaultMappingByOrderType(orderType)).encode());
+            return getDefaultMappingsFromCache(orderType);
+          }
         })
         .exceptionally(t -> {
           logger.error("Exception looking up custom order mappings for tenant", t);
@@ -158,7 +161,7 @@ public class PostGobiOrdersHelper {
    * @param orderType
    * @return Map<Mapping.Field, org.folio.gobi.DataSourceResolver>
    */
-  private Map<Mapping.Field, org.folio.gobi.DataSourceResolver> getDefaultMappingsFromCache(
+  private Map<Mapping.Field, org.folio.gobi.DataSourceResolver> getDefaultMappingsFromCache (
       final OrderMappings.OrderType orderType) {
 
     logger.info("No custom Mappings found for tenant, using default mappings");
@@ -167,7 +170,7 @@ public class PostGobiOrdersHelper {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
          OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : mappingHelper.getDefaultMappingForOrderType(orderType);
 
-    if(!cacheFound)
+    if (!cacheFound)
       OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
     return mappings;
   }
@@ -175,18 +178,18 @@ public class PostGobiOrdersHelper {
   private Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
     Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings;
     String tenant = restClient.getTenantId();
-    String tenantConfigKey=OrderMappingCache.computeKey(tenant, orderType, jo);
+    String tenantConfigKey = OrderMappingCache.computeKey(tenant, orderType, jo);
 
-    if(OrderMappingCache.getInstance().containsKey(tenantConfigKey)){
+    if (OrderMappingCache.getInstance().containsKey(tenantConfigKey)){
       mappings = OrderMappingCache.getInstance().getValue(tenantConfigKey);
     } else {
-      //check if there is a key with an old mapping for this order type and tenant, if so delete it
+      // check if there is a key with an old mapping for this order type and tenant, if so delete it
       String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(tenant, orderType);
-      if(tenantKey!=null) {
+      if (tenantKey != null) {
         OrderMappingCache.getInstance().removeKey(tenantKey);
       }
-      //extract the mappings and add it to cache
-      mappings= mappingHelper.extractOrderMappings(orderType, jo);
+      // extract the mappings and add it to cache
+      mappings = mappingHelper.extractOrderMappings(orderType, jo);
       if(!mappings.isEmpty())
           OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);
     }
@@ -198,7 +201,7 @@ public class PostGobiOrdersHelper {
     try {
       return restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
           .map(body -> {
-            logger.info("Response from mod-orders: {}", body::encodePrettily);
+            logger.info("Response from mod-orders: \n {}", body::encodePrettily);
             return body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
           })
           .toCompletionStage().toCompletableFuture();

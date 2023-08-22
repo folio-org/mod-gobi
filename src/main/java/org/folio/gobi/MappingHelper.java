@@ -138,4 +138,8 @@ public class MappingHelper {
     }
     return StringUtils.EMPTY;
   }
+
+  public static OrderMappings getDefaultMappingByOrderType(OrderMappings.OrderType orderType) {
+    return defaultMappings.get(orderType);
+  }
 }
