@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
+import org.folio.rest.annotations.Validate;
 import org.folio.rest.core.RestClient;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.jaxrs.resource.GobiOrdersCustomMappings;
@@ -33,6 +34,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
 
 
   @Override
+  @Validate
   public void postGobiOrdersCustomMappings(OrderMappings orderMappings, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
@@ -56,6 +58,7 @@ public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersC
   }
 
   @Override
+  @Validate
   public void putGobiOrdersCustomMappingsByOrderType(String orderType, OrderMappings orderMappings,
       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
