@@ -134,8 +134,8 @@ public class PostGobiOrdersHelper {
               CONFIGURATION_CODE + orderType));
 
       String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
-      return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
-        .thenApply(jo ->  {
+      return restClient.handleGetRequest(endpoint)
+        .map(jo ->  {
           if (!jo.getJsonArray(CONFIGS).isEmpty()) {
             logger.info("lookupOrderMappings:: Use custom mapping config: \n {}", jo.getJsonArray(CONFIGS).getJsonObject(0).getString("value"));
             return extractOrderMappings(orderType, jo);
@@ -144,15 +144,9 @@ public class PostGobiOrdersHelper {
             return getDefaultMappingsFromCache(orderType);
           }
         })
-        .exceptionally(t -> {
-          logger.error("Exception looking up custom order mappings for tenant", t);
-          String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(restClient.getTenantId(), orderType);
-          if(tenantKey!=null) {
-            logger.info("Using the cached value of custom mappings");
-            return OrderMappingCache.getInstance().getValue(tenantKey);
-          }
-          return getDefaultMappingsFromCache(orderType);
-        });
+        .onFailure(t -> logger.error("Exception looking up custom order mappings for tenant '{}'", restClient.getTenantId()))
+        .toCompletionStage()
+        .toCompletableFuture();
   }
 
   /**

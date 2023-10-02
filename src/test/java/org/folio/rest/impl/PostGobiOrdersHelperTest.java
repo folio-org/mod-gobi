@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
@@ -281,28 +282,15 @@ public class PostGobiOrdersHelperTest {
   }
 
   @Test
-  public final void testLookupDefaultOrderMappings() {
-    var headers = Map.of("X-Okapi-Url", "http://invalid");
+  public final void testLookupDefaultOrderMappingsFailed() {
+    var headers = Map.of("X-Okapi-Url", "http://invalid-host");
     PostGobiOrdersHelper pgoh = new PostGobiOrdersHelper(null, headers, Vertx.vertx().getOrCreateContext());
 
     logger.info("Begin: Testing for Order Mappings to fetch default mappings if configuration Call fails");
-    var map = pgoh.lookupOrderMappings(OrderMappings.OrderType.LISTED_ELECTRONIC_MONOGRAPH).join();
-          assertNotNull(map);
-          assertNotNull(map.get(Mapping.Field.CURRENCY));
-          DataSourceResolver ds = map.get(Mapping.Field.CURRENCY);
-          assertEquals("//ListPrice/Currency", ds.from);
-          assertEquals("USD", ds.defValue);
 
-          assertNotNull(map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC));
-          ds = map.get(Mapping.Field.LIST_UNIT_PRICE_ELECTRONIC);
-          assertEquals("//ListPrice/Amount", ds.from);
-          assertEquals("0", ds.defValue);
-          try {
-            Double result = (Double) ds.translation.apply(ds.defValue.toString()).get();
-            assertEquals(0.0, result);
-          } catch (Exception e) {
-            logger.error("Failed to execute translation LIST_PRICE", e);
-          }
+    var future = pgoh.lookupOrderMappings(OrderMappings.OrderType.LISTED_ELECTRONIC_MONOGRAPH);
+    var exception = Assertions.assertThrows(CompletionException.class, future::join);
 
+    assertEquals(UnknownHostException.class, exception.getCause().getClass());
   }
 }
