@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class HelperUtils {
+public final class HelperUtils {
 
   public static final String CONTRIBUTOR_NAME_TYPES = "contributorNameTypes";
   public static final String FUND_CODE_EXPENSE_CLASS_SEPARATOR = ":";
@@ -20,11 +20,6 @@ public class HelperUtils {
   public static final String BASEACCOUNT_SUBACCOUNT_SEPARATOR = "-";
 
   private HelperUtils() {
-
-  }
-
-  public static String truncate(String message, int limit) {
-    return (message != null && limit > 0) ? message.substring(0, Math.min(message.length(), limit)) : message;
   }
 
   public static String extractLocationId(JsonObject obj) {
@@ -83,14 +78,4 @@ public class HelperUtils {
     return clazz.getAnnotation(Path.class).value();
   }
 
-  /**
-   * To be used in {@link CompletableFuture#whenComplete(BiConsumer)}.
-   */
-  public static <R> BiConsumer<R, Throwable> logError(Logger logger, String msg) {
-    return (r, t) -> {
-      if (t != null) {
-        logger.error(msg, t);
-      }
-    };
-  }
 }
