@@ -1,7 +1,6 @@
 package org.folio.rest.impl;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.folio.gobi.HelperUtils.logError;
 import static org.folio.gobi.LookupService.CONFIGS;
 import static org.folio.gobi.LookupService.FIRST_ELEM;
 import static org.folio.gobi.LookupService.QUERY;
@@ -9,8 +8,8 @@ import static org.folio.rest.ResourcePaths.CONFIGURATION_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_BY_ID_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_ENDPOINT;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
-import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond401WithTextPlain;
-import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithTextPlain;
+import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithApplicationXml;
+import static org.folio.rest.jaxrs.resource.GobiOrdersCustomMappings.GetGobiOrdersCustomMappingsResponse.respond401WithTextPlain;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -33,6 +32,8 @@ import org.folio.gobi.Mapper;
 import org.folio.gobi.MappingHelper;
 import org.folio.gobi.OrderMappingCache;
 import org.folio.gobi.domain.BindingResult;
+import org.folio.gobi.exceptions.ErrorCodes;
+import org.folio.gobi.exceptions.GobiException;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
@@ -41,6 +42,7 @@ import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
+import org.folio.rest.tools.utils.BinaryOutStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -81,12 +83,11 @@ public class PostGobiOrdersHelper {
     final OrderMappings.OrderType orderType = getOrderType(doc);
 
     return lookupOrderMappings(orderType)
-        .thenCompose(orderMappings -> {
-          logger.info("Using Mappings {}", orderMappings);
-          return new Mapper(lookupService).map(orderMappings, doc);
-        })
-        .thenApply(BindingResult::getResult)
-        .whenComplete(logError(logger, "Exception looking up Order mappings"));
+      .thenCompose(orderMappings -> {
+        logger.info("Using Mappings {}", orderMappings);
+        return new Mapper(lookupService).map(orderMappings, doc);
+      })
+      .thenApply(BindingResult::getResult);
   }
 
 
@@ -98,8 +99,8 @@ public class PostGobiOrdersHelper {
     String provided = null;
     try {
       Node node = (Node) xpath.evaluate(
-          "//ListedElectronicMonograph|//ListedElectronicSerial|//ListedPrintMonograph|//ListedPrintSerial|//UnlistedPrintMonograph|//UnlistedPrintSerial",
-          doc, XPathConstants.NODE);
+        "//ListedElectronicMonograph|//ListedElectronicSerial|//ListedPrintMonograph|//ListedPrintSerial|//UnlistedPrintMonograph|//UnlistedPrintSerial",
+        doc, XPathConstants.NODE);
       if (node != null) {
         provided = node.getNodeName();
         orderType = OrderMappings.OrderType.fromValue(provided);
@@ -127,46 +128,57 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<Map<Mapping.Field, DataSourceResolver>> lookupOrderMappings(OrderMappings.OrderType orderType) {
-      final String query = HelperUtils.encodeValue(
-          String.format("module==%s AND configName==%s AND code==%s",
-              CONFIGURATION_MODULE,
-              CONFIGURATION_CONFIG_NAME,
-              CONFIGURATION_CODE + orderType));
+    final String query = HelperUtils.encodeValue(
+      String.format("module==%s AND configName==%s AND code==%s",
+        CONFIGURATION_MODULE,
+        CONFIGURATION_CONFIG_NAME,
+        CONFIGURATION_CODE + orderType));
 
-      String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
-      return restClient.handleGetRequest(endpoint)
-        .map(jo ->  {
-          if (!jo.getJsonArray(CONFIGS).isEmpty()) {
-            logger.info("lookupOrderMappings:: Use custom mapping config: \n {}", jo.getJsonArray(CONFIGS).getJsonObject(0).getString("value"));
-            return extractOrderMappings(orderType, jo);
-          } else {
-            logger.info("lookupOrderMappings:: Use default mapping config: \n {}", JsonObject.mapFrom(MappingHelper.getDefaultMappingByOrderType(orderType)).encode());
-            return getDefaultMappingsFromCache(orderType);
-          }
-        })
-        .onFailure(t -> logger.error("Exception looking up custom order mappings for tenant '{}'", restClient.getTenantId()))
-        .toCompletionStage()
-        .toCompletableFuture();
+    String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
+    return restClient.handleGetRequest(endpoint)
+      .map(jo -> {
+        if (!jo.getJsonArray(CONFIGS).isEmpty()) {
+          String config = jo.getJsonArray(CONFIGS).getJsonObject(0).getString("value");
+          logger.info("lookupOrderMappings:: Use custom mapping config: \n {}", config);
+          return tryExtractOrderMappings(orderType, jo);
+        } else {
+          String config = JsonObject.mapFrom(MappingHelper.getDefaultMappingByOrderType(orderType)).encode();
+          logger.info("lookupOrderMappings:: Use default mapping config: \n {}", config);
+          return getDefaultMappingsFromCache(orderType);
+        }
+      })
+      .onFailure(t -> logger.error("Exception looking up custom order mappings for tenant '{}'", restClient.getTenantId(), t))
+      .toCompletionStage()
+      .toCompletableFuture();
   }
 
   /**
-   * If retrieval of custom tenant mapping fails, and there is no cached value, then the default mappings will be used for placing an order
+   * If retrieval of custom tenant mapping fails and there is no cached value
+   * then the default mappings will be used for placing an order
    *
    * @param orderType
    * @return Map<Mapping.Field, org.folio.gobi.DataSourceResolver>
    */
-  private Map<Mapping.Field, org.folio.gobi.DataSourceResolver> getDefaultMappingsFromCache (
-      final OrderMappings.OrderType orderType) {
+  private Map<Mapping.Field, org.folio.gobi.DataSourceResolver> getDefaultMappingsFromCache(
+    final OrderMappings.OrderType orderType) {
 
     logger.info("No custom Mappings found for tenant, using default mappings");
     String tenant = restClient.getTenantId();
     boolean cacheFound = OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
-    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings =  cacheFound ?
-         OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : mappingHelper.getDefaultMappingForOrderType(orderType);
+    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings = cacheFound ?
+      OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : mappingHelper.getDefaultMappingForOrderType(orderType);
 
     if (!cacheFound)
       OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
     return mappings;
+  }
+
+  private Map<Mapping.Field, DataSourceResolver> tryExtractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
+    try {
+      return extractOrderMappings(orderType, jo);
+    } catch (Exception e) {
+      throw new GobiException(ErrorCodes.INVALID_ORDER_MAPPING_FILE, e);
+    }
   }
 
   private Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
@@ -174,18 +186,18 @@ public class PostGobiOrdersHelper {
     String tenant = restClient.getTenantId();
     String tenantConfigKey = OrderMappingCache.computeKey(tenant, orderType, jo);
 
-    if (OrderMappingCache.getInstance().containsKey(tenantConfigKey)){
+    if (OrderMappingCache.getInstance().containsKey(tenantConfigKey)) {
       mappings = OrderMappingCache.getInstance().getValue(tenantConfigKey);
     } else {
       // check if there is a key with an old mapping for this order type and tenant, if so delete it
-      String tenantKey=OrderMappingCache.getInstance().getifContainsTenantconfigKey(tenant, orderType);
+      String tenantKey = OrderMappingCache.getInstance().getifContainsTenantconfigKey(tenant, orderType);
       if (tenantKey != null) {
         OrderMappingCache.getInstance().removeKey(tenantKey);
       }
       // extract the mappings and add it to cache
       mappings = mappingHelper.extractOrderMappings(orderType, jo);
-      if(!mappings.isEmpty())
-          OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);
+      if (!mappings.isEmpty())
+        OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);
     }
     return mappings;
 
@@ -194,11 +206,11 @@ public class PostGobiOrdersHelper {
   private CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
     try {
       return restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
-          .map(body -> {
-            logger.info("Response from mod-orders: \n {}", body::encodePrettily);
-            return body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
-          })
-          .toCompletionStage().toCompletableFuture();
+        .map(body -> {
+          logger.info("Response from mod-orders: \n {}", body::encodePrettily);
+          return body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
+        })
+        .toCompletionStage().toCompletableFuture();
     } catch (Exception e) {
       String errorMessage = String.format("Exception calling %s on %s", HttpMethod.POST, ORDERS_ENDPOINT);
       logger.error(errorMessage, e);
@@ -210,12 +222,12 @@ public class PostGobiOrdersHelper {
   public CompletableFuture<String> getOrPlaceOrder(CompositePurchaseOrder compPO) {
     logger.debug("getOrPlaceOrder:: Trying to get order or place it with composite PO, its Line Number: {}", compPO.getPoNumber());
     return checkExistingOrder(compPO).thenCompose(isExisting -> {
-      if (Boolean.TRUE.equals(isExisting)) {
-        logger.info("getOrPlaceOrder:: Order already exists, retrieving the PO Line Number: {}", compPO.getPoNumber());
-        return getExistingOrderById(compPO);
-      }
-      return CompletableFuture.completedFuture(compPO);
-    })
+        if (Boolean.TRUE.equals(isExisting)) {
+          logger.info("getOrPlaceOrder:: Order already exists, retrieving the PO Line Number: {}", compPO.getPoNumber());
+          return getExistingOrderById(compPO);
+        }
+        return CompletableFuture.completedFuture(compPO);
+      })
       .thenCompose(compositePO -> {
         String poLineNumber = compositePO.getCompositePoLines()
           .get(FIRST_ELEM)
@@ -227,7 +239,7 @@ public class PostGobiOrdersHelper {
       });
   }
 
-  private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO){
+  private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO) {
     String vendorRefNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getVendorDetail().getReferenceNumbers().get(FIRST_ELEM).getRefNumber();
     logger.debug("checkExistingOrder:: Trying to look for existing order with Vendor Reference Number: {}", vendorRefNumber);
     String query = HelperUtils.encodeValue(String.format("poLine.vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
@@ -281,42 +293,45 @@ public class PostGobiOrdersHelper {
       });
 
   }
+
   public Void handleError(Throwable throwable) {
-    final javax.ws.rs.core.Response result;
-
-    logger.error("Exception placing order", throwable.getCause());
-    GobiResponse response = new GobiResponse();
-    response.setError(new ResponseError());
-
-    final Throwable t = throwable.getCause();
-    if (t instanceof HttpException) {
-      final int code = ((HttpException) t).getCode();
-      final String message = t.getMessage();
-
-      switch (code) {
-      case 400:
-        response.getError().setCode(CODE_BAD_REQUEST);
-        response.getError().setMessage(HelperUtils.truncate(t.getMessage(), 500));
-        result = respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response));
-        break;
-      case 500:
-        result = respond500WithTextPlain(message);
-        break;
-      case 401:
-        result = respond401WithTextPlain(message);
-        break;
-      default:
-        result = respond500WithTextPlain(message);
-      }
-    } else if (t instanceof GobiPurchaseOrderParserException) {
-      response.getError().setCode(CODE_INVALID_XML);
-      response.getError().setMessage(HelperUtils.truncate(t.getMessage(), 500));
-      result = respond400WithApplicationXml(GobiResponseWriter.getWriter().write(response));
-    } else {
-      result = respond500WithTextPlain(throwable.getMessage());
-    }
-
-    asyncResultHandler.handle(Future.succeededFuture(result));
+    logger.error("Exception placing order", throwable);
+    Throwable cause = throwable.getCause();
+    asyncResultHandler.handle(Future.succeededFuture(mapExceptionToResponse(cause != null ? cause : throwable)));
     return null;
   }
+
+  private static Response mapExceptionToResponse(Throwable t) {
+
+    String message = t.getMessage();
+
+    if (t instanceof HttpException) {
+      switch (((HttpException) t).getCode()) {
+        case 400:
+          return respond400WithApplicationXml(writeGobiResponse(CODE_BAD_REQUEST, message));
+        case 401:
+          return respond401WithTextPlain(message);
+      }
+    }
+
+    if (t instanceof GobiPurchaseOrderParserException) {
+      return respond400WithApplicationXml(writeGobiResponse(CODE_INVALID_XML, message));
+    }
+
+    if (t instanceof GobiException) {
+      String errorCode = ((GobiException) t).getErrorCode().getCode();
+      return respond500WithApplicationXml(writeGobiResponse(errorCode, message));
+    }
+
+    return respond500WithApplicationXml(message);
+  }
+
+  private static BinaryOutStream writeGobiResponse(String errorCode, String message) {
+    GobiResponse response = new GobiResponse();
+    response.setError(new ResponseError());
+    response.getError().setCode(errorCode);
+    response.getError().setMessage(message);
+    return GobiResponseWriter.getWriter().write(response);
+  }
+
 }
