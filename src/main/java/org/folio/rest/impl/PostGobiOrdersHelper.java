@@ -295,8 +295,8 @@ public class PostGobiOrdersHelper {
   }
 
   public Void handleError(Throwable throwable) {
+    logger.error("Exception placing order", throwable);
     Throwable cause = throwable.getCause();
-    logger.error("Exception placing order", cause);
     asyncResultHandler.handle(Future.succeededFuture(mapExceptionToResponse(cause != null ? cause : throwable)));
     return null;
   }
