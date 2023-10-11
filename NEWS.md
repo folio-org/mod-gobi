@@ -12,8 +12,8 @@ Major changes in this release related to fixing bugs relate to mapping and updat
 * [MODGOBI-187](https://issues.folio.org/browse/MODGOBI-187) Update dependent raml-util
 
 ### Bug fixes
-* [MODGOBI-195](https://issues.folio.org/browse/MODGOBI-195) fixed custom mapping usage
-* [MODGOBI-194](https://issues.folio.org/browse/MODGOBI-194) fixed lookupAcquisitionUnitIdsByName mapping
+* [MODGOBI-195](https://issues.folio.org/browse/MODGOBI-195) invalid entry in mapping causes process to try to use default mapping
+* [MODGOBI-194](https://issues.folio.org/browse/MODGOBI-194) Acquisition units mapping by name has empty result
 
 ### Dependencies
 
