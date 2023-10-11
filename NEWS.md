@@ -1,4 +1,23 @@
-## 2.7.0 Unreleased
+## 2.8.0 Unreleased
+
+## 2.7.0 Released (Poppy R2 2023)
+
+Major changes in this release related to fixing bugs relate to mapping and update java version to 17
+
+[Full Changelog] (https://github.com/folio-org/mod-gobi/compare/v2.6.0...v2.7.0)
+
+### Stories
+* [MODGOBI-192](https://issues.folio.org/browse/MODGOBI-192) updated to java-17
+* [MODGOBI-191](https://issues.folio.org/browse/MODGOBI-191) Use GitHub Workflows api-lint and api-schema-lint and api-doc
+* [MODGOBI-187](https://issues.folio.org/browse/MODGOBI-187) Update dependent raml-util
+
+### Bug fixes
+* [MODGOBI-195](https://issues.folio.org/browse/MODGOBI-195) fixed custom mapping usage
+* [MODGOBI-194](https://issues.folio.org/browse/MODGOBI-194) fixed lookupAcquisitionUnitIdsByName mapping
+
+### Dependencies
+
+* Bump `java version` from `11` to `17`
 
 ## 2.6.0 Released (Orchid R1 2023)
 Major changes in this release related to updating mapping logic and improvement Logging
