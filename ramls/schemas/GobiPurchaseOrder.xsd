@@ -164,7 +164,7 @@
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="CustomerDetail" minOccurs="1" maxOccurs="1">
+        <xs:element name="CustomerDetail" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="BaseAccount" type="BaseAccount" minOccurs="1" maxOccurs="1"/>
@@ -305,7 +305,7 @@
                           <xs:element name="OtherLocalId" type="OtherLocalId" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="Location" type="Location" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="Quantity" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
-                          <xs:element name="YBPOrderKey" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
+                          <xs:element name="YBPOrderKey" type="xs:positiveInteger" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OrderPlaced" type="xs:dateTime" minOccurs="1" maxOccurs="1"/>
                           <xs:element name="Initials" type="Initials" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="ListPrice" minOccurs="1" maxOccurs="1">

@@ -240,21 +240,15 @@ public class PostGobiOrdersHelper {
   }
 
   private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO) {
-    logger.debug("checkExistingOrder:: Trying to look for existing order poNumber: {} with/without Vendor Reference Number", compPO.getPoNumber());
-    var vendorDetail = compPO.getCompositePoLines().get(FIRST_ELEM).getVendorDetail();
-    String endpoint;
-    if (vendorDetail != null) {
-      String vendorRefNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getVendorDetail().getReferenceNumbers().get(FIRST_ELEM).getRefNumber();
-      String query = HelperUtils.encodeValue(String.format("poLine.vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
-      endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
-    } else {
-      endpoint = String.format(ORDERS_ENDPOINT);
-    }
+    String vendorRefNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getVendorDetail().getReferenceNumbers().get(FIRST_ELEM).getRefNumber();
+    logger.debug("checkExistingOrder:: Trying to look for existing order with Vendor Reference Number: {}", vendorRefNumber);
+    String query = HelperUtils.encodeValue(String.format("poLine.vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
+    String endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(purchaseOrders -> {
         String orderId = HelperUtils.extractOrderId(purchaseOrders);
         if (StringUtils.isEmpty(orderId)) {
-          logger.warn("checkExistingOrder:: No existing order found with/without Vendor Reference Number");
+          logger.warn("checkExistingOrder:: No existing order found with Vendor Reference Number: {}", vendorRefNumber);
           return completedFuture(false);
         }
         CompositePurchaseOrder purchaseOrder = purchaseOrders.getJsonArray("purchaseOrders").getJsonObject(FIRST_ELEM).mapTo(CompositePurchaseOrder.class);
