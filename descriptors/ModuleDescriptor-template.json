@@ -228,7 +228,6 @@
       "displayName": "Delete gobi custom mapping",
       "description": "Delete gobi custom mapping"
     },
-
     {
       "permissionName": "gobi.mappings.fields.collection.get",
       "displayName": "Get gobi mapping fields",
