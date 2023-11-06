@@ -1,5 +1,14 @@
 ## 2.8.0 Unreleased
 
+## 2.7.1 - Released (Poppy Bug Fix R2 2023)
+
+The focus of this release was to add necessary permissions
+
+[Full Changelog](https://github.com/folio-org/mod-orders/compare/v2.7.0...v2.7.1)
+
+### Bug Fixes
+* [MODGOBI-201](https://issues.folio.org/browse/MODGOBI-201) - Add missed gobi permissions in module descriptor
+
 ## 2.7.0 Released (Poppy R2 2023)
 
 Major changes in this release related to fixing bugs relate to mapping and update java version to 17
