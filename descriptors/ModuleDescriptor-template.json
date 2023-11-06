@@ -229,6 +229,21 @@
       "description": "Delete gobi custom mapping"
     },
     {
+      "permissionName": "gobi.mappings.fields.collection.get",
+      "displayName": "Get gobi mapping fields",
+      "description": "Get gobi mapping fields"
+    },
+    {
+      "permissionName": "gobi.mappings.translators.collection.get",
+      "displayName": "Get gobi mapping translators",
+      "description": "Get gobi mapping translators"
+    },
+    {
+      "permissionName": "gobi.mappings.types.collection.get",
+      "displayName": "Get gobi mapping types",
+      "description": "Get gobi mapping types"
+    },
+    {
       "permissionName": "gobi.custom-mappings.all",
       "displayName": "custom mappings - all permissions",
       "description": "Entire set of permissions needed to use custom mappings",
@@ -247,7 +262,6 @@
       "subPermissions": [
         "gobi.item.post",
         "gobi.orders.mappings.all",
-        "gobi.custom-mappings.all",
         "gobi.custom-mappings.all"
       ]
     },
