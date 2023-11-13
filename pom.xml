@@ -53,7 +53,7 @@
     <raml-module-builder.version>35.0.3</raml-module-builder.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <vertx.version>4.3.4</vertx.version>
-    <sonar.exclusions>**/models/**.java, **/domain/**.java, **/completablefuture/FolioVertxCompletableFuture.java</sonar.exclusions>
+    <sonar.exclusions>**/models/**.java, **/domain/**.java</sonar.exclusions>
     <sonar.test.exclusions>**/*Test.java</sonar.test.exclusions>
     <jmockit.version>1.49</jmockit.version>
     <mod-configuration-client.version>5.9.1</mod-configuration-client.version>
