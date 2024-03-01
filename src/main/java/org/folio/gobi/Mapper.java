@@ -541,7 +541,7 @@ public class Mapper {
 
     Optional.ofNullable(mappings.get(Mapping.Field.DONOR_DEPRECATED))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setDonorDeprecated((String) o))
+        .thenAccept(o -> pol.setDonor((String) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.DONOR))
@@ -549,7 +549,7 @@ public class Mapper {
         .thenAccept(o -> {
           if (o != null) {
             Organization organization = (Organization) o;
-            pol.setDonor(organization.getId());
+            pol.setDonorOrganizationIds(Collections.singletonList(organization.getId()));
           }
         })
         .exceptionally(Mapper::logException)));
