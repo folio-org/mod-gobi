@@ -539,9 +539,29 @@ public class Mapper {
         .thenAccept(o -> pol.setDescription((String) o))
         .exceptionally(Mapper::logException)));
 
+    Optional.ofNullable(mappings.get(Mapping.Field.DONOR_DEPRECATED))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setDonorDeprecated((String) o))
+        .exceptionally(Mapper::logException)));
+
     Optional.ofNullable(mappings.get(Mapping.Field.DONOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setDonor((String) o))
+        .thenAccept(o -> {
+          if (o != null) {
+            Organization organization = (Organization) o;
+            pol.setDonor(organization.getId());
+          }
+        })
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.CLAIM_ACTIVE))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setClaimingActive((Boolean) o))
+        .exceptionally(Mapper::logException)));
+
+    Optional.ofNullable(mappings.get(Mapping.Field.CLAIM_INTERVAL))
+      .ifPresent(field -> futures.add(field.resolve(doc)
+        .thenAccept(o -> pol.setClaimingInterval((Integer) o))
         .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.SELECTOR))
