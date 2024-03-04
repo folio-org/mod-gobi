@@ -539,11 +539,6 @@ public class Mapper {
         .thenAccept(o -> pol.setDescription((String) o))
         .exceptionally(Mapper::logException)));
 
-    Optional.ofNullable(mappings.get(Mapping.Field.DONOR_DEPRECATED))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> pol.setDonor((String) o))
-        .exceptionally(Mapper::logException)));
-
     Optional.ofNullable(mappings.get(Mapping.Field.DONOR))
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
