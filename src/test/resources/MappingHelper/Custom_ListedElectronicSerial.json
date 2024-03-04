@@ -250,7 +250,21 @@
     {
       "field": "DONOR",
       "dataSource": {
-        "default": "Test Data"
+        "default": "Test Data",
+        "translation": "lookupOrganization",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "CLAIM_ACTIVE",
+      "dataSource": {
+        "translation": "toBoolean"
+      }
+    },
+    {
+      "field": "CLAIM_INTERVAL",
+      "dataSource": {
+        "translation": "toInteger"
       }
     },
     {

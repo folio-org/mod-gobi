@@ -125,6 +125,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String FUNDS = "FUNDS";
   private static final String MATERIAL_TYPES = "MATERIAL-TYPES";
   private static final String VENDOR = "VENDOR";
+  private static final String DONOR = "DONOR";
   private static final String MATERIAL_SUPPLIER = "MATERIAL_SUPPLIER";
   private static final String COMPOSITE_PURCHASE_ORDER = "COMPOSITE_PURCHASE_ORDER";
   private static final String IDENTIFIER_TYPES = "IDENTIFIER_TYPES";
@@ -233,7 +234,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
-        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     logger.info("End: Testing for 201 - XML content");
   }
@@ -250,7 +251,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
-        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -315,7 +316,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Print Monograph has to get the Product type ID so there will be an additional call made
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
-        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
+        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -344,7 +345,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER, VENDOR,
-      EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
+      EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -371,7 +372,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(),
         containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
-                  VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
+                  VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     verifyResourceCreateInventoryNotMapped();
 
@@ -396,7 +397,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
-            VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
+            VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -447,7 +448,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     //Listed Print Monograph has Product Id type so there will be an additional call made
     assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
-        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER));
+      MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -1109,15 +1110,16 @@ public class GOBIIntegrationServiceResourceImplTest {
 
         addServerRqRsData(HttpMethod.GET, VENDOR, vendors);
         addServerRqRsData(HttpMethod.GET, MATERIAL_SUPPLIER, vendors);
+        addServerRqRsData(HttpMethod.GET, DONOR, vendors);
 
         ctx.response()
           .setStatusCode(200)
           .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
           .end(vendors.encodePrettily());
-      }catch (IOException e) {
+      } catch (IOException e) {
         ctx.response()
-        .setStatusCode(404)
-        .end();
+          .setStatusCode(404)
+          .end();
        }
     }
 
