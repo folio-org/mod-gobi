@@ -248,12 +248,6 @@
       }
     },
     {
-      "field": "DONOR_DEPRECATED",
-      "dataSource": {
-        "default": "Test Data"
-      }
-    },
-    {
       "field": "DONOR",
       "dataSource": {
         "default": "Test Data",

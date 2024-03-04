@@ -16,6 +16,18 @@
           }
         },
         {
+          "field": "CLAIM_ACTIVE",
+          "dataSource": {
+            "translation": "toBoolean"
+          }
+        },
+        {
+          "field": "CLAIM_INTERVAL",
+          "dataSource": {
+            "translation": "toInteger"
+          }
+        },
+        {
           "field": "COLLECTION",
           "dataSource": {
             "default": "false",
@@ -43,6 +55,14 @@
           "dataSource": {
             "from": "//ListPrice/Currency",
             "default": "USD"
+          }
+        },
+        {
+          "field": "DONOR",
+          "dataSource": {
+            "default": "GOBI",
+            "translation": "lookupOrganization",
+            "translateDefault": true
           }
         },
         {
@@ -158,29 +178,9 @@
           }
         },
         {
-          "field": "CLAIM_ACTIVE",
-          "dataSource": {
-            "translation": "toBoolean"
-          }
-        },
-        {
-          "field": "CLAIM_INTERVAL",
-          "dataSource": {
-            "translation": "toInteger"
-          }
-        },
-        {
           "field": "SOURCE",
           "dataSource": {
             "default": "API"
-          }
-        },
-        {
-          "field": "DONOR",
-          "dataSource": {
-            "default": "GOBI",
-            "translation": "lookupOrganization",
-            "translateDefault": true
           }
         },
         {
