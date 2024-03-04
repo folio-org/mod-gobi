@@ -8,6 +8,7 @@
 			"status": "Active",
 			"language": "en-us",
 			"isVendor": true,
+      "isDonor": true,
 			"aliases": [
 				{
 					"value": "YBP",
