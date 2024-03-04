@@ -10,12 +10,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-
-import io.vertx.core.json.JsonArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.HttpException;
@@ -40,7 +36,7 @@ public class GobiCustomMappingsService {
   }
 
   public Future<OrderMappingsViewCollection> getCustomMappingListByQuery(int offset, int limit) {
-    var query = "module==GOBI AND configName==orderMappings";
+   var query = "configName==GOBI AND configName==orderMappings";
     return restClient.handleGetRequest(CONFIGURATION_ENDPOINT, query, offset, limit)
       .map(this::buildOrderMappingsViewCollectionResponse);
   }
@@ -74,10 +70,9 @@ public class GobiCustomMappingsService {
   }
 
   private OrderMappingsViewCollection buildOrderMappingsViewCollectionResponse(JsonObject configs) {
-    final var customMappings = getCustomMappingNames(configs.getJsonArray(CONFIG_FIELD));
     var defaultMappings = loadDefaultMappings().stream()
       .map(defMap -> new OrderMappingsView()
-        .withMappingType(getMappingOrderType(defMap, customMappings))
+        .withMappingType(OrderMappingsView.MappingType.DEFAULT)
         .withOrderMappings(defMap))
       .collect(toList());
 
@@ -153,22 +148,4 @@ public class GobiCustomMappingsService {
       .withEnabled(true)
       .withCode("gobi.order." + orderMappings.getOrderType());
   }
-
-  private Set<OrderMappings.OrderType> getCustomMappingNames(JsonArray configArray) {
-    final var customMappings = new HashSet<OrderMappings.OrderType>();
-    for (int i  = 0; i < configArray.size(); i++) {
-      var mappingCode = configArray.getJsonObject(i).getString("code");
-      customMappings.add(extractMappingOrderType(mappingCode));
-    }
-    return customMappings;
-  }
-
-  private OrderMappings.OrderType extractMappingOrderType(String code) {
-    return OrderMappings.OrderType.fromValue(code.substring(code.lastIndexOf(".") + 1));
-  }
-
-  private OrderMappingsView.MappingType getMappingOrderType(OrderMappings mapping, Set<OrderMappings.OrderType> customMappings) {
-    return customMappings.contains(mapping.getOrderType()) ? OrderMappingsView.MappingType.CUSTOM : OrderMappingsView.MappingType.DEFAULT;
-  }
-
 }
