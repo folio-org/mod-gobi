@@ -74,6 +74,14 @@ public class GobiCustomMappingsService {
     }
   }
 
+  /**
+   * Receives a JsonObject as a parameter which contains custom mappings and merges these
+   * with default mappings, returning a list of all mappings, by first checking if a
+   * custom mapping exists for an order type, otherwise uses its default mapping
+   *
+   * @param configs Object containing custom mappings
+   * @return mappings for each order type, custom if present, otherwise default is returned
+   */
   private OrderMappingsViewCollection buildOrderMappingsViewCollectionResponse(JsonObject configs) {
     final var customMappings = getCustomMappings(configs.getJsonArray(CONFIG_FIELD));
     var mappings = loadDefaultMappings().stream()
@@ -157,11 +165,12 @@ public class GobiCustomMappingsService {
 
   private Map<OrderMappings.OrderType, OrderMappings> getCustomMappings(JsonArray configArray) {
     final var customMappings = new HashMap<OrderMappings.OrderType, OrderMappings>();
-    for (int i = 0; i < configArray.size(); i++) {
-      var config = configArray.getJsonObject(i);
-      var orderType = extractMappingOrderType(config.getString("code"));
-      var customOrderMappings = Json.decodeValue(config.mapTo(Config.class).getValue(), OrderMappings.class);
-      customMappings.put(orderType, customOrderMappings);
+    for (Object configObj : configArray) {
+      if (configObj instanceof JsonObject config) {
+        var orderType = extractMappingOrderType(config.getString("code"));
+        var customOrderMappings = Json.decodeValue(config.mapTo(Config.class).getValue(), OrderMappings.class);
+        customMappings.put(orderType, customOrderMappings);
+      }
     }
     return customMappings;
   }
