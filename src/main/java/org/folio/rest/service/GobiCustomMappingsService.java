@@ -10,8 +10,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+
+import io.vertx.core.json.JsonArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.HttpException;
@@ -36,7 +41,7 @@ public class GobiCustomMappingsService {
   }
 
   public Future<OrderMappingsViewCollection> getCustomMappingListByQuery(int offset, int limit) {
-   var query = "configName==GOBI AND configName==orderMappings";
+    var query = "module==GOBI AND configName==orderMappings";
     return restClient.handleGetRequest(CONFIGURATION_ENDPOINT, query, offset, limit)
       .map(this::buildOrderMappingsViewCollectionResponse);
   }
@@ -69,16 +74,25 @@ public class GobiCustomMappingsService {
     }
   }
 
+  /**
+   * Receives a JsonObject as a parameter which contains custom mappings and merges these
+   * with default mappings, returning a list of all mappings, by first checking if a
+   * custom mapping exists for an order type, otherwise uses its default mapping
+   *
+   * @param configs Object containing custom mappings
+   * @return mappings for each order type, custom if present, otherwise default is returned
+   */
   private OrderMappingsViewCollection buildOrderMappingsViewCollectionResponse(JsonObject configs) {
-    var defaultMappings = loadDefaultMappings().stream()
+    final var customMappings = getCustomMappings(configs.getJsonArray(CONFIG_FIELD));
+    var mappings = loadDefaultMappings().stream()
       .map(defMap -> new OrderMappingsView()
-        .withMappingType(OrderMappingsView.MappingType.DEFAULT)
-        .withOrderMappings(defMap))
+        .withMappingType(getMappingType(defMap, customMappings))
+        .withOrderMappings(getMapping(defMap, customMappings)))
       .collect(toList());
 
     return new OrderMappingsViewCollection()
-      .withOrderMappingsViews(defaultMappings)
-      .withTotalRecords(defaultMappings.size());
+      .withOrderMappingsViews(mappings)
+      .withTotalRecords(mappings.size());
   }
 
   private List<OrderMappings> loadDefaultMappings() {
@@ -148,4 +162,29 @@ public class GobiCustomMappingsService {
       .withEnabled(true)
       .withCode("gobi.order." + orderMappings.getOrderType());
   }
+
+  private Map<OrderMappings.OrderType, OrderMappings> getCustomMappings(JsonArray configArray) {
+    final var customMappings = new HashMap<OrderMappings.OrderType, OrderMappings>();
+    for (Object configObj : configArray) {
+      if (configObj instanceof JsonObject config) {
+        var orderType = extractMappingOrderType(config.getString("code"));
+        var customOrderMappings = Json.decodeValue(config.mapTo(Config.class).getValue(), OrderMappings.class);
+        customMappings.put(orderType, customOrderMappings);
+      }
+    }
+    return customMappings;
+  }
+
+  private OrderMappings.OrderType extractMappingOrderType(String code) {
+    return OrderMappings.OrderType.fromValue(code.substring(code.lastIndexOf(".") + 1));
+  }
+
+  private OrderMappingsView.MappingType getMappingType(OrderMappings mapping, Map<OrderMappings.OrderType, OrderMappings> customMappings) {
+    return customMappings.containsKey(mapping.getOrderType()) ? OrderMappingsView.MappingType.CUSTOM : OrderMappingsView.MappingType.DEFAULT;
+  }
+
+  private OrderMappings getMapping(OrderMappings mapping, Map<OrderMappings.OrderType, OrderMappings> customMappings) {
+    return Optional.ofNullable(customMappings.get(mapping.getOrderType())).orElse(mapping);
+  }
+
 }
