@@ -60,6 +60,7 @@
     <log4j.version>2.23.0</log4j.version>
     <aspectj.version>1.9.21.1</aspectj.version>
     <jackson-bom.version>2.15.2</jackson-bom.version>
+    <tomakehurst-wiremock.version>3.0.1</tomakehurst-wiremock.version>
 
     <!--Maven plugin properties-->
     <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
@@ -200,7 +201,7 @@
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock</artifactId>
-      <version>3.0.1</version>
+      <version>${tomakehurst-wiremock.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
