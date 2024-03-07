@@ -59,10 +59,10 @@
     <mod-configuration-client.version>5.9.2</mod-configuration-client.version>
     <log4j.version>2.23.0</log4j.version>
     <aspectj.version>1.9.21.1</aspectj.version>
-    <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
     <jackson-bom.version>2.15.2</jackson-bom.version>
 
     <!--Maven plugin properties-->
+    <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
     <exec-maven-plugin.version>3.2.0</exec-maven-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
