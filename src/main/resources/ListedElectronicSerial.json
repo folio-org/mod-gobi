@@ -60,7 +60,7 @@
         {
           "field": "DONOR",
           "dataSource": {
-            "translation": "lookupOrganization",
+            "translation": "lookupOrganization"
           }
         },
         {
