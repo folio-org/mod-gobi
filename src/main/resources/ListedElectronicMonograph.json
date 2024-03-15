@@ -75,9 +75,7 @@
         {
           "field": "DONOR",
           "dataSource": {
-            "default": "GOBI",
-            "translation": "lookupOrganization",
-            "translateDefault": true
+            "translation": "lookupOrganization"
           }
         },
         {
