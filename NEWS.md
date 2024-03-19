@@ -1,4 +1,20 @@
-## 2.8.0 Unreleased
+## 2.9.0 - Unreleased
+
+## 2.8.0 - Released (Quesnelia R1 2024)
+The primary focus of this release was to update custom mappings loading and library versions  
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.7.0...v2.8.0)
+
+### Stories
+* [MODGOBI-200] (https://folio-org.atlassian.net/browse/MODGOBI-200) - Add possibility to work with empty vendorDetails object
+* [MODBOGI-203] (https://folio-org.atlassian.net/browse/MODGOBI-203) - Update GOBI settings to include Quesnelia functional updates
+
+### Bug Fixes
+* [MODGOBI-206] (https://folio-org.atlassian.net/browse/MODGOBI-206) - Fix endpoint to load custom mappings
+
+### Dependencies
+* Bump `raml` from `35.0.1` to `35.2.0`
+* Bump `vertx` from `4.3.4` to `4.5.4`
 
 ## 2.7.0 Released (Poppy R2 2023)
 
