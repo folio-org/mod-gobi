@@ -1,5 +1,13 @@
 ## 2.9.0 - Unreleased
 
+## 2.8.1 - Released (Quesnelia R1 2024)
+This release focused on adding ability to search by location and holding in POL  
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.8.0...v2.8.1)
+
+### Bug Fixes
+* [MODORDERS-1085](https://folio-org.atlassian.net/browse/MODORDERS-1085) - Add ability to search by location and holding in POL
+
+
 ## 2.8.0 - Released (Quesnelia R1 2024)
 The primary focus of this release was to update custom mappings loading and library versions  
 
