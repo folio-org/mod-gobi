@@ -57,8 +57,7 @@ public class MappingHelperTest {
   private Mapping mapping2 = null;
   private Map<Mapping.Field, org.folio.gobi.DataSourceResolver> fieldDataSourceMapping = new EnumMap<>(Mapping.Field.class);
   private LookupService lookupService = Mockito.mock(LookupService.class);
-  private FieldMappingTranslatorResolver fieldMappingTranslatorResolver = new FieldMappingTranslatorResolver(lookupService);
-  private MappingHelper mappingHelper = new MappingHelper(fieldMappingTranslatorResolver);
+  private MappingHelper mappingHelper = new MappingHelper(lookupService);
 
   @BeforeEach
   public void setUp() {

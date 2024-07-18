@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.DataSourceResolver;
-import org.folio.gobi.FieldMappingTranslatorResolver;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.gobi.HelperUtils;
@@ -61,7 +60,6 @@ public class PostGobiOrdersHelper {
   private static final String CONFIGURATION_CODE = "gobi.order.";
   public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
   public static final String CODE_INVALID_XML = "INVALID_XML";
-  public static final String TENANT_HEADER = "X-Okapi-Tenant";
 
 
   private final Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler;
@@ -74,8 +72,7 @@ public class PostGobiOrdersHelper {
     this.restClient = new RestClient(okapiHeaders, ctx);
     this.asyncResultHandler = asyncResultHandler;
     this.lookupService = new LookupService(restClient);
-    FieldMappingTranslatorResolver fieldMappingTranslatorResolver = new FieldMappingTranslatorResolver(lookupService);
-    this.mappingHelper = new MappingHelper(fieldMappingTranslatorResolver);
+    this.mappingHelper = new MappingHelper(lookupService);
   }
 
 

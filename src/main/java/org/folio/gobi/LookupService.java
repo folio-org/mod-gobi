@@ -3,7 +3,6 @@ package org.folio.gobi;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.folio.gobi.HelperUtils.extractFundCode;
 import static org.folio.rest.ResourcePaths.ACQUISITION_METHOD_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ACQUISITION_UNIT_ENDPOINT;
 import static org.folio.rest.ResourcePaths.CONFIGURATION_ENDPOINT;
@@ -139,7 +138,7 @@ public class LookupService {
 
   public CompletableFuture<String> lookupFundId(String fundCode) {
     logger.debug("lookupFundId:: Trying to look up fundId by fundCode: {}", fundCode);
-    String query = HelperUtils.encodeValue(String.format("code==%s", extractFundCode(fundCode)));
+    String query = HelperUtils.encodeValue(String.format("code==%s", HelperUtils.extractFundCode(fundCode)));
     String endpoint = String.format(FUNDS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(funds -> {

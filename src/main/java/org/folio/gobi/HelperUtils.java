@@ -3,12 +3,8 @@ package org.folio.gobi;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
-import javax.ws.rs.Path;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -37,6 +33,7 @@ public final class HelperUtils {
   public static String extractProductTypeId(JsonObject obj) {
     return extractIdOfFirst(obj, "identifierTypes");
   }
+
   public static String extractContributorNameTypeId(JsonObject obj) {
     return extractIdOfFirst(obj, CONTRIBUTOR_NAME_TYPES);
   }
@@ -64,18 +61,18 @@ public final class HelperUtils {
   public static String extractFundCode(String fundCode) {
     return StringUtils.substringBefore(fundCode, FUND_CODE_EXPENSE_CLASS_SEPARATOR);
   }
+
   public static String extractExpenseClassFromFundCode(String fundCode) {
     return StringUtils.substringAfterLast(fundCode, FUND_CODE_EXPENSE_CLASS_SEPARATOR);
   }
+
   public static String normalizeSubAccout(String organisationAccountNo) {
-    return organisationAccountNo.replace(BASEACCOUNT_SUBACCOUNT_SEPARATOR,"");
+    return organisationAccountNo.replace(BASEACCOUNT_SUBACCOUNT_SEPARATOR, "");
   }
+
   public static String getVendAccountFromOrgAccountsList(String vendorAccountNo, List<String> orgAccountNoList) {
-    return orgAccountNoList.stream().filter(account->
-     normalizeSubAccout(account).equals(vendorAccountNo)).findFirst().map(Object::toString).orElse("");
-  }
-  public static String getEndpoint(Class<?> clazz) {
-    return clazz.getAnnotation(Path.class).value();
+    return orgAccountNoList.stream().filter(account ->
+      normalizeSubAccout(account).equals(vendorAccountNo)).findFirst().map(Object::toString).orElse("");
   }
 
 }

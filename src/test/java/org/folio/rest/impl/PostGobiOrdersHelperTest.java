@@ -256,7 +256,7 @@ public class PostGobiOrdersHelperTest {
           assertEquals("//ListPrice/Amount", ds.from);
           assertEquals("0", ds.defValue);
           try {
-            Double result = (Double) ds.translation.apply(ds.defValue.toString()).get();
+            Double result = (Double) ds.applyTranslation(ds.defValue).get();
             assertEquals(0.0, result);
           } catch (Exception e) {
             logger.error("Failed to execute translation LIST_PRICE", e);
@@ -270,7 +270,7 @@ public class PostGobiOrdersHelperTest {
           assertEquals("//ListPrice/Amount//EstPrice", defVal.from);
           assertEquals("15.0", defVal.defValue);
           try {
-            Double result = (Double) defVal.translation.apply(defVal.defValue.toString()).get();
+            Double result = (Double) defVal.applyTranslation(defVal.defValue).get();
             assertEquals(15.0, result);
           } catch (Exception e) {
             logger.error("Failed to execute translation for ESTIMATED_ PRICE with recursive default mapping", e);

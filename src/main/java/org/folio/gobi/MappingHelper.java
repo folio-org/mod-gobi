@@ -13,8 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.Mapper.NodeCombinator;
-import org.folio.gobi.Mapper.Translation;
 import org.folio.rest.impl.PostGobiOrdersHelper;
+import org.folio.rest.jaxrs.model.DataSource;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.w3c.dom.NodeList;
@@ -25,10 +25,11 @@ import io.vertx.core.json.JsonObject;
 
 public class MappingHelper {
   private static final Logger logger = LogManager.getLogger(MappingHelper.class);
-  private final FieldMappingTranslatorResolver fieldMappingTranslatorResolver;
 
-  public MappingHelper(FieldMappingTranslatorResolver fieldMappingTranslatorResolver) {
-    this.fieldMappingTranslatorResolver = fieldMappingTranslatorResolver;
+  private final LookupService lookupService;
+
+  public MappingHelper(LookupService lookupService) {
+    this.lookupService = lookupService;
   }
 
   private static final Map<OrderMappings.OrderType, OrderMappings> defaultMappings = new EnumMap<>(OrderMappings.OrderType.class);
@@ -94,16 +95,15 @@ public class MappingHelper {
       }
     }
 
-    org.folio.rest.jaxrs.model.DataSource.Translation translation = mapping.getDataSource().getTranslation();
-    Translation<?> t = fieldMappingTranslatorResolver.resolve(translation);
-    return org.folio.gobi.DataSourceResolver.builder()
-        .withFrom(dataSourceFrom)
-        .withDefault(defaultValue)
-        .withTranslation(t)
-        .withTranslateDefault(translateDefault != null && translateDefault)
-        .withCombinator(nc)
-        .build();
-
+    DataSource.Translation translation = mapping.getDataSource().getTranslation();
+    return new DataSourceResolver(
+      lookupService,
+      dataSourceFrom,
+      nc,
+      defaultValue,
+      translation,
+      translateDefault != null && translateDefault
+    );
   }
 
   public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
