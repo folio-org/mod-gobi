@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -31,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.jaxrs.model.DataSource.Translation;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.tools.utils.NetworkUtils;
@@ -101,7 +101,7 @@ public class MappingTest {
     assertEquals(4.5d, DataSourceResolver.builder()
       .withFrom("//Zap | //Zop")
       .withCombinator(Mapper::multiply)
-      .withTranslation(Mapper::toDouble)
+      .withTranslation(Translation.TO_DOUBLE)
       .build()
       .resolve(doc)
       .get());
@@ -111,21 +111,14 @@ public class MappingTest {
   void testTranslations() throws Exception {
     logger.info("begin: Test Mapping - translations");
 
-    assertEquals("HELLO WORLD",
-      DataSourceResolver.builder().withFrom("//Doo/Dah").withTranslation(this::toUpper).build().resolve(doc).get());
     assertEquals(1.5d,
-      DataSourceResolver.builder().withFrom("//Zap").withTranslation(Mapper::toDouble).build().resolve(doc).get());
+      DataSourceResolver.builder().withFrom("//Zap").withTranslation(Translation.TO_DOUBLE).build().resolve(doc).get());
     assertEquals(90210,
-      DataSourceResolver.builder().withFrom("//Zip").withTranslation(Mapper::toInteger).build().resolve(doc).get());
+      DataSourceResolver.builder().withFrom("//Zip").withTranslation(Translation.TO_INTEGER).build().resolve(doc).get());
   }
 
   @Test
-  void testExceptionInTranslator() {
-    Assertions.assertThrows(ExecutionException.class, () -> DataSourceResolver.builder().withFrom("//Zip").withTranslation(this::throwException).build().resolve(doc).get());
-  }
-
-  @Test
-  void testExceptionInApplyDefault() throws Exception {
+  void testExceptionInApplyDefault() {
     logger.info("begin: Test Exception in applyDefault()");
     DataSourceResolver defMapping = DataSourceResolver.builder().withFrom("//Bar[@attr='dat']").build();
 
@@ -162,13 +155,13 @@ public class MappingTest {
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
-    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupSuffix).withTranslateDefault(false).build());
-    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupPrefix).withTranslateDefault(false).build());
-    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupLinkedPackage).withTranslateDefault(false).build());
-    mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withDefault("Physical Resource").build());
-    mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withFrom(exchangeRateFrom).build());
+    mappings.put(BILL_TO,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(billToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
+    mappings.put(SHIP_TO,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(shipToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
+    mappings.put(SUFFIX,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(suffixFrom).withTranslation(Translation.LOOKUP_SUFFIX).withTranslateDefault(false).build());
+    mappings.put(PREFIX,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(prefixFrom).withTranslation(Translation.LOOKUP_PREFIX).withTranslateDefault(false).build());
+    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(linkedPackageFrom).withTranslation(Translation.LOOKUP_LINKED_PACKAGE).withTranslateDefault(false).build());
+    mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withLookupService(lookupService).withDefault("Physical Resource").build());
+    mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(exchangeRateFrom).build());
     //When
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
@@ -211,11 +204,11 @@ public class MappingTest {
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
-    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupSuffix).withTranslateDefault(false).build());
-    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupPrefix).withTranslateDefault(false).build());
-    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupLinkedPackage).withTranslateDefault(false).build());
+    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
+    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
+    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(Translation.LOOKUP_SUFFIX).withTranslateDefault(false).build());
+    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(Translation.LOOKUP_PREFIX).withTranslateDefault(false).build());
+    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(Translation.LOOKUP_LINKED_PACKAGE).withTranslateDefault(false).build());
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withDefault("Physical Resource").build());
     mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withFrom(exchangeRateFrom).build());
     //When
@@ -256,11 +249,11 @@ public class MappingTest {
     String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
-    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
-    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(lookupService::lookupOrganization).withTranslateDefault(false).build());
-    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(lookupService::lookupSuffix).withTranslateDefault(false).build());
-    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(lookupService::lookupPrefix).withTranslateDefault(false).build());
-    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(lookupService::lookupLinkedPackage).withTranslateDefault(false).build());
+    mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
+    mappings.put(SHIP_TO,  DataSourceResolver.builder().withFrom(shipToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
+    mappings.put(SUFFIX,  DataSourceResolver.builder().withFrom(suffixFrom).withTranslation(Translation.LOOKUP_SUFFIX).withTranslateDefault(false).build());
+    mappings.put(PREFIX,  DataSourceResolver.builder().withFrom(prefixFrom).withTranslation(Translation.LOOKUP_PREFIX).withTranslateDefault(false).build());
+    mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(Translation.LOOKUP_LINKED_PACKAGE).withTranslateDefault(false).build());
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withDefault("Physical Resource").build());
     mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withFrom(exchangeRateFrom).build());
     //When
@@ -274,14 +267,4 @@ public class MappingTest {
     assertNotNull(bindingResult.getError(PREFIX));
   }
 
-  private CompletableFuture<String> toUpper(String s) {
-    String ret = s != null ? s.toUpperCase() : null;
-    return CompletableFuture.completedFuture(ret);
-  }
-
-  private CompletableFuture<String> throwException(String s) {
-    CompletableFuture<String> future = new CompletableFuture<>();
-    CompletableFuture.runAsync(() -> future.completeExceptionally(new Throwable("Whoops!")));
-    return future;
-  }
 }

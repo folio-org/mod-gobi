@@ -1,11 +1,11 @@
 package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
-import static org.folio.gobi.HelperUtils.getEndpoint;
 import static org.folio.rest.core.RestClient.X_OKAPI_URL;
 
 import java.util.Map;
 
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.folio.rest.annotations.Validate;
@@ -19,7 +19,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 
 public class GobiOrdersCustomMappingsImpl extends BaseApi implements GobiOrdersCustomMappings {
-  private static final String GOBI_ORDERS_CUSTOM_MAPPINGS_LOCATION = getEndpoint(GobiOrdersCustomMappings.class) + "/%s";
+
+  private static final String GOBI_ORDERS_CUSTOM_MAPPINGS_LOCATION = GobiOrdersCustomMappings.class.getAnnotation(Path.class).value() + "/%s";
 
   @Override
   public void getGobiOrdersCustomMappings(String query, String totalRecords, int offset, int limit, Map<String, String> okapiHeaders,

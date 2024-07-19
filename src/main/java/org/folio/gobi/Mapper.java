@@ -1021,10 +1021,6 @@ public class Mapper {
       .collect(Collectors.toList());
   }
 
-  public interface Translation<T> {
-    CompletableFuture<T> apply(String s);
-  }
-
   public interface NodeCombinator {
     String apply(NodeList n);
   }
