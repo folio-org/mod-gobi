@@ -118,7 +118,7 @@ public class DataSourceResolver {
       case TO_DATE -> Mapper.toDate(s);
 
       default -> {
-        logger.error("Exception in translation time, no such Translation available: " + translation);
+        logger.error("applyTranslation:: no translation available for: {}", translation);
         yield CompletableFuture.completedFuture(null);
       }
     };
