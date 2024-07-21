@@ -75,6 +75,10 @@
           <Description>LocalData7</Description>
           <Value>http://test.htm</Value>
         </LocalData>
+        <LocalData>
+          <Description>LocalData8</Description>
+          <Value>locationCode</Value>
+        </LocalData>
       </OrderDetail>
     </ListedPrintMonograph>
   </Order>

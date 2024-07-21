@@ -12,7 +12,7 @@ public final class ResourcePaths {
   public static final String ACQUISITION_METHOD_ENDPOINT = "/orders/acquisition-methods";
   public static final String GET_ORGANIZATION_ENDPOINT = "/organizations-storage/organizations";
   public static final String ACQUISITION_UNIT_ENDPOINT = "/acquisitions-units/units";
-  public static final String LOCATIONS_ENDPOINT = "/locations";
+  public static final String LOCATIONS_ENDPOINT = "/search/consortium/locations";
   public static final String ORDER_LINES_ENDPOINT = "/orders/order-lines";
   public static final String MATERIAL_TYPES_ENDPOINT = "/material-types";
   public static final String CONTRIBUTOR_NAME_TYPES_ENDPOINT = "/contributor-name-types";

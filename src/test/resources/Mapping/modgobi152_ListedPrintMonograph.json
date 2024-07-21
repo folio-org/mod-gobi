@@ -83,15 +83,6 @@
           }
         },
         {
-          "field": "LOCATION",
-          "dataSource": {
-            "from": "//Location",
-            "default": "*",
-            "translation": "lookupLocationId",
-            "translateDefault": true
-          }
-        },
-        {
           "field": "MANUAL_PO",
           "dataSource": {
             "default": "false",
@@ -269,6 +260,13 @@
           "field": "URL",
           "dataSource": {
             "from": "//LocalData[Description='LocalData7']/Value"
+          }
+        },
+        {
+          "field": "LOCATION",
+          "dataSource": {
+            "from": "//LocalData[Description='LocalData8']/Value",
+            "translation": "lookupLocationId"
           }
         }
       ]

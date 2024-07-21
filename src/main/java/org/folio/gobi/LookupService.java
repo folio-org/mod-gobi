@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.gobi.domain.LocationTranslationResult;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.Organization;
@@ -68,19 +69,28 @@ public class LookupService {
    * @param location
    * @return UUID of the location
    */
-  public CompletableFuture<String> lookupLocationId(String location) {
+  public CompletableFuture<LocationTranslationResult> lookupLocationId(String location) {
     logger.debug("lookupLocationId:: Trying to look up locationId by location '{}'", location);
     String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
     String endpoint = String.format(LOCATIONS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(locations -> {
-        String locationId = HelperUtils.extractLocationId(locations);
-        if (StringUtils.isEmpty(locationId)) {
-          logger.warn("lookupLocationId:: Location '{}' not found", location);
-          return completedFuture(null);
+        JsonArray jsonArray = locations.getJsonArray("locations");
+        for (int i = 0; i < jsonArray.size(); i++) {
+          JsonObject locationObject = jsonArray.getJsonObject(i);
+          if (location != null && location.equals(locationObject.getString("code"))) {
+
+            String locationId = locationObject.getString("id");
+            String tenantId = locationObject.getString("tenantId");
+
+            logger.info("lookupLocationId:: found id: {}, tenant: {}", locationId, tenantId);
+            return completedFuture(new LocationTranslationResult(locationId, tenantId));
+
+          }
         }
-        logger.info("lookupLocationId:: found location id: {}", locationId);
-        return completedFuture(locationId);
+
+        logger.warn("lookupLocationId:: Location '{}' not found", location);
+        return completedFuture(null);
       })
       .exceptionally(t -> {
         logger.error("Error while searching for location '{}'", location, t);

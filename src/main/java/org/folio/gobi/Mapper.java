@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.domain.BindingResult;
+import org.folio.gobi.domain.LocationTranslationResult;
 import org.folio.isbn.IsbnUtil;
 import org.folio.rest.acq.model.Account;
 import org.folio.rest.acq.model.AcquisitionMethod;
@@ -874,7 +875,11 @@ public class Mapper {
     Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.LOCATION))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> location.setLocationId((String) o))
+        .thenAccept(o -> {
+          LocationTranslationResult locationTranslation = (LocationTranslationResult) o;
+          location.setLocationId(locationTranslation.locationId());
+          location.setTenantId(locationTranslation.tenantId());
+        })
         .exceptionally(Mapper::logException)));
 
     // A GOBI order can only be one of the below type per order, hence the total
