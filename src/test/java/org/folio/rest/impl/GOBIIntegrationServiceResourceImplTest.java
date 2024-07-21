@@ -997,6 +997,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     private static final String NAME = "name";
     private static final String ID = "id";
+    private static final String TENANT_ID = "tenantId";
     private static final String TOTAL_RECORDS = "totalRecords";
     private static final Logger logger = LogManager.getLogger(MockServer.class);
     private static final Random rand = new Random(System.nanoTime());
@@ -1157,17 +1158,12 @@ public class GOBIIntegrationServiceResourceImplTest {
       logger.info("got location request: {}", ctx.request().query());
 
       JsonObject locations = new JsonObject();
-      if (ctx.request().query().contains("HUM")) {
-        locations.put("locations", new JsonArray())
-          .put(TOTAL_RECORDS, 0);
-      }
-      else {
-        locations.put("locations", new JsonArray()
+      locations.put("locations", new JsonArray()
           .add(new JsonObject()
             .put(ID, randomUUID().toString())
-            .put("code", ctx.queryParam("query").get(0).split("=")[1])))
+            .put(TENANT_ID, randomUUID().toString())
+            .put("code", "KU/CC/DI/O")))
         .put(TOTAL_RECORDS, 1);
-      }
 
       addServerRqRsData(HttpMethod.GET, LOCATION, locations);
 

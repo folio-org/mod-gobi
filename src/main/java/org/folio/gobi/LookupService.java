@@ -71,9 +71,7 @@ public class LookupService {
    */
   public CompletableFuture<LocationTranslationResult> lookupLocationId(String location) {
     logger.debug("lookupLocationId:: Trying to look up locationId by location '{}'", location);
-    String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
-    String endpoint = String.format(LOCATIONS_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
+    return restClient.handleGetRequest(LOCATIONS_ENDPOINT).toCompletionStage().toCompletableFuture()
       .thenCompose(locations -> {
         JsonArray jsonArray = locations.getJsonArray("locations");
         for (int i = 0; i < jsonArray.size(); i++) {
