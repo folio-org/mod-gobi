@@ -71,7 +71,7 @@ public class LookupService {
    */
   public CompletableFuture<LocationTranslationResult> lookupLocationId(String location) {
     logger.debug("lookupLocationId:: Trying to look up locationId by location '{}'", location);
-    return restClient.handleGetRequest(LOCATIONS_ENDPOINT).toCompletionStage().toCompletableFuture()
+    return restClient.handleGetRequest(LOCATIONS_ENDPOINT + "?limit=1000").toCompletionStage().toCompletableFuture()
       .thenCompose(locations -> {
         JsonArray jsonArray = locations.getJsonArray("locations");
         for (int i = 0; i < jsonArray.size(); i++) {
