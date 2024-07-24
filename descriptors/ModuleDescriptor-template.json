@@ -40,7 +40,6 @@
             "orders.item.put",
             "inventory-storage.contributor-name-types.collection.get",
             "inventory-storage.material-types.collection.get",
-            "inventory-storage.locations.collection.get",
             "inventory-storage.identifier-types.collection.get",
             "inventory.items.item.get",
             "organizations-storage.organizations.collection.get",
@@ -168,10 +167,6 @@
     {
       "id": "material-types",
       "version": "2.2"
-    },
-    {
-      "id": "locations",
-      "version": "3.0"
     },
     {
       "id": "organizations-storage.organizations",
