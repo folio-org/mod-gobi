@@ -63,35 +63,33 @@ public class LookupService {
     this.restClient = restClient;
   }
   /**
-   * Use the provided location code. if one isn't provided, or the specified
+   * Use the provided location code.
+   * If one isn't provided, or the specified
    * type can't be found, fallback using the first one listed
    *
-   * @param location
-   * @return UUID of the location
+   * @param locationCode code of location object
+   * @return UUID of the location object
    */
-  public CompletableFuture<LocationTranslationResult> lookupLocationId(String location) {
-    logger.debug("lookupLocationId:: Trying to look up locationId by location '{}'", location);
-    return restClient.handleGetRequest(LOCATIONS_ENDPOINT + "?limit=1000").toCompletionStage().toCompletableFuture()
+  public CompletableFuture<LocationTranslationResult> lookupLocationId(String locationCode) {
+    logger.debug("lookupLocationId:: Trying to look up locationId by location '{}'", locationCode);
+    return restClient.handleGetRequest(LOCATIONS_ENDPOINT).toCompletionStage().toCompletableFuture()
       .thenCompose(locations -> {
-        JsonArray jsonArray = locations.getJsonArray("locations");
-        for (int i = 0; i < jsonArray.size(); i++) {
-          JsonObject locationObject = jsonArray.getJsonObject(i);
-          if (location != null && location.equals(locationObject.getString("code"))) {
-
+        JsonArray locationsJsonArray = locations.getJsonArray("locations");
+        for (int i = 0; i < locationsJsonArray.size(); i++) {
+          JsonObject locationObject = locationsJsonArray.getJsonObject(i);
+          if (locationCode != null && locationCode.equals(locationObject.getString("code"))) {
             String locationId = locationObject.getString("id");
             String tenantId = locationObject.getString("tenantId");
-
             logger.info("lookupLocationId:: found id: {}, tenant: {}", locationId, tenantId);
             return completedFuture(new LocationTranslationResult(locationId, tenantId));
-
           }
         }
 
-        logger.warn("lookupLocationId:: Location '{}' not found", location);
+        logger.warn("lookupLocationId:: Location '{}' not found", locationCode);
         return completedFuture(null);
       })
       .exceptionally(t -> {
-        logger.error("Error while searching for location '{}'", location, t);
+        logger.error("Error while searching for location '{}'", locationCode, t);
         return null;
       });
   }
