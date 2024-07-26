@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -238,8 +239,7 @@ public class Mapper {
                 })
                 .exceptionally(Mapper::logException));
 
-            if (compPo.getCompositePoLines()
-              .get(0)
+            if (compPo.getCompositePoLines().get(0)
               .getOrderFormat()
               .equals(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE)) {
               Optional.ofNullable(organization.getExpectedActivationInterval())
@@ -877,8 +877,12 @@ public class Mapper {
       .ifPresent(field -> futures.add(field.resolve(doc)
         .thenAccept(o -> {
           LocationTranslationResult locationTranslation = (LocationTranslationResult) o;
-          location.setLocationId(locationTranslation.locationId());
-          location.setTenantId(locationTranslation.tenantId());
+          if (Objects.isNull(locationTranslation)) {
+            logger.warn("mapLocation:: LocationTranslation is null");
+          } else {
+            location.setLocationId(locationTranslation.locationId());
+            location.setTenantId(locationTranslation.tenantId());
+          }
         })
         .exceptionally(Mapper::logException)));
 
@@ -1022,6 +1026,10 @@ public class Mapper {
   }
 
   public static List<String> splitStringIntoList(String tags, String delimiter) {
+    if (tags == null) {
+      logger.warn("splitStringIntoList:: tags is null");
+      return Collections.emptyList();
+    }
     return Stream.of(tags.split(delimiter))
       .collect(Collectors.toList());
   }

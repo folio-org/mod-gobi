@@ -134,7 +134,7 @@ public class DataSourceResolver {
         }
       } else {
         if (translateDefValue) {
-          return applyTranslation(defValue.toString());
+          return defValue != null ? applyTranslation(defValue.toString()) : CompletableFuture.completedFuture(null);
         } else {
           return CompletableFuture.completedFuture(defValue);
         }
