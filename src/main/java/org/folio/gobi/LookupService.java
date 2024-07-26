@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.gobi.domain.LocationTranslationResult;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.Organization;
@@ -62,28 +63,33 @@ public class LookupService {
     this.restClient = restClient;
   }
   /**
-   * Use the provided location code. if one isn't provided, or the specified
+   * Use the provided location code.
+   * If one isn't provided, or the specified
    * type can't be found, fallback using the first one listed
    *
-   * @param location
-   * @return UUID of the location
+   * @param locationCode code of location object
+   * @return UUID of the location object
    */
-  public CompletableFuture<String> lookupLocationId(String location) {
-    logger.debug("lookupLocationId:: Trying to look up locationId by location '{}'", location);
-    String query = HelperUtils.encodeValue(String.format(CQL_CODE_STRING_FMT, location));
-    String endpoint = String.format(LOCATIONS_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
+  public CompletableFuture<LocationTranslationResult> lookupLocationId(String locationCode) {
+    logger.debug("lookupLocationId:: Trying to look up locationId by location '{}'", locationCode);
+    return restClient.handleGetRequest(LOCATIONS_ENDPOINT).toCompletionStage().toCompletableFuture()
       .thenCompose(locations -> {
-        String locationId = HelperUtils.extractLocationId(locations);
-        if (StringUtils.isEmpty(locationId)) {
-          logger.warn("lookupLocationId:: Location '{}' not found", location);
-          return completedFuture(null);
+        JsonArray locationsJsonArray = locations.getJsonArray("locations");
+        for (int i = 0; i < locationsJsonArray.size(); i++) {
+          JsonObject locationObject = locationsJsonArray.getJsonObject(i);
+          if (locationCode != null && locationCode.equals(locationObject.getString("code"))) {
+            String locationId = locationObject.getString("id");
+            String tenantId = locationObject.getString("tenantId");
+            logger.info("lookupLocationId:: found id: {}, tenant: {}", locationId, tenantId);
+            return completedFuture(new LocationTranslationResult(locationId, tenantId));
+          }
         }
-        logger.info("lookupLocationId:: found location id: {}", locationId);
-        return completedFuture(locationId);
+
+        logger.warn("lookupLocationId:: Location '{}' not found", locationCode);
+        return completedFuture(null);
       })
       .exceptionally(t -> {
-        logger.error("Error while searching for location '{}'", location, t);
+        logger.error("Error while searching for location '{}'", locationCode, t);
         return null;
       });
   }

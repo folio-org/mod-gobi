@@ -3,6 +3,7 @@ package org.folio.gobi;
 import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.EXCHANGE_RATE;
 import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.LOCATION;
 import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
 import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
@@ -28,8 +29,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.gobi.domain.LocationTranslationResult;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.acq.model.Location;
 import org.folio.rest.jaxrs.model.DataSource.Translation;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
@@ -115,6 +118,40 @@ public class MappingTest {
       DataSourceResolver.builder().withFrom("//Zap").withTranslation(Translation.TO_DOUBLE).build().resolve(doc).get());
     assertEquals(90210,
       DataSourceResolver.builder().withFrom("//Zip").withTranslation(Translation.TO_INTEGER).build().resolve(doc).get());
+  }
+
+  @Test
+  void testLocationTranslation() throws Exception {
+    //Given
+    LookupService lookupService = Mockito.mock(LookupService.class);
+    String locationId = UUID.randomUUID().toString();
+    String tenantId = UUID.randomUUID().toString();
+    Mockito.doReturn(CompletableFuture.completedFuture(new LocationTranslationResult(locationId, tenantId)))
+      .when(lookupService).lookupLocationId(eq("locationCode"));
+
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
+
+    String actualListedPrintJson = MappingHelper.readMappingsFile(MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
+      .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
+
+    String locationFrom = fieldMappingMap.get(LOCATION).get(0).getDataSource().getFrom();
+
+    Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
+    mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withLookupService(lookupService).withDefault("Physical Resource").build());
+    mappings.put(LOCATION,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(locationFrom).withTranslation(Translation.LOOKUP_LOCATION_ID).build());
+
+    //When
+    Mapper mapper = new Mapper(lookupService);
+    var bindingResult = mapper.map(mappings, gobiOrder).get();
+    CompositePurchaseOrder compPO = bindingResult.getResult();
+    CompositePoLine pol = compPO.getCompositePoLines().get(0);
+
+    //Then
+    Location location = pol.getLocations().get(0);
+    assertEquals(locationId, location.getLocationId());
+    assertEquals(tenantId, location.getTenantId());
   }
 
   @Test

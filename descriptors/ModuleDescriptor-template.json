@@ -40,7 +40,6 @@
             "orders.item.put",
             "inventory-storage.contributor-name-types.collection.get",
             "inventory-storage.material-types.collection.get",
-            "inventory-storage.locations.collection.get",
             "inventory-storage.identifier-types.collection.get",
             "inventory.items.item.get",
             "organizations-storage.organizations.collection.get",
@@ -50,7 +49,8 @@
             "orders.acquisition-methods.collection.get",
             "orders.item.approve",
             "orders.acquisitions-units-assignments.assign",
-            "orders.acquisitions-units-assignments.manage"
+            "orders.acquisitions-units-assignments.manage",
+            "consortium-search.locations.collection.get"
           ]
         }
       ]
@@ -169,10 +169,6 @@
       "version": "2.2"
     },
     {
-      "id": "locations",
-      "version": "3.0"
-    },
-    {
       "id": "organizations-storage.organizations",
       "version": "3.1"
     },
@@ -195,6 +191,10 @@
     {
       "id": "acquisitions-units",
       "version": "1.1"
+    },
+    {
+      "id": "consortium-search",
+      "version": "1.2"
     }
   ],
   "permissionSets": [

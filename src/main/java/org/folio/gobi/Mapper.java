@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -31,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.domain.BindingResult;
+import org.folio.gobi.domain.LocationTranslationResult;
 import org.folio.isbn.IsbnUtil;
 import org.folio.rest.acq.model.Account;
 import org.folio.rest.acq.model.AcquisitionMethod;
@@ -237,8 +239,7 @@ public class Mapper {
                 })
                 .exceptionally(Mapper::logException));
 
-            if (compPo.getCompositePoLines()
-              .get(0)
+            if (compPo.getCompositePoLines().get(0)
               .getOrderFormat()
               .equals(CompositePoLine.OrderFormat.ELECTRONIC_RESOURCE)) {
               Optional.ofNullable(organization.getExpectedActivationInterval())
@@ -874,7 +875,15 @@ public class Mapper {
     Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.LOCATION))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> location.setLocationId((String) o))
+        .thenAccept(o -> {
+          LocationTranslationResult locationTranslation = (LocationTranslationResult) o;
+          if (Objects.isNull(locationTranslation)) {
+            logger.warn("mapLocation:: LocationTranslation is null");
+          } else {
+            location.setLocationId(locationTranslation.locationId());
+            location.setTenantId(locationTranslation.tenantId());
+          }
+        })
         .exceptionally(Mapper::logException)));
 
     // A GOBI order can only be one of the below type per order, hence the total
@@ -1017,6 +1026,10 @@ public class Mapper {
   }
 
   public static List<String> splitStringIntoList(String tags, String delimiter) {
+    if (tags == null) {
+      logger.warn("splitStringIntoList:: tags is null");
+      return Collections.emptyList();
+    }
     return Stream.of(tags.split(delimiter))
       .collect(Collectors.toList());
   }

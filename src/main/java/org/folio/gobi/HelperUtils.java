@@ -18,10 +18,6 @@ public final class HelperUtils {
   private HelperUtils() {
   }
 
-  public static String extractLocationId(JsonObject obj) {
-    return extractIdOfFirst(obj, "locations");
-  }
-
   public static String extractMaterialTypeId(JsonObject obj) {
     return extractIdOfFirst(obj, "mtypes");
   }
