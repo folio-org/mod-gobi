@@ -18,6 +18,7 @@ import static org.folio.rest.ResourcePaths.PREFIXES_ENDPOINT;
 import static org.folio.rest.ResourcePaths.SUFFIXES_ENDPOINT;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -77,14 +78,14 @@ public class LookupService {
         JsonArray locationsJsonArray = locations.getJsonArray("locations");
         for (int i = 0; i < locationsJsonArray.size(); i++) {
           JsonObject locationObject = locationsJsonArray.getJsonObject(i);
-          if (locationCode != null && locationCode.equals(locationObject.getString("code"))) {
+          String code = locationObject.getString("code");
+          if (Objects.equals(locationCode, code) || DEFAULT_LOOKUP_CODE.equals(locationCode)) {
             String locationId = locationObject.getString("id");
             String tenantId = locationObject.getString("tenantId");
             logger.info("lookupLocationId:: found id: {}, tenant: {}", locationId, tenantId);
             return completedFuture(new LocationTranslationResult(locationId, tenantId));
           }
         }
-
         logger.warn("lookupLocationId:: Location '{}' not found", locationCode);
         return completedFuture(null);
       })
