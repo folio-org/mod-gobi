@@ -56,11 +56,14 @@
     <raml-module-builder.version>35.2.0</raml-module-builder.version>
     <java.version>17</java.version>
     <vertx.version>4.5.4</vertx.version>
-    <mod-configuration-client.version>5.10.0</mod-configuration-client.version>
     <log4j.version>2.23.0</log4j.version>
     <aspectj.version>1.9.21.1</aspectj.version>
     <jackson-bom.version>2.15.2</jackson-bom.version>
     <tomakehurst-wiremock.version>3.0.1</tomakehurst-wiremock.version>
+
+    <!--Folio dependencies properties-->
+    <mod-configuration-client.version>5.10.0</mod-configuration-client.version>
+    <folio-module-descriptor-validator.version>1.0.0</folio-module-descriptor-validator.version>
 
     <!--Maven plugin properties-->
     <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
@@ -178,6 +181,7 @@
       <artifactId>mod-configuration-client</artifactId>
       <version>${mod-configuration-client.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
@@ -707,6 +711,18 @@
             -Duser.language=en -Duser.region=US
           </argLine>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.folio</groupId>
+        <artifactId>folio-module-descriptor-validator</artifactId>
+        <version>${folio-module-descriptor-validator.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>validate</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

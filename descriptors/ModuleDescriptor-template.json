@@ -12,7 +12,7 @@
           ],
           "pathPattern": "/gobi/validate",
           "permissionsRequired": [
-            "gobi.item.post"
+            "gobi.validate.item.get"
           ]
         },
         {
@@ -21,7 +21,7 @@
           ],
           "pathPattern": "/gobi/validate",
           "permissionsRequired": [
-            "gobi.item.post"
+            "gobi.validate.item.post"
           ]
         },
         {
@@ -30,7 +30,7 @@
           ],
           "pathPattern": "/gobi/orders",
           "permissionsRequired": [
-            "gobi.item.post"
+            "gobi.orders.item.post"
           ],
           "modulePermissions": [
             "acquisitions-units.units.collection.get",
@@ -199,7 +199,17 @@
   ],
   "permissionSets": [
     {
-      "permissionName": "gobi.item.post",
+      "permissionName": "gobi.validate.item.get",
+      "displayName": "gobi - post order",
+      "description": "Creates an order"
+    },
+    {
+      "permissionName": "gobi.validate.item.post",
+      "displayName": "gobi - post order",
+      "description": "Creates an order"
+    },
+    {
+      "permissionName": "gobi.orders.item.post",
       "displayName": "gobi - post order",
       "description": "Creates an order"
     },
