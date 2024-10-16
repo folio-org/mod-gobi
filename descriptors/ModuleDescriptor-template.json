@@ -12,7 +12,7 @@
           ],
           "pathPattern": "/gobi/validate",
           "permissionsRequired": [
-            "gobi.item.post"
+            "gobi.validate.item.get"
           ]
         },
         {
@@ -21,7 +21,7 @@
           ],
           "pathPattern": "/gobi/validate",
           "permissionsRequired": [
-            "gobi.item.post"
+            "gobi.validate.item.post"
           ]
         },
         {
@@ -30,7 +30,7 @@
           ],
           "pathPattern": "/gobi/orders",
           "permissionsRequired": [
-            "gobi.item.post"
+            "gobi.orders.item.post"
           ],
           "modulePermissions": [
             "acquisitions-units.units.collection.get",
@@ -199,7 +199,17 @@
   ],
   "permissionSets": [
     {
-      "permissionName": "gobi.item.post",
+      "permissionName": "gobi.validate.item.get",
+      "displayName": "gobi validate item",
+      "description": "Get a validated order item"
+    },
+    {
+      "permissionName": "gobi.validate.item.post",
+      "displayName": "gobi - validate item",
+      "description": "Validate an order item"
+    },
+    {
+      "permissionName": "gobi.orders.item.post",
       "displayName": "gobi - post order",
       "description": "Creates an order"
     },
@@ -260,7 +270,9 @@
       "displayName": "gobi - all permissions",
       "description": "Entire set of permissions needed to use gobi",
       "subPermissions": [
-        "gobi.item.post",
+        "gobi.validate.item.get",
+        "gobi.validate.item.post",
+        "gobi.orders.item.post",
         "gobi.orders.mappings.all",
         "gobi.custom-mappings.all"
       ]
