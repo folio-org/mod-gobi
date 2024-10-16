@@ -200,13 +200,13 @@
   "permissionSets": [
     {
       "permissionName": "gobi.validate.item.get",
-      "displayName": "gobi - post order",
-      "description": "Creates an order"
+      "displayName": "gobi validate item",
+      "description": "Get a validated order item"
     },
     {
       "permissionName": "gobi.validate.item.post",
-      "displayName": "gobi - post order",
-      "description": "Creates an order"
+      "displayName": "gobi - validate item",
+      "description": "Validate an order item"
     },
     {
       "permissionName": "gobi.orders.item.post",
@@ -270,7 +270,9 @@
       "displayName": "gobi - all permissions",
       "description": "Entire set of permissions needed to use gobi",
       "subPermissions": [
-        "gobi.item.post",
+        "gobi.validate.item.get",
+        "gobi.validate.item.post",
+        "gobi.orders.item.post",
         "gobi.orders.mappings.all",
         "gobi.custom-mappings.all"
       ]
