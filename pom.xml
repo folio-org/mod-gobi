@@ -62,7 +62,7 @@
     <tomakehurst-wiremock.version>3.0.1</tomakehurst-wiremock.version>
 
     <!--Folio dependencies properties-->
-    <mod-configuration-client.version>5.10.0</mod-configuration-client.version>
+    <mod-configuration-client.version>5.11.0</mod-configuration-client.version>
     <folio-module-descriptor-validator.version>1.0.0</folio-module-descriptor-validator.version>
 
     <!--Maven plugin properties-->
