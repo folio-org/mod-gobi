@@ -1,4 +1,30 @@
-## 2.9.0 - Unreleased
+## 3.0.0 - Unreleased
+
+## 2.9.0 - Released (Ramson R2 2024)
+The primary focus of this release was to update location translation and dependencies
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.8.0...v2.9.0)
+
+### Breaking changes
+Introduced new permissions for the module instead of `gobi.item.post`:
+* `gobi.validate.item.get` for GET `/gobi/validate`
+* `gobi.validate.item.post` for POST `/gobi/validate`
+* `gobi.orders.item.post` for POST `/gobi/orders`
+
+Before (v2.8.0):
+* `gobi.item.post` for GET `/gobi/validate`
+* `gobi.item.post` for POST `/gobi/validate`
+* `gobi.item.post` for POST `/gobi/orders`
+
+### Stories
+* [MODBOGI-214] (https://folio-org.atlassian.net/browse/MODGOBI-214) - Update libraries of dependant acq modules to the latest versions
+* [MODBOGI-212] (https://folio-org.atlassian.net/browse/MODGOBI-212) - Review and cleanup Module Descriptors for mod-gobi
+* [MODGOBI-209] (https://folio-org.atlassian.net/browse/MODGOBI-209) - Update location translation for central ordering
+
+### Dependencies
+* Bump `raml` from `35.2.0` to `35.3.0`
+* Added `folio-module-descriptor-validator` version `1.0.0`
+
 
 ## 2.8.0 - Released (Quesnelia R1 2024)
 The primary focus of this release was to update custom mappings loading and library versions  
