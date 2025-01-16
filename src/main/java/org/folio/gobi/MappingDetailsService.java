@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,6 +83,12 @@ public class MappingDetailsService {
   }
 
   public List<OrderMappings.OrderType> retrieveMappingsTypes() {
-    return List.of(OrderMappings.OrderType.values());
+    return Arrays.stream(OrderMappings.OrderType.values())
+      .filter(type ->
+        !type.equals(OrderMappings.OrderType.LISTED_PRINT_SERIAL)
+          && !type.equals(OrderMappings.OrderType.LISTED_ELECTRONIC_SERIAL)
+          && !type.equals(OrderMappings.OrderType.UNLISTED_PRINT_SERIAL)
+      )
+      .toList();
   }
 }
