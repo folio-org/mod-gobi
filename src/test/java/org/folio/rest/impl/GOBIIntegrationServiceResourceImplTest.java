@@ -255,6 +255,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
+    compPO.getCompositePoLines().get(0).withDescription("test");
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
 
@@ -262,7 +263,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
     assertEquals("9781410352224",compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
 
-    assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
+    assertFalse(compPO.getCompositePoLines().get(0).getDescription().isEmpty());
 
     logger.info("End: Testing for 201 - posted order listed electronic monograph");
   }
