@@ -2,12 +2,6 @@
       "orderType": "ListedPrintMonograph",
       "mappings": [
         {
-          "field": "ACCESS_PROVIDER",
-          "dataSource": {
-            "from": "//PurchaseOption/VendorPOCode"
-          }
-        },
-        {
           "field": "ACQUISITION_METHOD",
           "dataSource": {
             "default": "Purchase At Vendor System"
