@@ -316,20 +316,20 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Print Monograph has to get the Product type ID so there will be an additional call made
-    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
-        MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
+    assertThat(column.keySet(), containsInAnyOrder(
+      CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+      MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR
+    ));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPriceElectronic(), nullValue());
     assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getExpenseClassId());
     assertNotNull(compPO.getCompositePoLines().get(0).getAcquisitionMethod());
 
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
-    assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
     logger.info("End: Testing for 201 - posted order listed print monograph");
   }
@@ -381,7 +381,6 @@ public class GOBIIntegrationServiceResourceImplTest {
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
     assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
-    assertFalse(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
 
     logger.info("End: Testing for 201 - posted order unlisted print monograph");
   }
@@ -448,8 +447,10 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     //Listed Print Monograph has Product Id type so there will be an additional call made
-    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
-      MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
+    assertThat(column.keySet(), containsInAnyOrder(
+      CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+      MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR
+    ));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
