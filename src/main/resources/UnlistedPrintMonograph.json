@@ -241,22 +241,6 @@
           "dataSource": {
             "default": "Open"
           }
-        },
-        {
-          "field": "ACCESS_PROVIDER",
-          "dataSource": {}
-        },
-        {
-          "field": "SELECTOR",
-          "dataSource": {
-            "from": "//Initials"
-          }
-        },
-        {
-          "field": "PO_LINE_DESCRIPTION",
-          "dataSource": {
-            "from": "//PurchaseOption/Description"
-          }
         }
       ]
     }
