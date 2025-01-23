@@ -275,6 +275,20 @@
           "dataSource": {
             "default": "Open"
           }
+        },
+        {
+          "field": "SELECTOR",
+          "dataSource": {
+            "from": "//Initials",
+            "dataSourceFieldName": "Custom Path"
+          }
+        },
+        {
+          "field": "PO_LINE_DESCRIPTION",
+          "dataSource": {
+            "from": "//PurchaseOption/Description",
+            "dataSourceFieldName": "Custom Path"
+          }
         }
       ]
     }
