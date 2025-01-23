@@ -2,10 +2,6 @@
       "orderType": "ListedElectronicMonograph",
       "mappings": [
         {
-          "field": "ACCESS_PROVIDER",
-          "dataSource": {}
-        },
-        {
           "field": "ACQUISITION_METHOD",
           "dataSource": {
             "default": "Purchase At Vendor System"
