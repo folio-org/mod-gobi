@@ -114,7 +114,7 @@
           "field": "MATERIAL_TYPE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData1']/Value",
-            "default" : "unspecified",
+            "default": "Book",
             "translation": "lookupMaterialTypeId",
             "translateDefault": true
           }
@@ -166,7 +166,7 @@
         {
           "field": "RECEIVING_NOTE",
           "dataSource": {
-            "from": "//LocalData[Description='LocalData2']/Value"
+            "from": "//LocalData[Description='LocalData4']/Value"
           }
         },
         {
@@ -221,7 +221,7 @@
           "field": "VENDOR_INSTRUCTIONS",
           "dataSource": {
             "from": "//OrderNotes",
-            "default" : "N/A"
+            "default": "N/A"
           }
         },
         {
@@ -240,6 +240,22 @@
           "field": "WORKFLOW_STATUS",
           "dataSource": {
             "default": "Open"
+          }
+        },
+        {
+          "field": "ACCESS_PROVIDER",
+          "dataSource": {}
+        },
+        {
+          "field": "SELECTOR",
+          "dataSource": {
+            "from": "//Initials"
+          }
+        },
+        {
+          "field": "PO_LINE_DESCRIPTION",
+          "dataSource": {
+            "from": "//PurchaseOption/Description"
           }
         }
       ]

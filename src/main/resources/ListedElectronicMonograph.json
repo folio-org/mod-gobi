@@ -3,10 +3,7 @@
       "mappings": [
         {
           "field": "ACCESS_PROVIDER",
-          "dataSource": {
-            "from": "//PurchaseOption/VendorPOCode",
-            "translation": "lookupOrganization"
-          }
+          "dataSource": {}
         },
         {
           "field": "ACQUISITION_METHOD",
@@ -126,12 +123,11 @@
           }
         },
         {
-          "field": "MATERIAL_TYPE",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData1']/Value",
-            "default": "unspecified",
-            "translation": "lookupMaterialTypeId",
-            "translateDefault": true
+          "field" : "MATERIAL_TYPE",
+          "dataSource" : {
+            "translation" : "lookupMaterialTypeId",
+            "translateDefault" : true,
+            "default" : "E-book"
           }
         },
         {
@@ -207,9 +203,10 @@
           }
         },
         {
-          "field": "RECEIVING_NOTE",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData2']/Value"
+          "field" : "RECEIVING_NOTE",
+          "dataSource" : {
+            "from" : "//LocalData[Description='LocalData4']/Value",
+            "dataSourceFieldName" : "Local Data 4"
           }
         },
         {
@@ -222,12 +219,6 @@
           "field": "SOURCE",
           "dataSource": {
             "default": "API"
-          }
-        },
-        {
-          "field": "TAGS",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData4']/Value"
           }
         },
         {
@@ -291,6 +282,20 @@
           "field": "WORKFLOW_STATUS",
           "dataSource": {
             "default": "Open"
+          }
+        },
+        {
+          "field": "SELECTOR",
+          "dataSource": {
+            "from": "//Initials",
+            "dataSourceFieldName": "Custom Path"
+          }
+        },
+        {
+          "field": "PO_LINE_DESCRIPTION",
+          "dataSource": {
+            "from": "//PurchaseOption/Description",
+            "dataSourceFieldName": "Custom Path"
           }
         }
       ]

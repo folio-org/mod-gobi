@@ -128,7 +128,7 @@
           "field": "MATERIAL_TYPE",
           "dataSource": {
             "from": "//LocalData[Description='LocalData1']/Value",
-            "default" : "unspecified",
+            "default" : "Book",
             "translation": "lookupMaterialTypeId",
             "translateDefault": true
           }
@@ -208,7 +208,7 @@
         {
           "field": "RECEIVING_NOTE",
           "dataSource": {
-            "from": "//LocalData[Description='LocalData2']/Value"
+            "from": "//LocalData[Description='LocalData4']/Value"
           }
         },
         {
@@ -255,8 +255,7 @@
         {
           "field": "VENDOR_ACCOUNT",
           "dataSource": {
-            "from": "//SubAccount",
-            "default": "0"
+            "from": "//SubAccount"
           }
         },
         {
