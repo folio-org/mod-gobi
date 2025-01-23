@@ -29,5 +29,8 @@ public class MappingDetailsServiceTest {
   void givenCollectionMappingTypes() {
     List<OrderMappings.OrderType> types = mappingDetailsService.retrieveMappingsTypes();
     assertFalse(types.isEmpty());
+    assertFalse(types.contains(OrderMappings.OrderType.LISTED_ELECTRONIC_SERIAL));
+    assertFalse(types.contains(OrderMappings.OrderType.LISTED_PRINT_SERIAL));
+    assertFalse(types.contains(OrderMappings.OrderType.UNLISTED_PRINT_SERIAL));
   }
 }
