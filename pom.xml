@@ -42,6 +42,10 @@
   </licenses>
 
   <properties>
+    <java.version>21</java.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+
     <!--Project properties-->
     <module_name>mod-gobi</module_name>
     <http.port>8081</http.port>
@@ -54,8 +58,7 @@
 
     <!--Dependency Properties-->
     <raml-module-builder.version>35.3.0</raml-module-builder.version>
-    <java.version>17</java.version>
-    <vertx.version>4.5.10</vertx.version>
+    <vertx.version>4.5.13</vertx.version>
     <log4j.version>2.24.1</log4j.version>
     <aspectj.version>1.9.22.1</aspectj.version>
     <jackson-bom.version>2.18.0</jackson-bom.version>
@@ -67,19 +70,19 @@
 
     <!--Maven plugin properties-->
     <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
-    <exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
+    <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
     <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
-    <maven-surefire-plugin.version>3.5.1 </maven-surefire-plugin.version>
+    <maven-surefire-plugin.version>3.5.2 </maven-surefire-plugin.version>
     <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jsonschema2pojo-maven-plugin.version>1.2.2</jsonschema2pojo-maven-plugin.version>
 
     <!--Test Scope dependencies-->
-    <rest-assured.version>5.5.0</rest-assured.version>
+    <rest-assured.version>5.5.1</rest-assured.version>
     <jmockit.version>1.49</jmockit.version>
     <junit-jupiter.version>5.11.2</junit-jupiter.version>
 
