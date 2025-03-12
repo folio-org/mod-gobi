@@ -1,6 +1,22 @@
-## 3.0.0 - Unreleased
+## 3.1.0 - Unreleased
 
-## 2.9.0 - Released (Ramson R2 2024)
+## 3.0.0 - (Sunflower R1 2025)
+The primary focus of this release was to simplify mappings and do dependencies upgrade including Java 21
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.9.0...v3.0.0)
+
+### Stories
+* [MODBOGI-211] (https://folio-org.atlassian.net/browse/MODGOBI-211) - Invalid entry in mapping causes process to try to use default mapping which generally has errors
+* [FOLIO-4208] (https://folio-org.atlassian.net/browse/FOLIO-4208) - Update to mod-gobi Java 21
+
+### Dependencies
+* Bump `java` from `17` to `21`
+* Bump `raml` from `35.3.0` to `35.4.0`
+* Bump `vertx` from `4.5.10` to `4.5.13`
+* Bump `log4j` from `2.24.1` to `2.24.3`
+* Bump `rest-assured` from `5.5.0` to `5.5.1`
+
+## 2.9.0 - Released (Ramsons R2 2024)
 The primary focus of this release was to update location translation and dependencies
 
 [Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.8.0...v2.9.0)
