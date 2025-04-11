@@ -30,9 +30,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.domain.LocationTranslationResult;
-import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.acq.model.Location;
+import org.folio.rest.acq.model.PoLine;
 import org.folio.rest.jaxrs.model.DataSource.Translation;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
@@ -146,7 +146,7 @@ public class MappingTest {
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    CompositePoLine pol = compPO.getCompositePoLines().get(0);
+    PoLine pol = compPO.getPoLines().get(0);
 
     //Then
     Location location = pol.getLocations().get(0);
@@ -203,9 +203,9 @@ public class MappingTest {
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    CompositePoLine pol = compPO.getCompositePoLines().get(0);
+    PoLine pol = compPO.getPoLines().get(0);
     //Then
-    assertThat(pol.getOrderFormat(), is(CompositePoLine.OrderFormat.PHYSICAL_RESOURCE));
+    assertThat(pol.getOrderFormat(), is(PoLine.OrderFormat.PHYSICAL_RESOURCE));
     assertThat(compPO.getPoNumberSuffix(), equalTo(sufId));
     assertThat(compPO.getPoNumberPrefix(), equalTo(prefId));
     assertThat(compPO.getBillTo(), equalTo(vendorId));
@@ -252,9 +252,9 @@ public class MappingTest {
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    CompositePoLine pol = compPO.getCompositePoLines().get(0);
+    PoLine pol = compPO.getPoLines().get(0);
     //Then
-    assertThat(pol.getOrderFormat(), is(CompositePoLine.OrderFormat.PHYSICAL_RESOURCE));
+    assertThat(pol.getOrderFormat(), is(PoLine.OrderFormat.PHYSICAL_RESOURCE));
     assertThat(compPO.getWorkflowStatus(), equalTo(CompositePurchaseOrder.WorkflowStatus.PENDING));
     assertNotNull(bindingResult.getError(PREFIX));
   }
@@ -297,9 +297,9 @@ public class MappingTest {
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    CompositePoLine pol = compPO.getCompositePoLines().get(0);
+    PoLine pol = compPO.getPoLines().get(0);
     //Then
-    assertThat(pol.getOrderFormat(), is(CompositePoLine.OrderFormat.PHYSICAL_RESOURCE));
+    assertThat(pol.getOrderFormat(), is(PoLine.OrderFormat.PHYSICAL_RESOURCE));
     assertThat(compPO.getWorkflowStatus(), equalTo(CompositePurchaseOrder.WorkflowStatus.PENDING));
     assertNotNull(bindingResult.getError(PREFIX));
   }

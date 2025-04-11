@@ -205,7 +205,7 @@ public class PostGobiOrdersHelper {
       return restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
         .map(body -> {
           logger.info("Response from mod-orders: \n {}", body::encodePrettily);
-          return body.getJsonArray("compositePoLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
+          return body.getJsonArray("poLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
         })
         .toCompletionStage().toCompletableFuture();
     } catch (Exception e) {
@@ -226,7 +226,7 @@ public class PostGobiOrdersHelper {
         return CompletableFuture.completedFuture(compPO);
       })
       .thenCompose(compositePO -> {
-        String poLineNumber = compositePO.getCompositePoLines()
+        String poLineNumber = compositePO.getPoLines()
           .get(FIRST_ELEM)
           .getPoLineNumber();
         if (StringUtils.isEmpty(poLineNumber)) {
@@ -237,7 +237,7 @@ public class PostGobiOrdersHelper {
   }
 
   private CompletableFuture<Boolean> checkExistingOrder(CompositePurchaseOrder compPO) {
-    String vendorRefNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getVendorDetail().getReferenceNumbers().get(FIRST_ELEM).getRefNumber();
+    String vendorRefNumber = compPO.getPoLines().get(FIRST_ELEM).getVendorDetail().getReferenceNumbers().get(FIRST_ELEM).getRefNumber();
     logger.debug("checkExistingOrder:: Trying to look for existing order with Vendor Reference Number: {}", vendorRefNumber);
     String query = HelperUtils.encodeValue(String.format("poLine.vendorDetail.referenceNumbers=\"refNumber\" : \"%s\"", vendorRefNumber));
     String endpoint = String.format(ORDERS_ENDPOINT + QUERY, query);
@@ -276,12 +276,12 @@ public class PostGobiOrdersHelper {
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenCompose(order -> {
         CompositePurchaseOrder compPO = order.mapTo(CompositePurchaseOrder.class);
-        String poLineNumber = compPO.getCompositePoLines().get(FIRST_ELEM).getPoLineNumber();
+        String poLineNumber = compPO.getPoLines().get(FIRST_ELEM).getPoLineNumber();
         if (StringUtils.isEmpty(poLineNumber)) {
           logger.warn("getExistingOrderById:: No PO Line Number found for existing Order with ID: {}", compositePurchaseOrder.getId());
           return completedFuture(compositePurchaseOrder);
         }
-        compositePurchaseOrder.getCompositePoLines().get(FIRST_ELEM).setPoLineNumber(poLineNumber);
+        compositePurchaseOrder.getPoLines().get(FIRST_ELEM).setPoLineNumber(poLineNumber);
         return completedFuture(compositePurchaseOrder);
       })
       .exceptionally(t -> {

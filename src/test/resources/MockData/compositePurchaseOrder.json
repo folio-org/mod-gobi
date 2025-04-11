@@ -19,15 +19,12 @@
   "totalItems" : 1,
   "vendor" : "588b5c42-8634-4af7-bc9b-5e0116ed96b6",
   "workflowStatus" : "Open",
-  "compositePoLines" : [ {
+  "poLines" : [ {
     "id" : "0fe2ce39-1011-4316-bd2c-490ac57c78bf",
     "poLineNumber" : "PO_6733180275-1",
     "purchaseOrderId" : "22dd4cfb-3e46-41cb-a9bf-f4b2bfa0b991",
     "checkinItems" : false,
     "acquisitionMethod" : "306489dd-0053-49ee-a068-c316444a8f55",
-    "alerts" : [ {
-      "alert" : "Test Data"
-    } ],
     "cancellationRestrictionNote" : "Test Data",
     "claims" : [ {
       "claimed" : true,
@@ -79,10 +76,6 @@
     "poLineDescription" : "Description from Custom Mapping",
     "publisher" : "GALE ONLINE",
     "receiptStatus" : "Receipt Not Required",
-    "reportingCodes" : [ {
-      "code" : "TestReportingCode",
-      "description" : "Test Data"
-    } ],
     "selector" : "Test Data",
     "source" : "API",
     "tags": {

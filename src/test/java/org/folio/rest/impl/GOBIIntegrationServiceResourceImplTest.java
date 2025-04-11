@@ -41,8 +41,8 @@ import org.apache.logging.log4j.Logger;
 import org.folio.gobi.LookupService;
 import org.folio.rest.ResourcePaths;
 import org.folio.rest.RestVerticle;
-import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.acq.model.PoLine;
 import org.folio.rest.gobi.model.GobiResponse;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.hamcrest.Matchers;
@@ -255,15 +255,15 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    compPO.getCompositePoLines().get(0).withDescription("test");
+    compPO.getPoLines().get(0).withDescription("test");
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     //make sure that the qualifier field is empty
-    assertNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
-    assertEquals("9781410352224",compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
+    assertNull(compPO.getPoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
+    assertEquals("9781410352224",compPO.getPoLines().get(0).getDetails().getProductIds().get(0).getProductId());
 
-    assertFalse(compPO.getCompositePoLines().get(0).getDescription().isEmpty());
+    assertFalse(compPO.getPoLines().get(0).getDescription().isEmpty());
 
     logger.info("End: Testing for 201 - posted order listed electronic monograph");
   }
@@ -289,17 +289,17 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
      CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
      verifyRequiredFieldsAreMapped(compPO);
-    assertEquals("Description from Custom Mapping", compPO.getCompositePoLines().get(0).getPoLineDescription());
+    assertEquals("Description from Custom Mapping", compPO.getPoLines().get(0).getPoLineDescription());
     // verify if the currency specified in the request is used
-    assertEquals("GBP", compPO.getCompositePoLines().get(0).getCost().getCurrency());
+    assertEquals("GBP", compPO.getPoLines().get(0).getCost().getCurrency());
 
     // MODGOBI-61 - check createInventory populated for eresource only
-    assertNotNull(compPO.getCompositePoLines().get(0).getEresource().getCreateInventory());
-    assertNull(compPO.getCompositePoLines().get(0).getPhysical());
+    assertNotNull(compPO.getPoLines().get(0).getEresource().getCreateInventory());
+    assertNull(compPO.getPoLines().get(0).getPhysical());
 
     verifyRequiredFieldsAreMapped(compPO);
     assertFalse(compPO.getAcqUnitIds().isEmpty());
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for 201 - posted order listed electronic serial");
   }
@@ -323,13 +323,13 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPriceElectronic(), nullValue());
-    assertThat(compPO.getCompositePoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
-    assertNotNull(compPO.getCompositePoLines().get(0).getAcquisitionMethod());
+    assertThat(compPO.getPoLines().get(0).getCost().getListUnitPriceElectronic(), nullValue());
+    assertThat(compPO.getPoLines().get(0).getCost().getListUnitPrice(), equalTo(14.95));
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getAcquisitionMethod());
 
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for 201 - posted order listed print monograph");
   }
@@ -351,11 +351,11 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     // verify if default currency is used
-    assertEquals("USD", compPO.getCompositePoLines().get(0).getCost().getCurrency());
+    assertEquals("USD", compPO.getPoLines().get(0).getCost().getCurrency());
 
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
-    assertTrue(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertTrue(compPO.getPoLines().get(0).getTags().getTagList().isEmpty());
 
     logger.info("End: Testing for 201 - posted order listed print serial");
   }
@@ -380,7 +380,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for 201 - posted order unlisted print monograph");
   }
@@ -401,11 +401,11 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    assertEquals("USD", compPO.getCompositePoLines().get(0).getCost().getCurrency());
+    assertEquals("USD", compPO.getPoLines().get(0).getCost().getCurrency());
 
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
-    assertTrue(compPO.getCompositePoLines().get(0).getTags().getTagList().isEmpty());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertTrue(compPO.getPoLines().get(0).getTags().getTagList().isEmpty());
 
     logger.info("End: Testing for 201 - posted order unlisted print serial");
   }
@@ -455,7 +455,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for 201 - posted order listed print monograph");
   }
@@ -477,10 +477,10 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
-    assertEquals(UNSPECIFIED_MATERIAL_TYPE_ID, compPO.getCompositePoLines().get(0).getEresource().getMaterialType());
+    assertEquals(UNSPECIFIED_MATERIAL_TYPE_ID, compPO.getPoLines().get(0).getEresource().getMaterialType());
 
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for falling back to the unspecified material id, if a non existent code is sent");
   }
@@ -524,7 +524,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for falling back to the first location id, if a non existent code is sent");
   }
@@ -543,7 +543,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
     assertFalse(compPO.getAcqUnitIds().isEmpty());
 
     logger.info("End: Testing for falling back to the first location id, if a non existent code is sent");
@@ -568,7 +568,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     CompositePurchaseOrder compPO = postedOrder.get(0)
       .mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for falling back to the first product id, if a non existent code is sent");
   }
@@ -592,8 +592,8 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getContributors().get(0).getContributorNameTypeId());
-    assertNotNull(compPO.getCompositePoLines().get(0).getContributors().get(0).getContributor());
+    assertNotNull(compPO.getPoLines().get(0).getContributors().get(0).getContributorNameTypeId());
+    assertNotNull(compPO.getPoLines().get(0).getContributors().get(0).getContributor());
 
     logger.info("End: Testing for falling back to the first random contributor name type, if a non existent code is sent");
   }
@@ -617,7 +617,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
     verifyRequiredFieldsAreMapped(compPO);
-    assertTrue(compPO.getCompositePoLines().get(0).getContributors().isEmpty());
+    assertTrue(compPO.getPoLines().get(0).getContributors().isEmpty());
 
     logger.info("End: Testing contributor is ignored if contributor name type cannot be resolved");
   }
@@ -641,10 +641,10 @@ public class GOBIIntegrationServiceResourceImplTest {
       .mapTo(CompositePurchaseOrder.class);
     // assert that the productId is mapped, so that if the order is created in Pending state even though
     // there is no ProductIdType
-    assertNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductIdType());
-    assertNotNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
+    assertNull(compPO.getPoLines().get(0).getDetails().getProductIds().get(0).getProductIdType());
+    assertNotNull(compPO.getPoLines().get(0).getDetails().getProductIds().get(0).getProductId());
     verifyRequiredFieldsAreMapped(compPO);
-    assertNotNull(compPO.getCompositePoLines().get(0).getFundDistribution().get(0).getFundId());
+    assertNotNull(compPO.getPoLines().get(0).getFundDistribution().get(0).getFundId());
 
     logger.info("End: Testing for checking if productId is set if there are no productIdTypes in the environment");
   }
@@ -670,7 +670,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     verifyRequiredFieldsAreMapped(compPO);
 
     //Fund Distribution List must be empty, with no proper FundId
-    assertEquals(Collections.emptyList(), compPO.getCompositePoLines().get(0).getFundDistribution());
+    assertEquals(Collections.emptyList(), compPO.getPoLines().get(0).getFundDistribution());
 
     logger.info("End: Testing for checking if FundId is not set if there are no Funds in the environment");
   }
@@ -899,9 +899,9 @@ public class GOBIIntegrationServiceResourceImplTest {
   private void validateProductIDAndQualifier(String productID, String qualifier) {
     Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
     CompositePurchaseOrder compPO = postOrder.get(PURCHASE_ORDER).get(0).mapTo(CompositePurchaseOrder.class);
-    assertNotNull(compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
-    assertEquals(productID,compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getProductId());
-    assertEquals(qualifier,compPO.getCompositePoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
+    assertNotNull(compPO.getPoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
+    assertEquals(productID,compPO.getPoLines().get(0).getDetails().getProductIds().get(0).getProductId());
+    assertEquals(qualifier,compPO.getPoLines().get(0).getDetails().getProductIds().get(0).getQualifier());
   }
 
   /**
@@ -965,10 +965,10 @@ public class GOBIIntegrationServiceResourceImplTest {
   private void verifyResourceCreateInventoryNotMapped() {
     Map<String, List<JsonObject>> postOrder = MockServer.serverRqRs.column(HttpMethod.POST);
     CompositePurchaseOrder compPO = postOrder.get(PURCHASE_ORDER).get(0).mapTo(CompositePurchaseOrder.class);
-    compPO.getCompositePoLines().stream()
+    compPO.getPoLines().stream()
       .filter(line -> line.getEresource() != null)
       .forEach(line -> assertNull(line.getEresource().getCreateInventory()));
-    compPO.getCompositePoLines().stream()
+    compPO.getPoLines().stream()
       .filter(line -> line.getPhysical() != null)
       .forEach(line -> assertNull(line.getPhysical().getCreateInventory()));
   }
@@ -981,7 +981,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(compPO.getVendor());
     assertNotNull(compPO.getOrderType());
 
-    CompositePoLine poLine = compPO.getCompositePoLines().get(0);
+    PoLine poLine = compPO.getPoLines().get(0);
     assertNotNull(poLine.getAcquisitionMethod());
     assertNotNull(poLine.getCost());
     assertNotNull(poLine.getOrderFormat());
@@ -1090,7 +1090,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       compPO.put(ID, randomUUID().toString());
       String poNumber = "PO_" + randomDigits(10);
       compPO.put("poNumber", poNumber);
-      compPO.getJsonArray("compositePoLines").forEach(line -> {
+      compPO.getJsonArray("poLines").forEach(line -> {
         JsonObject poLine = (JsonObject) line;
         poLine.put(ID, randomUUID().toString());
         poLine.put("poLineNumber", poNumber + "-1");
