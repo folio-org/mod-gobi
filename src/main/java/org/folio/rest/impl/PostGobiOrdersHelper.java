@@ -204,7 +204,7 @@ public class PostGobiOrdersHelper {
     try {
       return restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
         .map(body -> {
-          logger.info("Response from mod-orders: \n {}", body::encodePrettily);
+          logger.debug("Response from mod-orders: \n {}", body::encodePrettily);
           return body.getJsonArray("poLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
         })
         .toCompletionStage().toCompletableFuture();
