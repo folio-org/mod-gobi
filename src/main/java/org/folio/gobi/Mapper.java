@@ -791,7 +791,7 @@ public class Mapper {
 
     Optional.ofNullable(mappings.get(Mapping.Field.USER_LIMIT))
       .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> eresource.setUserLimit((Integer) o))
+        .thenAccept(o -> eresource.setUserLimit((String) o))
         .exceptionally(Mapper::logException)));
 
     Optional.ofNullable(mappings.get(Mapping.Field.ACTIVATED))
