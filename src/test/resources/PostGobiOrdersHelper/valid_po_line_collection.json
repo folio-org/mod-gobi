@@ -8,9 +8,6 @@
         "isPackage": false,
         "agreementId": "bdc75fea-fed8-11e8-8eb2-f2801f1b9fd1",
         "acquisitionMethod": "73d14bc5-d131-48c6-b380-f8e62f63c8f3",
-        "alerts": [
-          "9a665b22-9fe5-4c95-b4ee-837a5433c95d"
-        ],
         "cancellationRestriction": false,
         "cancellationRestrictionNote": "ABCDEFGHIJKLMNOPQRSTUVW",
         "claims": [
@@ -97,11 +94,6 @@
         "purchaseOrderId": "d79b0bcc-DcAD-1E4E-Abb7-DbFcaD5BB3bb",
         "receiptDate": "2018-10-09T00:00:00.000Z",
         "receiptStatus": "Awaiting Receipt",
-        "reportingCodes": [
-          "5926dcd7-85f5-4504-8283-712595ebc38b",
-          "fa316c04-8101-4e72-8aaf-01281bac718f",
-          "ea68b696-3125-4940-bf91-1d128323473e"
-        ],
         "requester": "Leo Bulero",
         "rush": true,
         "selector": "ABCD",
