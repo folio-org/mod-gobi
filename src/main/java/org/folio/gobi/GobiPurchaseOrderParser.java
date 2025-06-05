@@ -42,6 +42,12 @@ public class GobiPurchaseOrderParser {
   private GobiPurchaseOrderParser() {
     try {
       SchemaFactory schemaFactory = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
+      // Disable XML External Entity (XXE) vulnerabilities
+      // https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet
+      // https://semgrep.dev/docs/cheat-sheets/java-xxe
+      schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
       schemaFactory.setResourceResolver(new ResourceResolver());
       Schema schema = schemaFactory.newSchema(new StreamSource(this.getClass().getClassLoader().getResourceAsStream(PURCHASE_ORDER_SCHEMA)));
       validator = schema.newValidator();
@@ -61,11 +67,11 @@ public class GobiPurchaseOrderParser {
 
       //https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet
       // By disabling DTD, almost all XXE attacks will be prevented.
-      factory.setFeature(DTD_FEATURE, Boolean.TRUE);
+      factory.setFeature(DTD_FEATURE, true);
       //Protect against Denial of Service attack and remote file access.
-      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
       // Protect against external DTDs
-      factory.setFeature(EXTERNAL_DTD_FEATURE, Boolean.FALSE);
+      factory.setFeature(EXTERNAL_DTD_FEATURE, false);
       // Protect from XML Schema
       factory.setXIncludeAware(false);
       factory.setExpandEntityReferences(false);
