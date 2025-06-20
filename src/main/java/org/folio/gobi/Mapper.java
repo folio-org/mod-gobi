@@ -639,7 +639,7 @@ public class Mapper {
 
       Optional.ofNullable(mappings.get(Mapping.Field.RECEIVING_WORKFLOW))
         .ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(checkinItemsFlag -> mapCheckinItemsFlag(checkinItemsFlag).ifPresent(pol::setCheckinItems))
+          .thenAccept(checkinItemsFlag -> mapCheckinItemsFlag(checkinItemsFlag, pol))
           .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PACKAGE_DESIGNATION))
@@ -660,11 +660,13 @@ public class Mapper {
     });
   }
 
-  private Optional<Boolean> mapCheckinItemsFlag(Object checkinItemsFlag) {
-    return Optional.ofNullable(checkinItemsFlag)
-                    .map(String.class::cast)
-                    .map(String::toUpperCase)
-                    .map(gobiReceivingFlowType::get);
+  private void mapCheckinItemsFlag(Object checkinItemsFlag, PoLine poLine) {
+    var checkinItems = Optional.ofNullable(checkinItemsFlag)
+      .map(String.class::cast)
+      .map(String::toUpperCase)
+      .map(gobiReceivingFlowType::get)
+      .orElse(PoLine.ReceiptStatus.RECEIPT_NOT_REQUIRED == poLine.getReceiptStatus());
+    poLine.setCheckinItems(checkinItems);
   }
 
   private Optional<Boolean> mapIsPackageToBoolean(Object isPackage) {
