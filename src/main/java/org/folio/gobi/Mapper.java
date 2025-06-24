@@ -661,12 +661,16 @@ public class Mapper {
   }
 
   private void mapCheckinItemsFlag(Object checkinItemsFlag, PoLine poLine) {
-    var checkinItems = Optional.ofNullable(checkinItemsFlag)
+    // Override checkinItems flag if receipt status is "Receipt Not Required"
+    if (PoLine.ReceiptStatus.RECEIPT_NOT_REQUIRED == poLine.getReceiptStatus()) {
+      poLine.setCheckinItems(true);
+      return;
+    }
+    Optional.ofNullable(checkinItemsFlag)
       .map(String.class::cast)
       .map(String::toUpperCase)
       .map(gobiReceivingFlowType::get)
-      .orElse(PoLine.ReceiptStatus.RECEIPT_NOT_REQUIRED == poLine.getReceiptStatus());
-    poLine.setCheckinItems(checkinItems);
+      .ifPresent(poLine::setCheckinItems);
   }
 
   private Optional<Boolean> mapIsPackageToBoolean(Object isPackage) {
