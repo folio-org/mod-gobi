@@ -638,9 +638,10 @@ public class Mapper {
           .exceptionally(Mapper::logException)));
 
       Optional.ofNullable(mappings.get(Mapping.Field.RECEIVING_WORKFLOW))
-        .ifPresent(field -> futures.add(field.resolve(doc)
-          .thenAccept(checkinItemsFlag -> mapCheckinItemsFlag(checkinItemsFlag, pol))
-          .exceptionally(Mapper::logException)));
+        .ifPresentOrElse(field -> futures.add(field.resolve(doc)
+            .thenAccept(checkinItemsFlag -> mapCheckinItemsFlag(checkinItemsFlag, pol))
+            .exceptionally(Mapper::logException)),
+          () -> pol.setCheckinItems(pol.getReceiptStatus() == PoLine.ReceiptStatus.RECEIPT_NOT_REQUIRED));
 
       Optional.ofNullable(mappings.get(Mapping.Field.PACKAGE_DESIGNATION))
         .ifPresent(field -> futures.add(field.resolve(doc)
