@@ -1,196 +1,202 @@
 {
-      "orderType": "UnlistedPrintSerial",
-      "mappings": [
-        {
-          "field": "ACQUISITION_METHOD",
-          "dataSource": {
-            "default": "Purchase At Vendor System"
-          }
-        },
-        {
-          "field": "APPROVED",
-          "dataSource": {
-            "default": "true",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "CLAIM_ACTIVE",
-          "dataSource": {
-            "translation": "toBoolean"
-          }
-        },
-        {
-          "field": "CLAIM_INTERVAL",
-          "dataSource": {
-            "translation": "toInteger"
-          }
-        },
-        {
-          "field": "COLLECTION",
-          "dataSource": {
-            "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "CURRENCY",
-          "dataSource": {
-            "default": "USD"
-          }
-        },
-        {
-          "field": "DONOR",
-          "dataSource": {
-            "translation": "lookupOrganization"
-          }
-        },
-        {
-          "field": "FUND_ID",
-          "dataSource": {
-            "from": "//FundCode",
-            "translation": "lookupFundId"
-          }
-        },
-        {
-          "field": "FUND_CODE",
-          "dataSource": {
-            "from": "//FundCode"
-          }
-        },
-        {
-          "field": "FUND_PERCENTAGE",
-          "dataSource": {
-            "default": "100",
-            "translation": "toDouble",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "LIST_UNIT_PRICE",
-          "dataSource": {
-            "default" : "0",
-            "translation": "toDouble",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "LOCATION",
-          "dataSource": {
-            "default" : "*",
-            "translation": "lookupLocationId",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "MANUAL_PO",
-          "dataSource": {
-            "default": "false",
-            "translation": "toBoolean",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "MATERIAL_TYPE",
-          "dataSource": {
-            "default" : "unspecified",
-            "translation": "lookupMaterialTypeId",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "ORDER_TYPE",
-          "dataSource": {
-            "default": "Ongoing"
-          }
-        },
-        {
-          "field": "PO_LINE_ORDER_FORMAT",
-          "dataSource": {
-            "default": "Physical Resource"
-          }
-        },
-        {
-          "field": "PO_LINE_PAYMENT_STATUS",
-          "dataSource": {
-            "default": "Awaiting Payment"
-          }
-        },
-        {
-          "field": "PO_LINE_RECEIPT_STATUS",
-          "dataSource": {
-            "default": "Awaiting Receipt"
-          }
-        },
-        {
-          "field": "QUANTITY_PHYSICAL",
-          "dataSource": {
-            "from": "//Quantity",
-            "default": "1",
-            "translation": "toInteger"
-          }
-        },
-        {
-          "field": "SOURCE",
-          "dataSource": {
-            "default": "API"
-          }
-        },
-        {
-          "field": "TAGS",
-          "dataSource": {
-            "from": "//LocalData[Description='LocalData4']/Value"
-          }
-        },
-        {
-          "field": "TITLE",
-          "dataSource": {
-            "from": "//datafield[@tag='245']/*",
-            "combinator": "concat"
-          }
-        },
-        {
-          "field": "VENDOR",
-          "dataSource": {
-            "default": "GOBI",
-            "translation": "lookupOrganization",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "MATERIAL_SUPPLIER",
-          "dataSource": {
-            "default": "GOBI",
-            "translation": "lookupOrganization",
-            "translateDefault": true
-          }
-        },
-        {
-          "field": "VENDOR_INSTRUCTIONS",
-          "dataSource": {
-            "from": "//OrderNotes",
-            "default" : "N/A"
-          }
-        },
-        {
-          "field": "VENDOR_REF_NO",
-          "dataSource": {
-            "from": "//YBPOrderKey"
-          }
-        },
-        {
-          "field": "VENDOR_REF_NO_TYPE",
-          "dataSource": {
-            "default": "Vendor order reference number"
-          }
-        },
-        {
-          "field": "WORKFLOW_STATUS",
-          "dataSource": {
-            "default": "Open"
-          }
-        }
-      ]
+  "orderType": "UnlistedPrintSerial",
+  "mappings": [
+    {
+      "field": "ACQUISITION_METHOD",
+      "dataSource": {
+        "default": "Purchase At Vendor System"
+      }
+    },
+    {
+      "field": "APPROVED",
+      "dataSource": {
+        "default": "true",
+        "translation": "toBoolean",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "CLAIM_ACTIVE",
+      "dataSource": {
+        "translation": "toBoolean"
+      }
+    },
+    {
+      "field": "CLAIM_INTERVAL",
+      "dataSource": {
+        "translation": "toInteger"
+      }
+    },
+    {
+      "field": "COLLECTION",
+      "dataSource": {
+        "default": "false",
+        "translation": "toBoolean",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "CURRENCY",
+      "dataSource": {
+        "default": "USD"
+      }
+    },
+    {
+      "field": "DONOR",
+      "dataSource": {
+        "translation": "lookupOrganization"
+      }
+    },
+    {
+      "field": "FUND_ID",
+      "dataSource": {
+        "from": "//FundCode",
+        "translation": "lookupFundId"
+      }
+    },
+    {
+      "field": "FUND_CODE",
+      "dataSource": {
+        "from": "//FundCode"
+      }
+    },
+    {
+      "field": "FUND_PERCENTAGE",
+      "dataSource": {
+        "default": "100",
+        "translation": "toDouble",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "LIST_UNIT_PRICE",
+      "dataSource": {
+        "default": "0",
+        "translation": "toDouble",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "LOCATION",
+      "dataSource": {
+        "default": "*",
+        "translation": "lookupLocationId",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "MANUAL_PO",
+      "dataSource": {
+        "default": "false",
+        "translation": "toBoolean",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "MATERIAL_TYPE",
+      "dataSource": {
+        "default": "unspecified",
+        "translation": "lookupMaterialTypeId",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "ORDER_TYPE",
+      "dataSource": {
+        "default": "Ongoing"
+      }
+    },
+    {
+      "field": "PO_LINE_ORDER_FORMAT",
+      "dataSource": {
+        "default": "Physical Resource"
+      }
+    },
+    {
+      "field": "PO_LINE_PAYMENT_STATUS",
+      "dataSource": {
+        "default": "Awaiting Payment"
+      }
+    },
+    {
+      "field": "PO_LINE_RECEIPT_STATUS",
+      "dataSource": {
+        "default": "Awaiting Receipt"
+      }
+    },
+    {
+      "field": "QUANTITY_PHYSICAL",
+      "dataSource": {
+        "from": "//Quantity",
+        "default": "1",
+        "translation": "toInteger"
+      }
+    },
+    {
+      "field": "SOURCE",
+      "dataSource": {
+        "default": "API"
+      }
+    },
+    {
+      "field": "TAGS",
+      "dataSource": {
+        "from": "//LocalData[Description='LocalData4']/Value"
+      }
+    },
+    {
+      "field": "TITLE",
+      "dataSource": {
+        "from": "//datafield[@tag='245']/*",
+        "combinator": "concat"
+      }
+    },
+    {
+      "field": "VENDOR",
+      "dataSource": {
+        "default": "GOBI",
+        "translation": "lookupOrganization",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "MATERIAL_SUPPLIER",
+      "dataSource": {
+        "default": "GOBI",
+        "translation": "lookupOrganization",
+        "translateDefault": true
+      }
+    },
+    {
+      "field": "VENDOR_INSTRUCTIONS",
+      "dataSource": {
+        "from": "//OrderNotes",
+        "default": "N/A"
+      }
+    },
+    {
+      "field": "VENDOR_REF_NO",
+      "dataSource": {
+        "from": "//YBPOrderKey"
+      }
+    },
+    {
+      "field": "VENDOR_REF_NO_TYPE",
+      "dataSource": {
+        "default": "Vendor order reference number"
+      }
+    },
+    {
+      "field": "WORKFLOW_STATUS",
+      "dataSource": {
+        "default": "Open"
+      }
+    },
+    {
+      "field": "SUPPRESS_INSTANCE_FROM_DISCOVERY",
+      "dataSource": {
+        "from": "//SuppressInstanceFromDiscovery"
+      }
     }
+  ]
+}

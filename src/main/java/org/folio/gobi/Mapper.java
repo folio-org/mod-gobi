@@ -648,6 +648,11 @@ public class Mapper {
           .thenAccept(isPackage -> mapIsPackageToBoolean(isPackage).ifPresent(pol::setIsPackage))
           .exceptionally(Mapper::logException)));
 
+      Optional.ofNullable(mappings.get(Mapping.Field.SUPPRESS_INSTANCE_FROM_DISCOVERY))
+        .ifPresent(field -> futures.add(field.resolve(doc)
+          .thenAccept(value -> mapSuppressInstanceFromDiscovery(value, pol))
+          .exceptionally(Mapper::logException)));
+
       Optional.ofNullable(mappings.get(Mapping.Field.LINKED_PACKAGE))
         .ifPresent(field -> futures.add(field.resolve(doc)
           .thenAccept(packagePoLineId -> Optional.ofNullable(packagePoLineId)
@@ -676,8 +681,15 @@ public class Mapper {
 
   private Optional<Boolean> mapIsPackageToBoolean(Object isPackage) {
     return Optional.ofNullable(isPackage).map(String.class::cast)
-                             .map(String::toUpperCase)
-                             .map(gobiBooleanType::get);
+     .map(String::toUpperCase)
+     .map(gobiBooleanType::get);
+  }
+
+  private void mapSuppressInstanceFromDiscovery(Object suppressInstanceFromDiscovery, PoLine poLine) {
+    Optional.ofNullable(suppressInstanceFromDiscovery)
+      .map(String.class::cast)
+      .map(Boolean::valueOf)
+      .ifPresent(poLine::setSuppressInstanceFromDiscovery);
   }
 
   private void mapCost(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings, Cost cost, Document doc) {
