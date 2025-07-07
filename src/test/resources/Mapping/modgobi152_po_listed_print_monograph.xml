@@ -39,6 +39,7 @@
         <YBPOrderKey>99974828471</YBPOrderKey>
         <OrderPlaced>2018-09-05T15:38:55</OrderPlaced>
         <Initials>Mark</Initials>
+        <SuppressInstanceFromDiscovery>true</SuppressInstanceFromDiscovery>
         <ListPrice>
           <Amount>14.95</Amount>
           <Currency>USD</Currency>

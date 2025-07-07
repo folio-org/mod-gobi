@@ -8,12 +8,13 @@ import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
 import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
+import static org.folio.rest.jaxrs.model.Mapping.Field.SUPPRESS_INSTANCE_FROM_DISCOVERY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.util.EnumMap;
@@ -37,7 +38,6 @@ import org.folio.rest.jaxrs.model.DataSource.Translation;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.tools.utils.NetworkUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,25 +49,21 @@ import io.vertx.core.json.Json;
 public class MappingTest {
 
   private static final Logger logger = LogManager.getLogger(MappingTest.class);
+  public static final String TEST_DATA_PATH = "Mapping/testdata.xml";
 
-  private final String MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH = "Mapping/modgobi152_po_listed_print_monograph.xml";
-  private final String MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING = "Mapping/modgobi152_ListedPrintMonograph.json";
+  private final String MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH = "Mapping/modgobi152_po_listed_print_monograph.xml";
+  private final String MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING = "Mapping/modgobi152_ListedPrintMonograph.json";
+  private final int port = NetworkUtils.nextFreePort();
 
-  public static final String testdataPath = "Mapping/testdata.xml";
   private Document doc;
-  private int port = NetworkUtils.nextFreePort();
-  private Map<String, String> okapiHeaders = new HashMap<>();
 
   @BeforeEach
-  public void setUp() throws Exception {
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(testdataPath);
+  void setUp() throws Exception {
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(TEST_DATA_PATH);
     doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
+    Map<String, String> okapiHeaders = new HashMap<>();
     okapiHeaders.put("x-okapi-url", "http://localhost:" + port);
     okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
-  }
-
-  @AfterEach
-  public void tearDown() {
   }
 
   @Test
@@ -122,36 +118,39 @@ public class MappingTest {
 
   @Test
   void testLocationTranslation() throws Exception {
-    //Given
+    // Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String locationId = UUID.randomUUID().toString();
     String tenantId = UUID.randomUUID().toString();
     Mockito.doReturn(CompletableFuture.completedFuture(new LocationTranslationResult(locationId, tenantId)))
-      .when(lookupService).lookupLocationId(eq("locationCode"));
+      .when(lookupService).lookupLocationId("locationCode");
 
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
-    String actualListedPrintJson = MappingHelper.readMappingsFile(MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    String actualListedPrintJson = MappingHelper.readMappingsFile(MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
-    String locationFrom = fieldMappingMap.get(LOCATION).get(0).getDataSource().getFrom();
+    String locationFrom = fieldMappingMap.get(LOCATION).getFirst().getDataSource().getFrom();
+    String suppressInstanceFromDiscovery = fieldMappingMap.get(SUPPRESS_INSTANCE_FROM_DISCOVERY).getFirst().getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withLookupService(lookupService).withDefault("Physical Resource").build());
     mappings.put(LOCATION,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(locationFrom).withTranslation(Translation.LOOKUP_LOCATION_ID).build());
+    mappings.put(SUPPRESS_INSTANCE_FROM_DISCOVERY,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(suppressInstanceFromDiscovery).build());
 
-    //When
+    // When
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    PoLine pol = compPO.getPoLines().get(0);
+    PoLine pol = compPO.getPoLines().getFirst();
 
-    //Then
-    Location location = pol.getLocations().get(0);
+    // Then
+    Location location = pol.getLocations().getFirst();
     assertEquals(locationId, location.getLocationId());
     assertEquals(tenantId, location.getTenantId());
+    assertTrue(pol.getSuppressInstanceFromDiscovery());
   }
 
   @Test
@@ -165,31 +164,31 @@ public class MappingTest {
 
   @Test
   void testSuccessLookupMappingOrdersPOListedPrintMonographWithNewAddedLookupsModGobi152() throws Exception {
-    //Given
+    // Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage(eq("PO_6733180275-1"));
+    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage("PO_6733180275-1");
     String sufId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix(eq("suf"));
+    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix("suf");
     String prefId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(prefId)).when(lookupService).lookupPrefix(eq("pref"));
+    Mockito.doReturn(CompletableFuture.completedFuture(prefId)).when(lookupService).lookupPrefix("pref");
     String vendorId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization(eq("GOBI"));
+    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization("GOBI");
     Double exchangeRate = 2.3;
 
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
-    String actualListedPrintJson = MappingHelper.readMappingsFile(MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    String actualListedPrintJson = MappingHelper.readMappingsFile(MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
-    String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
-    String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
-    String suffixFrom = fieldMappingMap.get(SUFFIX).get(0).getDataSource().getFrom();
-    String prefixFrom = fieldMappingMap.get(PREFIX).get(0).getDataSource().getFrom();
-    String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).get(0).getDataSource().getFrom();
-    String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
+    String billToFrom = fieldMappingMap.get(BILL_TO).getFirst().getDataSource().getFrom();
+    String shipToFrom = fieldMappingMap.get(SHIP_TO).getFirst().getDataSource().getFrom();
+    String suffixFrom = fieldMappingMap.get(SUFFIX).getFirst().getDataSource().getFrom();
+    String prefixFrom = fieldMappingMap.get(PREFIX).getFirst().getDataSource().getFrom();
+    String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).getFirst().getDataSource().getFrom();
+    String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).getFirst().getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
     mappings.put(BILL_TO,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(billToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
@@ -199,12 +198,12 @@ public class MappingTest {
     mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(linkedPackageFrom).withTranslation(Translation.LOOKUP_LINKED_PACKAGE).withTranslateDefault(false).build());
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withLookupService(lookupService).withDefault("Physical Resource").build());
     mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withLookupService(lookupService).withFrom(exchangeRateFrom).build());
-    //When
+    // When
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    PoLine pol = compPO.getPoLines().get(0);
-    //Then
+    PoLine pol = compPO.getPoLines().getFirst();
+    // Then
     assertThat(pol.getOrderFormat(), is(PoLine.OrderFormat.PHYSICAL_RESOURCE));
     assertThat(compPO.getPoNumberSuffix(), equalTo(sufId));
     assertThat(compPO.getPoNumberPrefix(), equalTo(prefId));
@@ -216,29 +215,29 @@ public class MappingTest {
 
   @Test
   void shouldCreateOrderInPendingStatusIfErrorsOccurredInTheLookupMappingModGobi152() throws Exception {
-    //Given
+    // Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage(eq("PO_6733180275-1"));
+    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage("PO_6733180275-1");
     String sufId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix(eq("suf"));
-    Mockito.doThrow(new CompletionException(new RuntimeException())).when(lookupService).lookupPrefix(eq("pref"));
+    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix("suf");
+    Mockito.doThrow(new CompletionException(new RuntimeException())).when(lookupService).lookupPrefix("pref");
     String vendorId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization(eq("GOBI"));
+    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization("GOBI");
 
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
-    String actualListedPrintJson = MappingHelper.readMappingsFile(MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    String actualListedPrintJson = MappingHelper.readMappingsFile(MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
-    String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
-    String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
-    String suffixFrom = fieldMappingMap.get(SUFFIX).get(0).getDataSource().getFrom();
-    String prefixFrom = fieldMappingMap.get(PREFIX).get(0).getDataSource().getFrom();
-    String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).get(0).getDataSource().getFrom();
-    String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
+    String billToFrom = fieldMappingMap.get(BILL_TO).getFirst().getDataSource().getFrom();
+    String shipToFrom = fieldMappingMap.get(SHIP_TO).getFirst().getDataSource().getFrom();
+    String suffixFrom = fieldMappingMap.get(SUFFIX).getFirst().getDataSource().getFrom();
+    String prefixFrom = fieldMappingMap.get(PREFIX).getFirst().getDataSource().getFrom();
+    String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).getFirst().getDataSource().getFrom();
+    String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).getFirst().getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
     mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
@@ -248,12 +247,12 @@ public class MappingTest {
     mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(Translation.LOOKUP_LINKED_PACKAGE).withTranslateDefault(false).build());
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withDefault("Physical Resource").build());
     mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withFrom(exchangeRateFrom).build());
-    //When
+    // When
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    PoLine pol = compPO.getPoLines().get(0);
-    //Then
+    PoLine pol = compPO.getPoLines().getFirst();
+    // Then
     assertThat(pol.getOrderFormat(), is(PoLine.OrderFormat.PHYSICAL_RESOURCE));
     assertThat(compPO.getWorkflowStatus(), equalTo(CompositePurchaseOrder.WorkflowStatus.PENDING));
     assertNotNull(bindingResult.getError(PREFIX));
@@ -261,29 +260,29 @@ public class MappingTest {
 
   @Test
   void shouldCreateOrderInPendingStatusIfValueNotFoundInTheLookupMappingModGobi152() throws Exception {
-    //Given
+    // Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String packageId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage(eq("PO_6733180275-1"));
+    Mockito.doReturn(CompletableFuture.completedFuture(packageId)).when(lookupService).lookupLinkedPackage("PO_6733180275-1");
     String sufId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix(eq("suf"));
-    Mockito.doReturn(CompletableFuture.completedFuture(null)).when(lookupService).lookupPrefix(eq("pref"));
+    Mockito.doReturn(CompletableFuture.completedFuture(sufId)).when(lookupService).lookupSuffix("suf");
+    Mockito.doReturn(CompletableFuture.completedFuture(null)).when(lookupService).lookupPrefix("pref");
     String vendorId = UUID.randomUUID().toString();
-    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization(eq("GOBI"));
+    Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization("GOBI");
 
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
-    String actualListedPrintJson = MappingHelper.readMappingsFile(MODGOBI152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    String actualListedPrintJson = MappingHelper.readMappingsFile(MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
-    String billToFrom = fieldMappingMap.get(BILL_TO).get(0).getDataSource().getFrom();
-    String shipToFrom = fieldMappingMap.get(SHIP_TO).get(0).getDataSource().getFrom();
-    String suffixFrom = fieldMappingMap.get(SUFFIX).get(0).getDataSource().getFrom();
-    String prefixFrom = fieldMappingMap.get(PREFIX).get(0).getDataSource().getFrom();
-    String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).get(0).getDataSource().getFrom();
-    String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).get(0).getDataSource().getFrom();
+    String billToFrom = fieldMappingMap.get(BILL_TO).getFirst().getDataSource().getFrom();
+    String shipToFrom = fieldMappingMap.get(SHIP_TO).getFirst().getDataSource().getFrom();
+    String suffixFrom = fieldMappingMap.get(SUFFIX).getFirst().getDataSource().getFrom();
+    String prefixFrom = fieldMappingMap.get(PREFIX).getFirst().getDataSource().getFrom();
+    String linkedPackageFrom = fieldMappingMap.get(LINKED_PACKAGE).getFirst().getDataSource().getFrom();
+    String exchangeRateFrom = fieldMappingMap.get(EXCHANGE_RATE).getFirst().getDataSource().getFrom();
 
     Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
     mappings.put(BILL_TO,  DataSourceResolver.builder().withFrom(billToFrom).withTranslation(Translation.LOOKUP_ORGANIZATION).withTranslateDefault(false).build());
@@ -293,15 +292,14 @@ public class MappingTest {
     mappings.put(LINKED_PACKAGE,  DataSourceResolver.builder().withFrom(linkedPackageFrom).withTranslation(Translation.LOOKUP_LINKED_PACKAGE).withTranslateDefault(false).build());
     mappings.put(PO_LINE_ORDER_FORMAT,  DataSourceResolver.builder().withDefault("Physical Resource").build());
     mappings.put(EXCHANGE_RATE,  DataSourceResolver.builder().withFrom(exchangeRateFrom).build());
-    //When
+    // When
     Mapper mapper = new Mapper(lookupService);
     var bindingResult = mapper.map(mappings, gobiOrder).get();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    PoLine pol = compPO.getPoLines().get(0);
-    //Then
+    PoLine pol = compPO.getPoLines().getFirst();
+    // Then
     assertThat(pol.getOrderFormat(), is(PoLine.OrderFormat.PHYSICAL_RESOURCE));
     assertThat(compPO.getWorkflowStatus(), equalTo(CompositePurchaseOrder.WorkflowStatus.PENDING));
     assertNotNull(bindingResult.getError(PREFIX));
   }
-
 }
