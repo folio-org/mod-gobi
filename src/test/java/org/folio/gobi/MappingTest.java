@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +36,6 @@ import org.folio.rest.acq.model.PoLine;
 import org.folio.rest.jaxrs.model.DataSource.Translation;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
-import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,9 +49,8 @@ public class MappingTest {
   private static final Logger logger = LogManager.getLogger(MappingTest.class);
   public static final String TEST_DATA_PATH = "Mapping/testdata.xml";
 
-  private final String MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH = "Mapping/modgobi152_po_listed_print_monograph.xml";
-  private final String MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING = "Mapping/modgobi152_ListedPrintMonograph.json";
-  private final int port = NetworkUtils.nextFreePort();
+  private final String poListedPrintMonograph = "Mapping/modgobi152_po_listed_print_monograph.xml";
+  private final String listedPrintMonographMapping = "Mapping/modgobi152_ListedPrintMonograph.json";
 
   private Document doc;
 
@@ -61,9 +58,6 @@ public class MappingTest {
   void setUp() throws Exception {
     InputStream data = this.getClass().getClassLoader().getResourceAsStream(TEST_DATA_PATH);
     doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
-    Map<String, String> okapiHeaders = new HashMap<>();
-    okapiHeaders.put("x-okapi-url", "http://localhost:" + port);
-    okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
   }
 
   @Test
@@ -117,7 +111,7 @@ public class MappingTest {
   }
 
   @Test
-  void testLocationTranslation() throws Exception {
+  void testLocationTranslationAndSuppressInstanceFromDiscovery() throws Exception {
     // Given
     LookupService lookupService = Mockito.mock(LookupService.class);
     String locationId = UUID.randomUUID().toString();
@@ -125,10 +119,10 @@ public class MappingTest {
     Mockito.doReturn(CompletableFuture.completedFuture(new LocationTranslationResult(locationId, tenantId)))
       .when(lookupService).lookupLocationId("locationCode");
 
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonograph);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
-    String actualListedPrintJson = MappingHelper.readMappingsFile(MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    String actualListedPrintJson = MappingHelper.readMappingsFile(listedPrintMonographMapping);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
@@ -176,10 +170,10 @@ public class MappingTest {
     Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization("GOBI");
     Double exchangeRate = 2.3;
 
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonograph);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
-    String actualListedPrintJson = MappingHelper.readMappingsFile(MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    String actualListedPrintJson = MappingHelper.readMappingsFile(listedPrintMonographMapping);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
@@ -225,10 +219,10 @@ public class MappingTest {
     String vendorId = UUID.randomUUID().toString();
     Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization("GOBI");
 
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonograph);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
-    String actualListedPrintJson = MappingHelper.readMappingsFile(MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    String actualListedPrintJson = MappingHelper.readMappingsFile(listedPrintMonographMapping);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
@@ -270,10 +264,10 @@ public class MappingTest {
     String vendorId = UUID.randomUUID().toString();
     Mockito.doReturn(CompletableFuture.completedFuture(vendorId)).when(lookupService).lookupOrganization("GOBI");
 
-    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MOD_GOBI_152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(poListedPrintMonograph);
     Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
 
-    String actualListedPrintJson = MappingHelper.readMappingsFile(MOD_GOBI_152_LISTED_PRINT_MONOGRAPH_MAPPING);
+    String actualListedPrintJson = MappingHelper.readMappingsFile(listedPrintMonographMapping);
     Map<Mapping.Field, List<Mapping>> fieldMappingMap = Json.decodeValue(actualListedPrintJson, OrderMappings.class)
       .getMappings().stream().collect(Collectors.groupingBy(Mapping::getField));
 
