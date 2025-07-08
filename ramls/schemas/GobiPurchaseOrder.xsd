@@ -54,10 +54,7 @@
     <xs:annotation>
       <xs:documentation>Records the fact that the record should not be displayed in a discovery system.</xs:documentation>
     </xs:annotation>
-    <xs:restriction base="xs:string">
-      <xs:minLength value="0"/>
-      <xs:maxLength value="5"/>
-    </xs:restriction>
+    <xs:restriction base="xs:boolean"/>
   </xs:simpleType>
   <xs:simpleType name="OrderNotes">
     <xs:annotation>
