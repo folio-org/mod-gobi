@@ -47,7 +47,7 @@
     </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:minLength value="0"/>
-      <xs:maxLength value="5"/>
+      <xs:maxLength value="30"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="SuppressInstanceFromDiscovery">
@@ -56,7 +56,7 @@
     </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:minLength value="0"/>
-      <xs:maxLength value="30"/>
+      <xs:maxLength value="5"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="OrderNotes">
