@@ -47,6 +47,15 @@
     </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:minLength value="0"/>
+      <xs:maxLength value="5"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SuppressInstanceFromDiscovery">
+    <xs:annotation>
+      <xs:documentation>Records the fact that the record should not be displayed in a discovery system.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:minLength value="0"/>
       <xs:maxLength value="30"/>
     </xs:restriction>
   </xs:simpleType>
@@ -189,6 +198,7 @@
                           <xs:element name="BatchPONumber" type="BatchPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="ItemPONumber" type="ItemPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="FundCode" type="FundCode" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="SuppressInstanceFromDiscovery" type="SuppressInstanceFromDiscovery" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OrderNotes" type="OrderNotes" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OtherLocalId" type="OtherLocalId" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="Location" type="Location" minOccurs="0" maxOccurs="1"/>
@@ -250,6 +260,7 @@
                           <xs:element name="BatchPONumber" type="BatchPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="ItemPONumber" type="ItemPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="FundCode" type="FundCode" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="SuppressInstanceFromDiscovery" type="SuppressInstanceFromDiscovery" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OrderNotes" type="OrderNotes" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="Quantity" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
                           <xs:element name="YBPOrderKey" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
@@ -301,6 +312,7 @@
                           <xs:element name="BatchPONumber" type="BatchPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="ItemPONumber" type="ItemPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="FundCode" type="FundCode" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="SuppressInstanceFromDiscovery" type="SuppressInstanceFromDiscovery" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OrderNotes" type="OrderNotes" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OtherLocalId" type="OtherLocalId" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="Location" type="Location" minOccurs="0" maxOccurs="1"/>
@@ -352,6 +364,7 @@
                           <xs:element name="BatchPONumber" type="BatchPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="ItemPONumber" type="ItemPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="FundCode" type="FundCode" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="SuppressInstanceFromDiscovery" type="SuppressInstanceFromDiscovery" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OrderNotes" type="OrderNotes" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="Quantity" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
                           <xs:element name="YBPOrderKey" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
@@ -378,6 +391,7 @@
                           <xs:element name="BatchPONumber" type="BatchPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="ItemPONumber" type="ItemPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="FundCode" type="FundCode" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="SuppressInstanceFromDiscovery" type="SuppressInstanceFromDiscovery" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OrderNotes" type="OrderNotes" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OtherLocalId" type="OtherLocalId" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="Location" type="Location" minOccurs="0" maxOccurs="1"/>
@@ -429,6 +443,7 @@
                           <xs:element name="BatchPONumber" type="BatchPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="ItemPONumber" type="ItemPONumber" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="FundCode" type="FundCode" minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="SuppressInstanceFromDiscovery" type="SuppressInstanceFromDiscovery" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="OrderNotes" type="OrderNotes" minOccurs="0" maxOccurs="1"/>
                           <xs:element name="Quantity" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
                           <xs:element name="YBPOrderKey" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
