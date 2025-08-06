@@ -164,9 +164,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     VertxTestContext deploymentContext = new VertxTestContext();
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, h -> {
-      deploymentContext.completeNow();
-    });
+    vertx.deployVerticle(RestVerticle.class.getName(), opt).onComplete(h -> deploymentContext.completeNow());
     checkVertxContextCompletion(deploymentContext);
     RestAssured.port = OKAPI_PORT;
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
@@ -176,7 +174,7 @@ public class GOBIIntegrationServiceResourceImplTest {
   @AfterAll
   public static void tearDownOnce(VertxTestContext context) throws Throwable {
     logger.info("GOBI Integration Service Testing Complete");
-    vertx.close(v -> {
+    vertx.close().onComplete(v -> {
       mockServer.close();
       context.completeNow();
     });
@@ -1014,7 +1012,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     public void close() {
-      vertx.close(res -> {
+      vertx.close().onComplete(res -> {
         if (res.failed()) {
           logger.error("Failed to shut down mock server", res.cause());
         } else {
@@ -1071,7 +1069,7 @@ public class GOBIIntegrationServiceResourceImplTest {
       // Setup Mock Server...
       HttpServer server = vertx.createHttpServer();
 
-      server.requestHandler(defineRoutes()).listen(port, result -> {
+      server.requestHandler(defineRoutes()).listen(port).onComplete(result -> {
         if (result.failed()) {
           logger.warn("Failure", result.cause());
         }
@@ -1083,9 +1081,9 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
 
     private void handlePostPurchaseOrder(RoutingContext ctx) {
-      logger.info("Handle Post Purchase Order got: {}", ctx.getBodyAsString());
+      logger.info("Handle Post Purchase Order got: {}", ctx.body().asString());
 
-      JsonObject compPO = ctx.getBodyAsJson();
+      JsonObject compPO = ctx.body().asJsonObject();
 
       compPO.put(ID, randomUUID().toString());
       String poNumber = "PO_" + randomDigits(10);
@@ -1311,7 +1309,7 @@ public class GOBIIntegrationServiceResourceImplTest {
         .path());
       String putInstruction = ctx.request()
         .getHeader(MOCK_OKAPI_PUT_ORDER_HEADER);
-      addServerRqRsData(HttpMethod.PUT, COMPOSITE_PURCHASE_ORDER, ctx.getBodyAsJson());
+      addServerRqRsData(HttpMethod.PUT, COMPOSITE_PURCHASE_ORDER, ctx.body().asJsonObject());
 
       if (putInstruction.equals(MOCK_INSTRUCTION_PUT_FAIL)) {
         ctx.response()

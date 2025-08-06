@@ -70,7 +70,7 @@ public class GobiOrdersCustomMappingsImplTest {
 
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
     Async async = context.async();
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, h -> async.complete());
+    vertx.deployVerticle(RestVerticle.class.getName(), opt).onComplete(h -> async.complete());
     async.await();
 
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
@@ -93,7 +93,7 @@ public class GobiOrdersCustomMappingsImplTest {
     log.info("GOBI Integration Service Testing Complete");
     Async async = context.async();
 
-    vertx.close(v -> async.complete());
+    vertx.close().onComplete(v -> async.complete());
     async.await();
   }
 

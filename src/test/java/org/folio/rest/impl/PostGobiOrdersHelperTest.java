@@ -236,7 +236,7 @@ public class PostGobiOrdersHelperTest {
     });
 
     int port = NetworkUtils.nextFreePort();
-    server.listen(port, "localhost", ar -> {
+    server.listen(port, "localhost").onComplete(ar -> {
       assertTrue(ar.succeeded());
 
       Map<String, String> okapiHeaders = new HashMap<>();
@@ -276,7 +276,7 @@ public class PostGobiOrdersHelperTest {
             logger.error("Failed to execute translation for ESTIMATED_ PRICE with recursive default mapping", e);
           }
 
-          vertx.close(context.succeedingThenComplete());
+          vertx.close().onComplete(context.succeedingThenComplete());
         });
     });
   }
