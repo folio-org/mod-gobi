@@ -13,3 +13,6 @@ updates:
         dependency-type: "development"
       prod-deps:
         dependency-type: "production"
+    ignore:
+      - dependency-name: "org.glassfish.jaxb:jaxb-runtime"
+      - dependency-name: "org.codehaus.mojo:jaxb2-maven-plugin"
