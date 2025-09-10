@@ -11,6 +11,7 @@ import static org.folio.rest.jaxrs.model.Mapping.Field.PREFIX;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SHIP_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.SUFFIX;
 
+import io.vertx.core.json.Json;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -160,6 +161,7 @@ public class Mapper {
         setObjectIfPresent(vendorDetail, o -> pol.setVendorDetail((VendorDetail) o));
 
         setObjectIfPresent(location, o -> {
+          logger.info("mapPoLine:: setting location: {}", Json.encodePrettily(location));
           List<Location> locations = new ArrayList<>();
           locations.add(location);
           pol.setLocations(locations);
@@ -899,6 +901,8 @@ public class Mapper {
           if (Objects.isNull(locationTranslation)) {
             logger.warn("mapLocation:: LocationTranslation is null");
           } else {
+            logger.info("mapLocation:: LocationTranslation is not null, locationId: {}, tenantId: {}",
+              locationTranslation.locationId(), locationTranslation.tenantId());
             location.setLocationId(locationTranslation.locationId());
             location.setTenantId(locationTranslation.tenantId());
           }

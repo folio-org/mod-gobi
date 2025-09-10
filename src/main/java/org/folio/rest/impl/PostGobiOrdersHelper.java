@@ -11,6 +11,7 @@ import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond4
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.GobiOrdersCustomMappings.GetGobiOrdersCustomMappingsResponse.respond401WithTextPlain;
 
+import io.vertx.core.json.Json;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -223,6 +224,7 @@ public class PostGobiOrdersHelper {
           logger.info("getOrPlaceOrder:: Order already exists, retrieving the PO Line Number: {}", compPO.getPoNumber());
           return getExistingOrderById(compPO);
         }
+        logger.info("getOrPlaceOrder:: placing order: {}", Json.encodePrettily(compPO));
         return CompletableFuture.completedFuture(compPO);
       })
       .thenCompose(compositePO -> {
