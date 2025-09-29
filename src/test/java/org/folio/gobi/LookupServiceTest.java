@@ -199,7 +199,7 @@ public class LookupServiceTest {
     LookupService lookupService = new LookupService(restClient, settingsRetriever);
 
     doReturn(succeededFuture(new JsonObject(locations))).when(restClient).handleGetRequest(anyString());
-    mockCentralOrderingEnabled();
+    mockCentralOrdering(true);
 
     var result = lookupService.lookupLocationId("MAIN").join();
 
@@ -214,7 +214,7 @@ public class LookupServiceTest {
     LookupService lookupService = new LookupService(restClient, settingsRetriever);
 
     doReturn(succeededFuture(new JsonObject(locations))).when(restClient).handleGetRequest(anyString());
-    mockCentralOrderingDisabled();
+    mockCentralOrdering(false);
 
     var result = lookupService.lookupLocationId("MAIN").join();
 
@@ -245,7 +245,7 @@ public class LookupServiceTest {
 
     when(restClient.getTenantId()).thenReturn("tenant1");
     doReturn(succeededFuture(new JsonObject(locations))).when(restClient).handleGetRequest(anyString());
-    mockCentralOrderingEnabled();
+    mockCentralOrdering(true);
 
     var result = lookupService.lookupLocationId("*").join();
 
@@ -261,7 +261,7 @@ public class LookupServiceTest {
 
     when(restClient.getTenantId()).thenReturn("tenant2");
     doReturn(succeededFuture(new JsonObject(locations))).when(restClient).handleGetRequest(anyString());
-    mockCentralOrderingDisabled();
+    mockCentralOrdering(false);
 
     var result = lookupService.lookupLocationId("*").join();
 
@@ -307,18 +307,11 @@ public class LookupServiceTest {
     assertNull(result); // Should return null when no tenant match found for default code
   }
 
-  private void mockCentralOrderingEnabled() {
-    Setting enabledSetting = new Setting();
-    enabledSetting.setKey("ALLOW_ORDERING_WITH_AFFILIATED_LOCATIONS");
-    enabledSetting.setValue("true");
-    when(settingsRetriever.getSettingByKey(any(OrdersSettingKey.class))).thenReturn(CompletableFuture.completedFuture(enabledSetting));
-  }
-
-  private void mockCentralOrderingDisabled() {
-    Setting disabledSetting = new Setting();
-    disabledSetting.setKey("ALLOW_ORDERING_WITH_AFFILIATED_LOCATIONS");
-    disabledSetting.setValue("false");
-    when(settingsRetriever.getSettingByKey(any(OrdersSettingKey.class))).thenReturn(CompletableFuture.completedFuture(disabledSetting));
+  private void mockCentralOrdering(boolean enabled) {
+    Setting setting = new Setting();
+    setting.setKey("ALLOW_ORDERING_WITH_AFFILIATED_LOCATIONS");
+    setting.setValue(String.valueOf(enabled));
+    when(settingsRetriever.getSettingByKey(any(OrdersSettingKey.class))).thenReturn(CompletableFuture.completedFuture(setting));
   }
 
   private void mockNoSettings() {

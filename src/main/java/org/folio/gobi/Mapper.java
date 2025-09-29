@@ -899,7 +899,7 @@ public class Mapper {
 
   private void mapLocation(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings, Location location,
     Document doc) {
-    if (Optional.ofNullable(mappings.get(Mapping.Field.LOCATION)).isEmpty()) {
+    if (mappings.get(Mapping.Field.LOCATION) == null) {
       logger.info("mapLocation:: location configuration is not set, skipping location mapping");
       return;
     }
