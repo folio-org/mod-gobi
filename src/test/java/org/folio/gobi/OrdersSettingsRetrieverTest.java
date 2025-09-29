@@ -12,6 +12,7 @@ import java.io.IOException;
 import org.folio.gobi.domain.OrdersSettingKey;
 import org.folio.rest.core.RestClient;
 import org.folio.rest.utils.CopilotGenerated;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -25,9 +26,18 @@ public class OrdersSettingsRetrieverTest {
   @Mock
   RestClient restClient;
 
+  private AutoCloseable mocks;
+
   @BeforeEach
   public void initMocks() {
-    MockitoAnnotations.openMocks(this);
+    mocks = MockitoAnnotations.openMocks(this);
+  }
+
+  @AfterEach
+  public void closeMocks() throws Exception {
+    if (mocks != null) {
+      mocks.close();
+    }
   }
 
   @Test
