@@ -30,6 +30,7 @@ import org.folio.gobi.LookupService;
 import org.folio.gobi.Mapper;
 import org.folio.gobi.MappingHelper;
 import org.folio.gobi.OrderMappingCache;
+import org.folio.gobi.OrdersSettingsRetriever;
 import org.folio.gobi.domain.BindingResult;
 import org.folio.gobi.exceptions.ErrorCodes;
 import org.folio.gobi.exceptions.GobiException;
@@ -64,6 +65,7 @@ public class PostGobiOrdersHelper {
 
   private final Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler;
   private final RestClient restClient;
+  private final OrdersSettingsRetriever settingsRetriever;
   private final LookupService lookupService;
   private final MappingHelper mappingHelper;
 
@@ -71,7 +73,8 @@ public class PostGobiOrdersHelper {
                               Map<String, String> okapiHeaders, Context ctx) {
     this.restClient = new RestClient(okapiHeaders, ctx);
     this.asyncResultHandler = asyncResultHandler;
-    this.lookupService = new LookupService(restClient);
+    this.settingsRetriever = new OrdersSettingsRetriever(restClient);
+    this.lookupService = new LookupService(restClient, settingsRetriever);
     this.mappingHelper = new MappingHelper(lookupService);
   }
 

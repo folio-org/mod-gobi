@@ -1,0 +1,10 @@
+{
+  "settings": [
+    {
+      "id": "setting-1-id",
+      "key": "ALLOW_ORDERING_WITH_AFFILIATED_LOCATIONS",
+      "value": "true"
+    }
+  ],
+  "totalRecords": 1
+}
