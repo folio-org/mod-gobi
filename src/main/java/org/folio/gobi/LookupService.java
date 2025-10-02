@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.domain.LocationTranslationResult;
+import org.folio.gobi.domain.OrdersSettingKey;
 import org.folio.rest.acq.model.AcquisitionMethod;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.Organization;
@@ -59,31 +60,40 @@ public class LookupService {
   public static final String NAME = "name";
 
   private final RestClient restClient;
+  private final OrdersSettingsRetriever settingsRetriever;
 
-  public LookupService(RestClient restClient) {
+  public LookupService(RestClient restClient, OrdersSettingsRetriever settingsRetriever) {
     this.restClient = restClient;
+    this.settingsRetriever = settingsRetriever;
   }
   /**
    * Use the provided location code.
    * If one isn't provided, or the specified
    * type can't be found, fallback using the first one listed
+   * Checks CENTRAL_ORDERING_ENABLED setting to determine whether to include tenantId in the result.
    *
    * @param locationCode code of location object
-   * @return UUID of the location object
+   * @return UUID of the location object with conditional tenantId based on settings
    */
   public CompletableFuture<LocationTranslationResult> lookupLocationId(String locationCode) {
     logger.debug("lookupLocationId:: Trying to look up locationId by location '{}'", locationCode);
+    String tenantIdFromHeaders = restClient.getTenantId();
     return restClient.handleGetRequest(LOCATIONS_ENDPOINT).toCompletionStage().toCompletableFuture()
       .thenCompose(locations -> {
         JsonArray locationsJsonArray = locations.getJsonArray("locations");
         for (int i = 0; i < locationsJsonArray.size(); i++) {
           JsonObject locationObject = locationsJsonArray.getJsonObject(i);
           String code = locationObject.getString("code");
-          if (Objects.equals(locationCode, code) || DEFAULT_LOOKUP_CODE.equals(locationCode)) {
-            String locationId = locationObject.getString("id");
-            String tenantId = locationObject.getString("tenantId");
-            logger.info("lookupLocationId:: found id: {}, tenant: {}", locationId, tenantId);
-            return completedFuture(new LocationTranslationResult(locationId, tenantId));
+          String locationId = locationObject.getString("id");
+          String tenantId = locationObject.getString("tenantId");
+
+          if (Objects.equals(locationCode, code)) {
+            logger.info("lookupLocationId:: found locationId: {}, tenantId: {}", locationId, tenantId);
+            return getLookupLocationResult(locationId, tenantId);
+          } else if (DEFAULT_LOOKUP_CODE.equals(locationCode) && StringUtils.equals(tenantIdFromHeaders, tenantId)) {
+            logger.info("lookupLocationId:: found first available locationId: {} that matches tenantId: {} "
+                + "for default lookup code: {}", locationId, tenantId, DEFAULT_LOOKUP_CODE);
+            return getLookupLocationResult(locationId, tenantId);
           }
         }
         logger.warn("lookupLocationId:: Location '{}' not found", locationCode);
@@ -92,6 +102,17 @@ public class LookupService {
       .exceptionally(t -> {
         logger.error("Error while searching for location '{}'", locationCode, t);
         return null;
+      });
+  }
+
+  private CompletableFuture<LocationTranslationResult> getLookupLocationResult(String locationId, String tenantId) {
+    return settingsRetriever.getSettingByKey(OrdersSettingKey.CENTRAL_ORDERING_ENABLED)
+      .thenApply(setting -> {
+        if (setting != null && Boolean.TRUE.toString().equalsIgnoreCase(setting.getValue())) {
+          return new LocationTranslationResult(locationId, tenantId);
+        } else {
+          return new LocationTranslationResult(locationId, null);
+        }
       });
   }
 

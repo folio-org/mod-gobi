@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -127,7 +128,7 @@ public class Mapper {
     Tags tags = new Tags();
     AcquisitionMethod acquisitionMethod = new AcquisitionMethod();
     CompositePurchaseOrder compPO = bindingResult.getResult();
-    PoLine pol = compPO.getPoLines().get(0);
+    PoLine pol = compPO.getPoLines().getFirst();
 
     List<CompletableFuture<?>> futures = new ArrayList<>();
 
@@ -148,7 +149,7 @@ public class Mapper {
     }
     CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0]))
       .thenAccept(v -> {
-        compPO.setTotalItems(location.getQuantity());
+        compPO.setTotalItems(calculateTotalQuantity(cost));
 
         setObjectIfPresent(detail, o -> pol.setDetails((Details) o));
         setObjectIfPresent(cost, o -> pol.setCost((Cost) o));
@@ -186,6 +187,12 @@ public class Mapper {
 
     return future;
 
+  }
+
+  private int calculateTotalQuantity(Cost cost) {
+    int eQuantity = ObjectUtils.defaultIfNull(cost.getQuantityElectronic(), 0);
+    int physicalQuantity = ObjectUtils.defaultIfNull(cost.getQuantityPhysical(), 0);
+    return eQuantity + physicalQuantity;
   }
 
   private void mapAcquisitionMethod(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings,
@@ -892,18 +899,24 @@ public class Mapper {
 
   private void mapLocation(List<CompletableFuture<?>> futures, Map<Mapping.Field, DataSourceResolver> mappings, Location location,
     Document doc) {
-    Optional.ofNullable(mappings.get(Mapping.Field.LOCATION))
-      .ifPresent(field -> futures.add(field.resolve(doc)
-        .thenAccept(o -> {
-          LocationTranslationResult locationTranslation = (LocationTranslationResult) o;
-          if (Objects.isNull(locationTranslation)) {
-            logger.warn("mapLocation:: LocationTranslation is null");
-          } else {
-            location.setLocationId(locationTranslation.locationId());
+    if (mappings.get(Mapping.Field.LOCATION) == null) {
+      logger.info("mapLocation:: location configuration is not set, skipping location mapping");
+      return;
+    }
+
+    futures.add(mappings.get(Mapping.Field.LOCATION).resolve(doc)
+      .thenAccept(o -> {
+        LocationTranslationResult locationTranslation = (LocationTranslationResult) o;
+        if (Objects.isNull(locationTranslation)) {
+          logger.warn("mapLocation:: LocationTranslation is null");
+        } else {
+          location.setLocationId(locationTranslation.locationId());
+          if (StringUtils.isNotBlank(locationTranslation.tenantId())) {
             location.setTenantId(locationTranslation.tenantId());
           }
-        })
-        .exceptionally(Mapper::logException)));
+        }
+      })
+      .exceptionally(Mapper::logException));
 
     // A GOBI order can only be one of the below type per order, hence the total
     // quantity will be the same
