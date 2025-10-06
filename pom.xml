@@ -84,10 +84,10 @@
     <jsonschema2pojo-maven-plugin.version>1.2.2</jsonschema2pojo-maven-plugin.version>
 
     <!--Test Scope dependencies-->
-    <rest-assured.version>5.5.5</rest-assured.version>
+    <rest-assured.version>5.5.6</rest-assured.version>
     <jmockit.version>1.50</jmockit.version>
     <junit-bom.version>5.12.0</junit-bom.version>
-    <mockito.version>5.18.0</mockito.version>
+    <mockito.version>5.20.0</mockito.version>
     <tomakehurst-wiremock.version>3.0.1</tomakehurst-wiremock.version>
 
     <!--Sonar properties-->
