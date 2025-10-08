@@ -881,7 +881,9 @@ public class Mapper {
             logger.warn("mapLocation:: LocationTranslation is null");
           } else {
             location.setLocationId(locationTranslation.locationId());
-            location.setTenantId(locationTranslation.tenantId());
+            if (StringUtils.isNotBlank(locationTranslation.tenantId())) {
+              location.setTenantId(locationTranslation.tenantId());
+            }
           }
         })
         .exceptionally(Mapper::logException)));

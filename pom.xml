@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-gobi</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.2-SNAPSHOT</version>
 
   <name>GOBI Integration</name>
   <description>GOBI® (Global Online Bibliographic Information) is the leading web-based acquisitions tool for finding, ordering and
@@ -377,10 +377,15 @@
         <version>${aspectj-maven-plugin.version}</version>
         <configuration>
           <verbose>true</verbose>
-          <complianceLevel>17</complianceLevel>
+          <complianceLevel>${java.version}</complianceLevel>
           <XaddSerialVersionUID>true</XaddSerialVersionUID>
           <showWeaveInfo>true</showWeaveInfo>
           <forceAjcCompile>true</forceAjcCompile>
+          <aspectDirectory>src/main/java/org/folio/rest/annotations</aspectDirectory>
+          <includes>
+            <include>**/impl/*.java</include>
+            <include>**/*.aj</include>
+          </includes>
           <aspectLibraries>
             <aspectLibrary>
               <groupId>org.folio</groupId>
@@ -654,6 +659,17 @@
           <outputDirectory>${jsonschema2pojo_output_dir}</outputDirectory>
         </configuration>
         <executions>
+          <execution>
+            <id>acq-models-common</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>${basedir}/ramls/acq-models/common/schemas</sourceDirectory>
+              <targetPackage>org.folio.rest.acq.model</targetPackage>
+              <generateBuilders>true</generateBuilders>
+            </configuration>
+          </execution>
           <execution>
             <id>acq-models</id>
             <goals>

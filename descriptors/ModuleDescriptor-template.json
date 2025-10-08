@@ -50,7 +50,8 @@
             "orders.item.approve",
             "orders.acquisitions-units-assignments.assign",
             "orders.acquisitions-units-assignments.manage",
-            "consortium-search.locations.collection.get"
+            "consortium-search.locations.collection.get",
+            "orders-storage.settings.collection.get"
           ]
         }
       ]

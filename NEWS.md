@@ -1,5 +1,13 @@
 ## 3.1.0 - Unreleased
 
+## 3.0.1 - (Sunflower R1 2025 Hot Hix)
+The primary focus of this release was to fix issues with populating tenantId for non ECS envs.
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v3.0.0...v3.0.1)
+
+### Bug fixes
+* [MODGOBI-232] (https://folio-org.atlassian.net/browse/MODGOBI-232) - Skip populating tenantId from Gobi when not necessary
+
 ## 3.0.0 - (Sunflower R1 2025)
 The primary focus of this release was to simplify mappings and do dependencies upgrade including Java 21
 

@@ -1,0 +1,23 @@
+{
+  "locations": [
+    {
+      "id": "loc-1-id",
+      "code": "MAIN",
+      "name": "Main Library",
+      "tenantId": "tenant1"
+    },
+    {
+      "id": "loc-2-id",
+      "code": "SCIENCE",
+      "name": "Science Library",
+      "tenantId": "tenant1"
+    },
+    {
+      "id": "loc-3-id",
+      "code": "REMOTE",
+      "name": "Remote Storage",
+      "tenantId": "tenant2"
+    }
+  ],
+  "totalRecords": 3
+}
