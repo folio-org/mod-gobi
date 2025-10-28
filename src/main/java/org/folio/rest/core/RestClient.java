@@ -2,12 +2,6 @@ package org.folio.rest.core;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.folio.rest.service.GobiCustomMappingsService.SEARCH_ENDPOINT;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -92,19 +86,4 @@ public class RestClient {
         .expect(SUCCESS_RESPONSE_PREDICATE).send()
         .mapEmpty();
   }
-
-  public Future<JsonObject> handleGetRequest(String baseEndpoint, String query, int offset, int limit) {
-    String endpoint = String.format(SEARCH_ENDPOINT, baseEndpoint, limit, offset, buildQueryParam(query));
-
-    return handleGetRequest(endpoint);
-  }
-
-  public String buildQueryParam(String query) {
-    return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query);
-  }
-
-  public String encodeQuery(String query) {
-    return URLEncoder.encode(query, StandardCharsets.UTF_8);
-  }
-
 }

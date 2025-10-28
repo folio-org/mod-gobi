@@ -1,10 +1,8 @@
 package org.folio.rest.impl;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.folio.gobi.LookupService.CONFIGS;
 import static org.folio.gobi.LookupService.FIRST_ELEM;
 import static org.folio.gobi.LookupService.QUERY;
-import static org.folio.rest.ResourcePaths.CONFIGURATION_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_BY_ID_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_ENDPOINT;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
@@ -22,14 +20,16 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.dao.OrderMappingsDao;
+import org.folio.dao.OrderMappingsDaoImpl;
 import org.folio.gobi.DataSourceResolver;
+import org.folio.rest.persist.PostgresClient;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
 import org.folio.gobi.HelperUtils;
 import org.folio.gobi.LookupService;
 import org.folio.gobi.Mapper;
 import org.folio.gobi.MappingHelper;
-import org.folio.gobi.OrderMappingCache;
 import org.folio.gobi.OrdersSettingsRetriever;
 import org.folio.gobi.domain.BindingResult;
 import org.folio.gobi.exceptions.ErrorCodes;
@@ -43,6 +43,7 @@ import org.folio.rest.gobi.model.ResponseError;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.tools.utils.BinaryOutStream;
+import org.folio.rest.tools.utils.TenantTool;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -56,9 +57,6 @@ import io.vertx.core.json.JsonObject;
 public class PostGobiOrdersHelper {
   private static final Logger logger = LogManager.getLogger(PostGobiOrdersHelper.class);
 
-  private static final String CONFIGURATION_MODULE = "GOBI";
-  private static final String CONFIGURATION_CONFIG_NAME = "orderMappings";
-  private static final String CONFIGURATION_CODE = "gobi.order.";
   public static final String CODE_BAD_REQUEST = "BAD_REQUEST";
   public static final String CODE_INVALID_XML = "INVALID_XML";
 
@@ -68,6 +66,9 @@ public class PostGobiOrdersHelper {
   private final OrdersSettingsRetriever settingsRetriever;
   private final LookupService lookupService;
   private final MappingHelper mappingHelper;
+  private final OrderMappingsDao orderMappingsDao;
+  private final String tenantId;
+  private final PostgresClient pgClient;
 
   public PostGobiOrdersHelper(Handler<AsyncResult<Response>> asyncResultHandler,
                               Map<String, String> okapiHeaders, Context ctx) {
@@ -76,6 +77,9 @@ public class PostGobiOrdersHelper {
     this.settingsRetriever = new OrdersSettingsRetriever(restClient);
     this.lookupService = new LookupService(restClient, settingsRetriever);
     this.mappingHelper = new MappingHelper(lookupService);
+    this.tenantId = TenantTool.tenantId(okapiHeaders);
+    this.pgClient = PostgresClient.getInstance(ctx.owner(), tenantId);
+    this.orderMappingsDao = new OrderMappingsDaoImpl();
   }
 
 
@@ -128,79 +132,30 @@ public class PostGobiOrdersHelper {
   }
 
   public CompletableFuture<Map<Mapping.Field, DataSourceResolver>> lookupOrderMappings(OrderMappings.OrderType orderType) {
-    final String query = HelperUtils.encodeValue(
-      String.format("module==%s AND configName==%s AND code==%s",
-        CONFIGURATION_MODULE,
-        CONFIGURATION_CONFIG_NAME,
-        CONFIGURATION_CODE + orderType));
+    logger.debug("lookupOrderMappings:: Looking up mappings for orderType={}", orderType);
 
-    String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
-    return restClient.handleGetRequest(endpoint)
-      .map(jo -> {
-        if (!jo.getJsonArray(CONFIGS).isEmpty()) {
-          String config = jo.getJsonArray(CONFIGS).getJsonObject(0).getString("value");
-          logger.info("lookupOrderMappings:: Use custom mapping config: \n {}", config);
-          return tryExtractOrderMappings(orderType, jo);
+    return pgClient.withConn(conn -> orderMappingsDao.getByOrderType(orderType.value(), conn)
+      .map(orderMappings -> {
+        if (orderMappings == null) {
+          logger.info("lookupOrderMappings:: Use default mapping for order type: {}", orderType);
+          return mappingHelper.getDefaultMappingForOrderType(orderType);
         } else {
-          String config = JsonObject.mapFrom(MappingHelper.getDefaultMappingByOrderType(orderType)).encode();
-          logger.info("lookupOrderMappings:: Use default mapping config: \n {}", config);
-          return getDefaultMappingsFromCache(orderType);
+          logger.info("lookupOrderMappings:: Use custom mapping config from DB for order type: {}", orderType);
+          return tryExtractOrderMappings(orderMappings);
         }
-      })
-      .onFailure(t -> logger.error("Exception looking up custom order mappings for tenant '{}'", restClient.getTenantId(), t))
-      .toCompletionStage()
-      .toCompletableFuture();
+      }))
+    .onFailure(t -> logger.error("Exception looking up custom order mappings for tenant '{}'", tenantId, t))
+    .toCompletionStage()
+    .toCompletableFuture();
   }
 
-  /**
-   * If retrieval of custom tenant mapping fails and there is no cached value
-   * then the default mappings will be used for placing an order
-   *
-   * @param orderType
-   * @return Map<Mapping.Field, org.folio.gobi.DataSourceResolver>
-   */
-  private Map<Mapping.Field, org.folio.gobi.DataSourceResolver> getDefaultMappingsFromCache(
-    final OrderMappings.OrderType orderType) {
 
-    logger.info("No custom Mappings found for tenant, using default mappings");
-    String tenant = restClient.getTenantId();
-    boolean cacheFound = OrderMappingCache.getInstance().containsKey(OrderMappingCache.computeKey(tenant, orderType));
-    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings = cacheFound ?
-      OrderMappingCache.getInstance().getValue(OrderMappingCache.computeKey(tenant, orderType)) : mappingHelper.getDefaultMappingForOrderType(orderType);
-
-    if (!cacheFound)
-      OrderMappingCache.getInstance().putValue(orderType.toString(), mappings);
-    return mappings;
-  }
-
-  private Map<Mapping.Field, DataSourceResolver> tryExtractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
+  private Map<Mapping.Field, DataSourceResolver> tryExtractOrderMappings(OrderMappings customMapping) {
     try {
-      return extractOrderMappings(orderType, jo);
+      return mappingHelper.extractOrderMappings(customMapping);
     } catch (Exception e) {
       throw new GobiException(ErrorCodes.INVALID_ORDER_MAPPING_FILE, e);
     }
-  }
-
-  private Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
-    Map<Mapping.Field, org.folio.gobi.DataSourceResolver> mappings;
-    String tenant = restClient.getTenantId();
-    String tenantConfigKey = OrderMappingCache.computeKey(tenant, orderType, jo);
-
-    if (OrderMappingCache.getInstance().containsKey(tenantConfigKey)) {
-      mappings = OrderMappingCache.getInstance().getValue(tenantConfigKey);
-    } else {
-      // check if there is a key with an old mapping for this order type and tenant, if so delete it
-      String tenantKey = OrderMappingCache.getInstance().getifContainsTenantconfigKey(tenant, orderType);
-      if (tenantKey != null) {
-        OrderMappingCache.getInstance().removeKey(tenantKey);
-      }
-      // extract the mappings and add it to cache
-      mappings = mappingHelper.extractOrderMappings(orderType, jo);
-      if (!mappings.isEmpty())
-        OrderMappingCache.getInstance().putValue(tenantConfigKey, mappings);
-    }
-    return mappings;
-
   }
 
   private CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {

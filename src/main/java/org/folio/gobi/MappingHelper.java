@@ -20,8 +20,6 @@ import org.folio.rest.jaxrs.model.OrderMappings;
 import org.w3c.dom.NodeList;
 
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 public class MappingHelper {
   private static final Logger logger = LogManager.getLogger(MappingHelper.class);
@@ -106,24 +104,16 @@ public class MappingHelper {
     );
   }
 
-  public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings.OrderType orderType, JsonObject jo) {
-    final Map<Mapping.Field, DataSourceResolver> map = new EnumMap<>(Mapping.Field.class);
+  public Map<Mapping.Field, DataSourceResolver> extractOrderMappings(OrderMappings orderMapping) {
+    Map<Mapping.Field, DataSourceResolver> map = new EnumMap<>(Mapping.Field.class);
 
-    final JsonArray configs = jo.getJsonArray("configs");
-
-    if (!configs.isEmpty()) {
-      final String mappingsString = configs.getJsonObject(0).getString("value");
-      final OrderMappings orderMapping = Json.decodeValue(mappingsString, OrderMappings.class);
-
-      final List<Mapping> orderMappingList = orderMapping.getMappings();
-
-      if (orderMappingList != null) {
-        for (Mapping mapping : orderMappingList) {
-          logger.info("Mapping exists for type: {} , field: {}", orderType, mapping.getField());
-          map.put(mapping.getField(), getDS(mapping, map));
-        }
-      }
+    if (orderMapping == null) {
+      return map;
     }
+    for (Mapping mapping : orderMapping.getMappings()) {
+      map.put(mapping.getField(), getDS(mapping, map));
+    }
+
     return map;
   }
 
@@ -137,9 +127,5 @@ public class MappingHelper {
       logger.error(errorMessage, e);
     }
     return StringUtils.EMPTY;
-  }
-
-  public static OrderMappings getDefaultMappingByOrderType(OrderMappings.OrderType orderType) {
-    return defaultMappings.get(orderType);
   }
 }

@@ -89,6 +89,7 @@
     <junit-bom.version>5.12.0</junit-bom.version>
     <mockito.version>5.20.0</mockito.version>
     <tomakehurst-wiremock.version>3.0.1</tomakehurst-wiremock.version>
+    <testcontainers.version>1.20.6</testcontainers.version>
 
     <!--Sonar properties-->
     <sonar.exclusions>**/models/**.java, **/domain/**.java</sonar.exclusions>
@@ -159,6 +160,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${testcontainers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -223,6 +231,22 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>postgres-testing</artifactId>
+      <version>${raml-module-builder.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

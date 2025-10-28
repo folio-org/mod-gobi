@@ -5,11 +5,11 @@ import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
 import static org.folio.rest.utils.TestUtils.checkVertxContextCompletion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
@@ -215,7 +215,7 @@ public class PostGobiOrdersHelperTest {
       .newDocumentBuilder()
       .parse(data);
 
-    Assertions.assertThrows(IllegalArgumentException.class, () -> PostGobiOrdersHelper.getOrderType(doc));
+    assertThrows(IllegalArgumentException.class, () -> PostGobiOrdersHelper.getOrderType(doc));
     logger.info("Got expected IllegalArgumentException for unknown order type");
 
   }
@@ -289,8 +289,6 @@ public class PostGobiOrdersHelperTest {
     logger.info("Begin: Testing for Order Mappings to fetch default mappings if configuration Call fails");
 
     var future = pgoh.lookupOrderMappings(OrderMappings.OrderType.LISTED_ELECTRONIC_MONOGRAPH);
-    var exception = Assertions.assertThrows(CompletionException.class, future::join);
-
-    assertEquals(UnknownHostException.class, exception.getCause().getClass());
+    assertThrows(CompletionException.class, future::join);
   }
 }

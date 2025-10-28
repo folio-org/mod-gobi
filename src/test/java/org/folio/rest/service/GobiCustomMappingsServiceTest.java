@@ -1,23 +1,31 @@
 package org.folio.rest.service;
 
-import static io.vertx.core.Future.succeededFuture;
-import static org.folio.rest.ResourcePaths.CONFIGURATION_ENDPOINT;
-import static org.folio.rest.utils.TestUtils.getMockData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
 
-import org.folio.rest.core.RestClient;
-import org.folio.rest.jaxrs.model.Configs;
+import org.folio.dao.OrderMappingsDao;
+import org.folio.rest.jaxrs.model.DataSource;
+import org.folio.rest.jaxrs.model.DataSource.Translation;
+import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
+import org.folio.rest.jaxrs.model.OrderMappings.OrderType;
 import org.folio.rest.jaxrs.model.OrderMappingsView;
+import org.folio.rest.persist.Conn;
+import org.folio.rest.persist.Criteria.Criterion;
+import org.folio.rest.persist.PostgresClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,8 +33,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.Future;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -35,113 +42,188 @@ import io.vertx.junit5.VertxTestContext;
 class GobiCustomMappingsServiceTest {
 
   @Mock
-  RestClient restClient;
+  private PostgresClient pgClient;
+
+  @Mock
+  private OrderMappingsDao orderMappingsDao;
+
+  @Mock
+  private Conn conn;
+
+  private GobiCustomMappingsService service;
+  private AutoCloseable closeable;
 
   @BeforeEach
-  public void initMocks() {
-    MockitoAnnotations.openMocks(this);
+  void setUp() {
+    closeable = MockitoAnnotations.openMocks(this);
+    service = new GobiCustomMappingsService(pgClient, orderMappingsDao);
+  }
+
+  @AfterEach
+  void tearDown() throws Exception {
+    if (closeable != null) {
+      closeable.close();
+    }
   }
 
   @Test
-  void getCustomMappingListByQuery(VertxTestContext vtc) throws IOException {
-    var jsonConfigs = getMockData("ConfigData/success.json");
+  void testGetCustomMappingListByQuery(VertxTestContext vtc) {
+    // Given
+    OrderMappings mapping = createSampleOrderMapping(OrderType.LISTED_PRINT_MONOGRAPH);
+    List<OrderMappings> customMappings = Collections.singletonList(mapping);
 
-    doReturn(succeededFuture(new JsonObject(jsonConfigs)))
-      .when(restClient).handleGetRequest(anyString(), anyString(), anyInt(), anyInt());
+    when(pgClient.withConn(any())).thenAnswer(invocation -> {
+      Function<Conn, Future<List<OrderMappings>>> function = invocation.getArgument(0);
+      when(orderMappingsDao.get(any(Criterion.class), anyInt(), anyInt(), eq(conn)))
+        .thenReturn(Future.succeededFuture(customMappings));
+      return function.apply(conn);
+    });
 
-    new GobiCustomMappingsService(restClient)
-    .getCustomMappingListByQuery(0,1)
-    .onComplete(vtc.succeeding(orderMappingsViewCollection -> {
-      assertFalse(orderMappingsViewCollection.getOrderMappingsViews().isEmpty());
-      vtc.completeNow();
-    }));
+    // When/Then
+    service.getCustomMappingListByQuery(0, 10)
+      .onComplete(vtc.succeeding(result -> {
+        assertNotNull(result);
+        assertNotNull(result.getOrderMappingsViews());
+        assertFalse(result.getOrderMappingsViews().isEmpty());
+        vtc.completeNow();
+      }));
   }
 
   @Test
-  void getCustomMappingByOrderType(VertxTestContext vtc) throws IOException {
-    var jsonConfigs = getMockData("ConfigData/success.json");
+  void testGetCustomMappingByOrderType_CustomMapping(VertxTestContext vtc) {
+    // Given
+    OrderType orderType = OrderType.LISTED_ELECTRONIC_MONOGRAPH;
+    OrderMappings customMapping = createSampleOrderMapping(orderType);
 
-    doReturn(succeededFuture(new JsonObject(jsonConfigs)))
-      .when(restClient).handleGetRequest(anyString(), anyString(), anyInt(), anyInt());
+    when(pgClient.withConn(any())).thenAnswer(invocation -> {
+      Function<Conn, Future<OrderMappingsView>> function = invocation.getArgument(0);
+      when(orderMappingsDao.getByOrderType(eq(orderType.value()), eq(conn)))
+        .thenReturn(Future.succeededFuture(customMapping));
+      return function.apply(conn);
+    });
 
-    new GobiCustomMappingsService(restClient)
-    .getCustomMappingByOrderType(OrderMappings.OrderType.LISTED_ELECTRONIC_MONOGRAPH.value())
-    .onComplete(vtc.succeeding(orderMappingsView -> {
-      assertEquals(OrderMappingsView.MappingType.CUSTOM, orderMappingsView.getMappingType());
-      assertFalse(orderMappingsView.getOrderMappings().getMappings().isEmpty());
-      vtc.completeNow();
-    }));
+    // When/Then
+    service.getCustomMappingByOrderType(orderType.value())
+      .onComplete(vtc.succeeding(result -> {
+        assertNotNull(result);
+        assertEquals(OrderMappingsView.MappingType.CUSTOM, result.getMappingType());
+        assertNotNull(result.getOrderMappings());
+        assertEquals(orderType, result.getOrderMappings().getOrderType());
+        vtc.completeNow();
+      }));
   }
 
   @Test
-  void getDefaultMappingByOrderType(VertxTestContext vtc) {
+  void testGetCustomMappingByOrderType_DefaultMapping(VertxTestContext vtc) {
+    // Given - no custom mapping found
+    OrderType orderType = OrderType.LISTED_PRINT_SERIAL;
 
-    doReturn(succeededFuture(JsonObject.mapFrom(new Configs())))
-      .when(restClient).handleGetRequest(anyString(), anyString(), anyInt(), anyInt());
+    when(pgClient.withConn(any())).thenAnswer(invocation -> {
+      Function<Conn, Future<OrderMappingsView>> function = invocation.getArgument(0);
+      when(orderMappingsDao.getByOrderType(eq(orderType.value()), eq(conn)))
+        .thenReturn(Future.succeededFuture(null));
+      return function.apply(conn);
+    });
 
-    new GobiCustomMappingsService(restClient)
-    .getCustomMappingByOrderType(OrderMappings.OrderType.LISTED_PRINT_SERIAL.value())
-    .onComplete(vtc.succeeding(orderMappingsView -> {
-      assertEquals(OrderMappingsView.MappingType.DEFAULT, orderMappingsView.getMappingType());
-      assertFalse(orderMappingsView.getOrderMappings().getMappings().isEmpty());
-      vtc.completeNow();
-    }));
+    // When/Then
+    service.getCustomMappingByOrderType(orderType.value())
+      .onComplete(vtc.succeeding(result -> {
+        assertNotNull(result);
+        assertEquals(OrderMappingsView.MappingType.DEFAULT, result.getMappingType());
+        assertNotNull(result.getOrderMappings());
+        assertEquals(orderType, result.getOrderMappings().getOrderType());
+        vtc.completeNow();
+      }));
   }
 
   @Test
-  void postCustomMapping(VertxTestContext vtc) throws IOException {
-    var jsonConfigs = getMockData("ConfigData/success.json");
-    var config =  new JsonObject(jsonConfigs).mapTo(Configs.class).getConfigs().get(0);
-    var orderMapping = Json.decodeValue(config.getValue(), OrderMappings.class);
+  void testPostCustomMapping(VertxTestContext vtc) {
+    // Given
+    OrderMappings newMapping = createSampleOrderMapping(OrderType.UNLISTED_PRINT_MONOGRAPH);
+    OrderMappings savedMapping = createSampleOrderMapping(OrderType.UNLISTED_PRINT_MONOGRAPH)
+      .withId(UUID.randomUUID().toString());
 
-    doReturn(succeededFuture(JsonObject.mapFrom(config)))
-      .when(restClient).post(anyString(), any());
+    when(pgClient.withConn(any())).thenAnswer(invocation -> {
+      Function<Conn, Future<OrderMappingsView>> function = invocation.getArgument(0);
+      when(orderMappingsDao.save(eq(newMapping), eq(conn)))
+        .thenReturn(Future.succeededFuture(savedMapping));
+      return function.apply(conn);
+    });
 
-    new GobiCustomMappingsService(restClient)
-    .postCustomMapping(orderMapping)
-    .onComplete(vtc.succeeding(orderMappingsView -> {
-      assertEquals(OrderMappingsView.MappingType.CUSTOM, orderMappingsView.getMappingType());
-      assertFalse(orderMappingsView.getOrderMappings().getMappings().isEmpty());
-      vtc.completeNow();
-    }));
+    // When/Then
+    service.postCustomMapping(newMapping)
+      .onComplete(vtc.succeeding(result -> {
+        assertNotNull(result);
+        assertEquals(OrderMappingsView.MappingType.CUSTOM, result.getMappingType());
+        assertNotNull(result.getOrderMappings());
+        assertEquals(savedMapping.getId(), result.getOrderMappings().getId());
+        vtc.completeNow();
+      }));
   }
 
   @Test
-  void putCustomMapping(VertxTestContext vtc) throws IOException {
-    var jsonConfigs = getMockData("ConfigData/success.json");
-    var config =  new JsonObject(jsonConfigs).mapTo(Configs.class).getConfigs().get(0);
-    var orderMapping = Json.decodeValue(config.getValue(), OrderMappings.class);
+  void testPutCustomMapping(VertxTestContext vtc) {
+    // Given
+    OrderType orderType = OrderType.LISTED_ELECTRONIC_MONOGRAPH;
+    OrderMappings updatedMapping = createSampleOrderMapping(orderType);
 
-    doReturn(succeededFuture(new JsonObject(jsonConfigs)))
-      .when(restClient).handleGetRequest(anyString(), anyString(), anyInt(), anyInt());
+    when(pgClient.withConn(any())).thenAnswer(invocation -> {
+      Function<Conn, Future<Void>> function = invocation.getArgument(0);
+      when(orderMappingsDao.updateByOrderType(anyString(), eq(updatedMapping), eq(conn)))
+        .thenReturn(Future.succeededFuture());
+      return function.apply(conn);
+    });
 
-    doReturn(succeededFuture(null))
-      .when(restClient).handlePutRequest(eq(CONFIGURATION_ENDPOINT + "/" + config.getId()), any());
-
-    new GobiCustomMappingsService(restClient)
-    .putCustomMapping(OrderMappings.OrderType.LISTED_ELECTRONIC_MONOGRAPH.value(), orderMapping)
-    .onComplete(vtc.succeeding(result -> {
-      assertNull(result);
-      vtc.completeNow();
-    }));
+    // When/Then
+    service.putCustomMapping(orderType.value(), updatedMapping)
+      .onComplete(vtc.succeeding(result -> {
+        assertNull(result);
+        vtc.completeNow();
+      }));
   }
 
   @Test
-  void deleteCustomMapping(VertxTestContext vtc) throws IOException {
-    var jsonConfigs = getMockData("ConfigData/success.json");
-    var config =  new JsonObject(jsonConfigs).mapTo(Configs.class).getConfigs().get(0);
+  void testDeleteCustomMapping(VertxTestContext vtc) {
+    // Given
+    OrderType orderType = OrderType.LISTED_ELECTRONIC_MONOGRAPH;
+    String existingId = UUID.randomUUID().toString();
+    OrderMappings existingMapping = createSampleOrderMapping(orderType);
+    existingMapping.setId(existingId);
 
-    doReturn(succeededFuture(new JsonObject(jsonConfigs)))
-      .when(restClient).handleGetRequest(anyString(), anyString(), anyInt(), anyInt());
+    when(pgClient.withConn(any())).thenAnswer(invocation -> {
+      Function<Conn, Future<Void>> function = invocation.getArgument(0);
+      when(orderMappingsDao.getByOrderType(eq(orderType.value()), eq(conn)))
+        .thenReturn(Future.succeededFuture(existingMapping));
+      when(orderMappingsDao.delete(eq(existingId), eq(conn)))
+        .thenReturn(Future.succeededFuture());
+      return function.apply(conn);
+    });
 
-    doReturn(succeededFuture(null))
-      .when(restClient).delete(CONFIGURATION_ENDPOINT + "/" + config.getId());
+    // When/Then
+    service.deleteCustomMapping(orderType.value())
+      .onComplete(vtc.succeeding(result -> {
+        assertNull(result);
+        vtc.completeNow();
+      }));
+  }
 
-    new GobiCustomMappingsService(restClient)
-    .deleteCustomMapping(OrderMappings.OrderType.LISTED_ELECTRONIC_MONOGRAPH.value())
-    .onComplete(vtc.succeeding(result -> {
-      assertNull(result);
-      vtc.completeNow();
-    }));
+  /**
+   * Helper method to create a sample OrderMappings object for testing
+   */
+  private OrderMappings createSampleOrderMapping(OrderType orderType) {
+    OrderMappings orderMappings = new OrderMappings();
+    orderMappings.setOrderType(orderType);
+
+    Mapping mapping = new Mapping();
+    mapping.setField(Mapping.Field.VENDOR);
+
+    DataSource dataSource = new DataSource();
+    dataSource.setFrom("//vendor");
+    dataSource.setTranslation(Translation.LOOKUP_ORGANIZATION);
+    mapping.setDataSource(dataSource);
+
+    orderMappings.setMappings(Collections.singletonList(mapping));
+
+    return orderMappings;
   }
 }

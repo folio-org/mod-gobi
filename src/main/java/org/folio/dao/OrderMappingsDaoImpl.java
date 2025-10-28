@@ -1,0 +1,89 @@
+package org.folio.dao;
+
+import io.vertx.core.Future;
+import java.util.List;
+import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.rest.jaxrs.model.OrderMappings;
+import org.folio.rest.persist.Conn;
+import org.folio.rest.persist.Criteria.Criteria;
+import org.folio.rest.persist.Criteria.Criterion;
+import org.folio.rest.persist.interfaces.Results;
+
+/**
+ * Implementation of OrderMappingsDao using Conn class.
+ */
+public class OrderMappingsDaoImpl implements OrderMappingsDao {
+
+  private static final Logger logger = LogManager.getLogger(OrderMappingsDaoImpl.class);
+
+  @Override
+  public Future<List<OrderMappings>> get(Criterion criterion, int offset, int limit, Conn conn) {
+    return conn.get(TABLE_NAME, OrderMappings.class, criterion, true)
+      .map(Results::getResults)
+      .onFailure(t -> logger.error("get:: Failed to retrieve order mappings", t));
+  }
+
+  @Override
+  public Future<OrderMappings> getById(String id, Conn conn) {
+    return conn.getById(TABLE_NAME, id, OrderMappings.class)
+      .onFailure(t -> logger.error("getById:: Failed to retrieve order mapping with id: {}", id, t));
+  }
+
+  @Override
+  public Future<OrderMappings> getByOrderType(String orderType, Conn conn) {
+    return conn.get(TABLE_NAME, OrderMappings.class, getOrderTypeCriterion(orderType), false)
+      .map(results -> {
+        if (results.getResults().isEmpty()) {
+          return null;
+        }
+        return results.getResults().getFirst();
+      })
+      .onFailure(t -> logger.error("findByOrderType:: Failed to find order mapping by orderType: {}", orderType, t));
+  }
+
+  @Override
+  public Future<OrderMappings> save(OrderMappings orderMappings, Conn conn) {
+    if (StringUtils.isBlank(orderMappings.getId())) {
+      orderMappings.setId(UUID.randomUUID().toString());
+    }
+
+    String id = orderMappings.getId();
+    return conn.saveAndReturnUpdatedEntity(TABLE_NAME, id, orderMappings)
+      .map(result -> result)
+      .onFailure(t -> logger.error("save:: Failed to save order mapping", t));
+  }
+
+  public Future<Void> update(String id, OrderMappings orderMappings, Conn conn) {
+    return conn.update(TABLE_NAME, orderMappings, id)
+      .onFailure(t -> logger.error("update:: Failed to update order mapping with id: {}", id, t))
+      .mapEmpty();
+  }
+
+  @Override
+  public Future<Void> updateByOrderType(String orderType, OrderMappings orderMappings, Conn conn) {
+    return conn.update(TABLE_NAME, orderMappings, getOrderTypeCriterion(orderType), true)
+      .compose(updateResult -> {
+        if (updateResult.size() == 0) {
+          logger.warn("updateByOrderType:: No mapping found for orderType {} to update", orderType);
+          return Future.failedFuture(new RuntimeException("No matching order mapping found to update for orderType: " + orderType));
+        }
+        return Future.succeededFuture();
+      })
+      .onFailure(t -> logger.error("updateByOrderType:: Failed to update order mapping for orderType: {}", orderType, t))
+      .mapEmpty();
+  }
+
+  @Override
+  public Future<Void> delete(String id, Conn conn) {
+    return conn.delete(TABLE_NAME, id)
+      .onFailure(t -> logger.error("delete:: Failed to delete order mapping with id: {}", id, t))
+      .mapEmpty();
+  }
+
+  private Criterion getOrderTypeCriterion(String orderType) {
+    return new Criterion(new Criteria().addField("'orderType'").setOperation("=").setVal(orderType));
+  }
+}
