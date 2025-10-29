@@ -190,7 +190,7 @@ class GobiCustomMappingsServiceTest {
     OrderMappings existingMapping = createSampleOrderMapping(orderType);
     existingMapping.setId(existingId);
 
-    when(pgClient.withConn(any())).thenAnswer(invocation -> {
+    when(pgClient.withTrans(any())).thenAnswer(invocation -> {
       Function<Conn, Future<Void>> function = invocation.getArgument(0);
       when(orderMappingsDao.getByOrderType(eq(orderType.value()), eq(conn)))
         .thenReturn(Future.succeededFuture(existingMapping));
