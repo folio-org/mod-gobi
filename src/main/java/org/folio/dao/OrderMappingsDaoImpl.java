@@ -53,6 +53,7 @@ public class OrderMappingsDaoImpl implements OrderMappingsDao {
       .onFailure(t -> log.error("save:: Failed to save order mapping", t));
   }
 
+  @Override
   public Future<Void> update(String id, OrderMappings orderMappings, Conn conn) {
     return conn.update(TABLE_NAME, orderMappings, id)
       .onFailure(t -> log.error("update:: Failed to update order mapping with id: {}", id, t))
