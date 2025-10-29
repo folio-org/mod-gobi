@@ -17,6 +17,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.hasKey;
+
 @ExtendWith(VertxExtension.class)
 @Testcontainers
 public abstract class BaseIntegrationTest {
@@ -55,8 +58,7 @@ public abstract class BaseIntegrationTest {
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
 
     vertx.deployVerticle(RestVerticle.class.getName(), opt, context.succeeding(id -> {
-      // Initialize the tenant
-      RestAssured
+      String tenantJobId = RestAssured
         .given()
           .header(OKAPI_HEADER_TENANT, TENANT_ID)
           .contentType(ContentType.JSON)
@@ -64,7 +66,19 @@ public abstract class BaseIntegrationTest {
         .when()
           .post("/_/tenant")
         .then()
-          .statusCode(201);
+          .statusCode(201)
+          .extract().path("id");
+
+      // Wait for the tenant job to complete
+      RestAssured
+        .given()
+          .header(OKAPI_HEADER_TENANT, TENANT_ID)
+        .when()
+          .get("/_/tenant/" + tenantJobId + "?wait=60000")
+        .then()
+          .statusCode(200)
+          .body(not(hasKey("error")));
+
       context.completeNow();
     }));
   }

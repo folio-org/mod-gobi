@@ -52,6 +52,19 @@ Please take a look wiki : [Using custom order mapping](https://wiki.folio.org/di
 
 **Note**: With the introduction of database support, custom mappings are now managed through the module's own database tables rather than mod-configuration. The API endpoints remain the same, ensuring backward compatibility.
 
+## Environment Variables
+
+For database connection, the following environment variables are used:
+
+| Environment Variable | Description                                         | Default Value |
+|----------------------|-----------------------------------------------------|---------------|
+| `DB_HOST`            | The hostname or IP address of the database server.  | `localhost`   |
+| `DB_PORT`            | The port number on which the database is listening. | `5432`        |
+| `DB_USERNAME`        | The username for connecting to the database.        | `postgres`    |
+| `DB_PASSWORD`        | The password for the specified username.            | `postgres`    |
+| `DB_DATABASE`        | The name of the database to connect to.             | `postgres`    |
+
+These variables are used to configure the connection to the PostgreSQL database.
 
 ### Issue tracker
 

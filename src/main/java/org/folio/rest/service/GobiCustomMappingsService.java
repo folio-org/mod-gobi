@@ -46,13 +46,7 @@ public class GobiCustomMappingsService {
 
   public Future<OrderMappingsView> getCustomMappingByOrderType(String orderType) {
     return pgClient.withConn(conn -> orderMappingsDao.getByOrderType(orderType, conn)
-      .map(orderMapping -> {
-        if (orderMapping == null) {
-          return buildOrderMappingsViewResponse(null, orderType);
-        } else {
-          return buildOrderMappingsViewResponse(orderMapping, orderType);
-        }
-      }));
+      .map(orderMapping -> buildOrderMappingsViewResponse(orderMapping, orderType)));
   }
 
   public Future<OrderMappingsView> postCustomMapping(OrderMappings orderMappings) {
