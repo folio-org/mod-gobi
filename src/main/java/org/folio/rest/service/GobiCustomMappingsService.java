@@ -64,7 +64,7 @@ public class GobiCustomMappingsService {
   }
 
   public Future<Void> deleteCustomMapping(String orderType) {
-    return pgClient.withConn(conn -> orderMappingsDao.getByOrderType(orderType, conn)
+    return pgClient.withTrans(conn -> orderMappingsDao.getByOrderType(orderType, conn)
       .compose(orderMappings -> {
         if (orderMappings == null) {
           logger.warn("deleteCustomMapping:: Mapping not found for orderType={}", orderType);

@@ -25,12 +25,10 @@ import org.folio.rest.persist.Conn;
 import org.folio.rest.persist.Criteria.Criterion;
 import org.folio.rest.persist.interfaces.Results;
 import org.folio.rest.utils.CopilotGenerated;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,19 +43,10 @@ class OrderMappingsDaoTest {
   private RowSet<Row> rowSet;
 
   private OrderMappingsDaoImpl dao;
-  private AutoCloseable closeable;
 
   @BeforeEach
   void setUp() {
-    closeable = MockitoAnnotations.openMocks(this);
     dao = new OrderMappingsDaoImpl();
-  }
-
-  @AfterEach
-  void tearDown() throws Exception {
-    if (closeable != null) {
-      closeable.close();
-    }
   }
 
   @Test

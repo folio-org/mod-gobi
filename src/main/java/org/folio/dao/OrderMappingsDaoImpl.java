@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.persist.Conn;
 import org.folio.rest.persist.Criteria.Criteria;
@@ -66,7 +67,7 @@ public class OrderMappingsDaoImpl implements OrderMappingsDao {
       .compose(updateResult -> {
         if (updateResult.size() == 0) {
           log.warn("updateByOrderType:: No mapping found for orderType {} to update", orderType);
-          return Future.failedFuture(new RuntimeException("No matching order mapping found to update for orderType: " + orderType));
+          return Future.failedFuture(new HttpException(404, "No matching order mapping found to update for orderType: " + orderType));
         }
         return Future.succeededFuture();
       })
