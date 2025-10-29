@@ -52,7 +52,6 @@ public class OrderMappingsDaoImpl implements OrderMappingsDao {
 
     String id = orderMappings.getId();
     return conn.saveAndReturnUpdatedEntity(TABLE_NAME, id, orderMappings)
-      .map(result -> result)
       .onFailure(t -> logger.error("save:: Failed to save order mapping", t));
   }
 
