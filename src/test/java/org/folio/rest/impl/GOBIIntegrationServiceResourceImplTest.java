@@ -14,6 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.folio.dao.OrderMappingsDao;
+import org.folio.dao.OrderMappingsDaoImpl;
+import org.folio.rest.jaxrs.model.OrderMappings;
+import org.folio.rest.persist.PostgresClient;
+import io.vertx.core.json.Json;
+
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import io.restassured.RestAssured;
@@ -236,6 +242,9 @@ public class GOBIIntegrationServiceResourceImplTest extends BaseIntegrationTest 
   @Test
   void testPostGobiOrdersCustomPOListedElectronicSerial() throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed electronic serial with custom mappings");
+
+    // Insert custom mapping into database
+    insertCustomMapping(CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING);
 
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
@@ -950,6 +959,24 @@ public class GOBIIntegrationServiceResourceImplTest extends BaseIntegrationTest 
         assertNotNull(contributor.getContributorNameTypeId());
       });
     }
+  }
+
+  /**
+   * Insert custom mapping into the database for testing
+   * @param mappingFilePath path to the custom mapping JSON file
+   * @throws IOException if the file cannot be read
+   */
+  private void insertCustomMapping(String mappingFilePath) throws IOException {
+    final String mappingJson = getMockData(mappingFilePath);
+    final OrderMappings orderMappings = Json.decodeValue(mappingJson, OrderMappings.class);
+
+    PostgresClient pgClient = PostgresClient.getInstance(BaseIntegrationTest.vertx, TENANT_ID);
+    OrderMappingsDao orderMappingsDao = new OrderMappingsDaoImpl();
+
+    pgClient.withConn(conn -> orderMappingsDao.save(orderMappings, conn))
+      .toCompletionStage()
+      .toCompletableFuture()
+      .join();
   }
 
   public static class MockServer {

@@ -24,7 +24,7 @@ public abstract class BaseIntegrationTest {
   protected static final String TENANT_ID = "test_tenant";
   private static final String OKAPI_HEADER_TENANT = "X-Okapi-Tenant";
 
-  private static Vertx vertx;
+  protected static Vertx vertx;
   protected static int okapiPort;
 
   @Container
