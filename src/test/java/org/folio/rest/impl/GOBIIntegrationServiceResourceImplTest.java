@@ -3,7 +3,6 @@ package org.folio.rest.impl;
 import static java.util.UUID.randomUUID;
 import static org.folio.gobi.HelperUtils.CONTRIBUTOR_NAME_TYPES;
 import static org.folio.rest.impl.PostGobiOrdersHelper.CODE_INVALID_XML;
-import static org.folio.rest.utils.TestUtils.checkVertxContextCompletion;
 import static org.folio.rest.utils.TestUtils.getMockData;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -15,6 +14,29 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.folio.dao.OrderMappingsDao;
+import org.folio.dao.OrderMappingsDaoImpl;
+import org.folio.rest.jaxrs.model.OrderMappings;
+import org.folio.rest.persist.PostgresClient;
+import io.vertx.core.json.Json;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.http.Header;
+import io.restassured.mapper.ObjectMapperType;
+import io.restassured.specification.RequestSpecification;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.junit5.VertxTestContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
-
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,13 +55,11 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.LookupService;
 import org.folio.rest.ResourcePaths;
-import org.folio.rest.RestVerticle;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
 import org.folio.rest.acq.model.PoLine;
 import org.folio.rest.gobi.model.GobiResponse;
@@ -50,49 +69,21 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.http.Header;
-import io.restassured.mapper.ObjectMapperType;
-import io.restassured.specification.RequestSpecification;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-
-@ExtendWith(VertxExtension.class)
-public class GOBIIntegrationServiceResourceImplTest {
+public class GOBIIntegrationServiceResourceImplTest extends BaseIntegrationTest {
 
   private static final Logger logger = LogManager.getLogger(GOBIIntegrationServiceResourceImplTest.class);
 
   private static final String APPLICATION_JSON = "application/json";
-  private static final String CONFIGS = "configs";
   private static final String PURCHASE_ORDER = "PURCHASE_ORDER";
-  private static final String CONFIGURATION = "CONFIGURATION";
 
-  private static final int OKAPI_PORT = NetworkUtils.nextFreePort();
   private static final int MOCK_PORT = NetworkUtils.nextFreePort();
 
-
-  // private final int serverPort = NetworkUtils.nextFreePort();
-  public static final Header TENANT_HEADER = new Header("X-Okapi-Tenant", "gobiintegrationserviceresourceimpltest");
+  public static final Header TENANT_HEADER = new Header("X-Okapi-Tenant", TENANT_ID);
   public static final Header TOKEN_HEADER = new Header("X-Okapi-Token",
       "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJfaWQiOiJlZjY3NmRiOS1kMjMxLTQ3OWEtYWE5MS1mNjVlYjRiMTc4NzIiLCJ0ZW5hbnQiOiJmczAwMDAwMDAwIn0.KC0RbgafcMmR5Mc3-I7a6SQPKeDSr0SkJlLMcqQz3nwI0lwPTlxw0wJgidxDq-qjCR0wurFRn5ugd9_SVadSxg");
   public static final Header URL_HEADER = new Header("X-Okapi-Url", "http://localhost:" + MOCK_PORT);
@@ -150,37 +141,17 @@ public class GOBIIntegrationServiceResourceImplTest {
   private static final String MOCK_INSTRUCTION_NOT_EXIST = "NotExist";
   private static final String MOCK_INSTRUCTION_USE_DEFAULT = "UseDefault";
 
-  private static Vertx vertx;
   private static MockServer mockServer;
 
   @BeforeAll
-  public static void setUpOnce(VertxTestContext context) throws Throwable {
-    vertx = Vertx.vertx();
-
+  public static void setUpOnce(VertxTestContext context) {
     mockServer = new MockServer(MOCK_PORT);
-    mockServer.start(context);
-    final JsonObject conf = new JsonObject();
-    conf.put("http.port", OKAPI_PORT);
-
-    VertxTestContext deploymentContext = new VertxTestContext();
-    final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, h -> {
-      deploymentContext.completeNow();
-    });
-    checkVertxContextCompletion(deploymentContext);
-    RestAssured.port = OKAPI_PORT;
-    RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    logger.info("GOBI Integration Service Test Setup Done using port {}", OKAPI_PORT);
+    mockServer.start(context.succeeding(id -> context.completeNow()));
   }
 
   @AfterAll
-  public static void tearDownOnce(VertxTestContext context) throws Throwable {
-    logger.info("GOBI Integration Service Testing Complete");
-    vertx.close(v -> {
-      mockServer.close();
-      context.completeNow();
-    });
-    checkVertxContextCompletion(context);
+  public static void tearDownOnce() {
+    mockServer.close();
   }
 
   @BeforeEach
@@ -233,7 +204,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
-    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+    assertThat(column.keySet(), containsInAnyOrder(CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
         MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     logger.info("End: Testing for 201 - XML content");
@@ -250,7 +221,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Electronic Monograph has to get the Product type ID so there will be an additional call made
-    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+    assertThat(column.keySet(), containsInAnyOrder(CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
         MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
@@ -272,19 +243,14 @@ public class GOBIIntegrationServiceResourceImplTest {
   void testPostGobiOrdersCustomPOListedElectronicSerial() throws Exception {
     logger.info("Begin: Testing for 201 - posted order listed electronic serial with custom mappings");
 
+    // Insert custom mapping into database
+    insertCustomMapping(CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING);
+
     final String body = getMockData(PO_LISTED_ELECTRONIC_SERIAL_PATH);
 
     final GobiResponse order = postOrderSuccess(body);
 
     assertNotNull(order.getPoLineNumber());
-
-    List<JsonObject> configEntries = MockServer.serverRqRs.get(CONFIGURATION, HttpMethod.GET);
-    assertNotNull(configEntries);
-
-    Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-
-    // Make sure the mappings from custom configuration were used
-    assertEquals(1, column.get(CONFIGURATION).get(0).getJsonArray(CONFIGS).size());
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
      CompositePurchaseOrder compPO = postedOrder.get(0).mapTo(CompositePurchaseOrder.class);
@@ -317,7 +283,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     // Listed Print Monograph has to get the Product type ID so there will be an additional call made
     assertThat(column.keySet(), containsInAnyOrder(
-      CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+      CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
       MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR
     ));
 
@@ -345,7 +311,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER, VENDOR,
+    assertThat(column.keySet(), containsInAnyOrder(FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER, VENDOR,
       EXPENSE_CLASS, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
@@ -372,7 +338,7 @@ public class GOBIIntegrationServiceResourceImplTest {
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     assertThat(column.keySet(),
-        containsInAnyOrder(CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
+        containsInAnyOrder(CONTRIBUTOR_NAME_TYPES, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
                   VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     verifyResourceCreateInventoryNotMapped();
@@ -396,7 +362,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     assertNotNull(order.getPoLineNumber());
 
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
-    assertThat(column.keySet(), containsInAnyOrder(CONFIGURATION, FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
+    assertThat(column.keySet(), containsInAnyOrder(FUNDS, LOCATION, MATERIAL_TYPES, PURCHASE_ORDER,
             VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR));
 
     List<JsonObject> postedOrder = MockServer.serverRqRs.get(PURCHASE_ORDER, HttpMethod.POST);
@@ -448,7 +414,7 @@ public class GOBIIntegrationServiceResourceImplTest {
     Map<String, List<JsonObject>> column = MockServer.serverRqRs.column(HttpMethod.GET);
     //Listed Print Monograph has Product Id type so there will be an additional call made
     assertThat(column.keySet(), containsInAnyOrder(
-      CONFIGURATION, CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
+      CONTRIBUTOR_NAME_TYPES, FUNDS, IDENTIFIER_TYPES, LOCATION,
       MATERIAL_TYPES, PURCHASE_ORDER, VENDOR, ACQUISITION_METHOD, MATERIAL_SUPPLIER, DONOR
     ));
 
@@ -995,6 +961,24 @@ public class GOBIIntegrationServiceResourceImplTest {
     }
   }
 
+  /**
+   * Insert custom mapping into the database for testing
+   * @param mappingFilePath path to the custom mapping JSON file
+   * @throws IOException if the file cannot be read
+   */
+  private void insertCustomMapping(String mappingFilePath) throws IOException {
+    final String mappingJson = getMockData(mappingFilePath);
+    final OrderMappings orderMappings = Json.decodeValue(mappingJson, OrderMappings.class);
+
+    PostgresClient pgClient = PostgresClient.getInstance(BaseIntegrationTest.vertx, TENANT_ID);
+    OrderMappingsDao orderMappingsDao = new OrderMappingsDaoImpl();
+
+    pgClient.withConn(conn -> orderMappingsDao.save(orderMappings, conn))
+      .toCompletionStage()
+      .toCompletableFuture()
+      .join();
+  }
+
   public static class MockServer {
 
     private static final String NAME = "name";
@@ -1028,7 +1012,6 @@ public class GOBIIntegrationServiceResourceImplTest {
 
       router.route().handler(BodyHandler.create());
       router.route(HttpMethod.POST, ResourcePaths.ORDERS_ENDPOINT).handler(this::handlePostPurchaseOrder);
-      router.get(ResourcePaths.CONFIGURATION_ENDPOINT).handler(this::handleGetConfigurationsEntries);
       router.get(ResourcePaths.ORDERS_ENDPOINT).handler(this::handleGetOrders);
       router.get(ResourcePaths.ORDERS_ENDPOINT+"/:id").handler(this::handleGetOrderById);
       router.get(ResourcePaths.EXPENSE_CLASS_ENDPOINT).handler(this::handleGetExpenseClass);
@@ -1065,20 +1048,13 @@ public class GOBIIntegrationServiceResourceImplTest {
         .end(acquisitionMethods.encodePrettily());
     }
 
-    public void start(VertxTestContext testContext) throws Throwable {
+    public void start(io.vertx.core.Handler<io.vertx.core.AsyncResult<HttpServer>> listeningHandler) {
       logger.info("Starting mock server on port: " + port);
 
       // Setup Mock Server...
       HttpServer server = vertx.createHttpServer();
 
-      server.requestHandler(defineRoutes()).listen(port, result -> {
-        if (result.failed()) {
-          logger.warn("Failure", result.cause());
-        }
-        assertTrue(result.succeeded());
-        testContext.completeNow();
-      });
-      checkVertxContextCompletion(testContext);
+      server.requestHandler(defineRoutes()).listen(port, listeningHandler);
 
     }
 
@@ -1204,38 +1180,6 @@ public class GOBIIntegrationServiceResourceImplTest {
         .setStatusCode(200)
         .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
         .end(funds.encodePrettily());
-    }
-
-    private void handleGetConfigurationsEntries(RoutingContext ctx) {
-
-      logger.info("got configurations entries request: {}", ctx.request()
-          .query());
-
-      JsonObject configurationsEntries = new JsonObject();
-      try {
-        if (ctx.request().query().contains("ListedElectronicSerial")) {
-          configurationsEntries
-            .put(CONFIGS, new JsonArray().add(
-                    new JsonObject().put("value", getMockData(CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING))))
-            .put(TOTAL_RECORDS, 1);
-
-        } else if (ctx.request().query().contains("ListedElectronicSerial")) {
-
-        }
-        else {
-          configurationsEntries.put(CONFIGS, new JsonArray())
-            .put(TOTAL_RECORDS, 0);
-        }
-        addServerRqRsData(HttpMethod.GET, CONFIGURATION, configurationsEntries);
-        ctx.response()
-          .setStatusCode(200)
-          .putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-          .end(configurationsEntries.encodePrettily());
-      } catch (IOException e) {
-        ctx.response()
-        .setStatusCode(500)
-        .end();
-       }
     }
 
     private void handleGetOrders(RoutingContext ctx) {

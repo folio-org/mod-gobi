@@ -3,7 +3,6 @@ package org.folio.rest.service;
 import static java.util.stream.Collectors.toList;
 import static org.folio.gobi.exceptions.ErrorCodes.ERROR_READING_DEFAULT_MAPPING_FILE;
 import static org.folio.gobi.exceptions.ErrorCodes.ORDER_MAPPINGS_RECORD_NOT_FOUND;
-import static org.folio.rest.ResourcePaths.CONFIGURATION_ENDPOINT;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,76 +13,91 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
-import io.vertx.core.json.JsonArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.dao.OrderMappingsDao;
 import org.folio.gobi.exceptions.HttpException;
-import org.folio.rest.core.RestClient;
-import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.jaxrs.model.OrderMappingsView;
 import org.folio.rest.jaxrs.model.OrderMappingsViewCollection;
+import org.folio.rest.persist.Criteria.Criterion;
+import org.folio.rest.persist.PostgresClient;
 import io.vertx.core.Future;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
 
 public class GobiCustomMappingsService {
-  private final RestClient restClient;
-  public static final String SEARCH_ENDPOINT = "%s?limit=%s&offset=%s%s";
-  public static final String CONFIG_FIELD = "configs";
-  public static final String MAPPINGS_BY_ORDER_TYPE_QUERY = "module==GOBI AND configName==orderMappings AND code==gobi.order.%s";
+  private final PostgresClient pgClient;
+  private final OrderMappingsDao orderMappingsDao;
   private static final Logger logger = LogManager.getLogger(GobiCustomMappingsService.class);
 
-  public GobiCustomMappingsService(RestClient client) {
-    this.restClient = client;
+  public GobiCustomMappingsService(PostgresClient pgClient, OrderMappingsDao orderMappingsDao) {
+    this.pgClient = pgClient;
+    this.orderMappingsDao = orderMappingsDao;
   }
 
   public Future<OrderMappingsViewCollection> getCustomMappingListByQuery(int offset, int limit) {
-    var query = "module==GOBI AND configName==orderMappings";
-    return restClient.handleGetRequest(CONFIGURATION_ENDPOINT, query, offset, limit)
-      .map(this::buildOrderMappingsViewCollectionResponse);
+    return pgClient.withConn(conn -> {
+      Criterion criterion = new Criterion();
+      return orderMappingsDao.get(criterion, offset, limit, conn)
+        .map(this::buildOrderMappingsViewCollectionResponse);
+    });
   }
 
   public Future<OrderMappingsView> getCustomMappingByOrderType(String orderType) {
-    return getCustomMappingConfigByOrderType(orderType)
-      .map(configs -> buildOrderMappingsViewResponse(configs, orderType));
-
+    return pgClient.withConn(conn -> orderMappingsDao.getByOrderType(orderType, conn)
+      .map(orderMapping -> buildOrderMappingsViewResponse(orderMapping, orderType)));
   }
 
-  private Future<JsonObject> getCustomMappingConfigByOrderType(String orderType) {
-    String query = String.format(MAPPINGS_BY_ORDER_TYPE_QUERY, orderType);
-    return restClient.handleGetRequest(CONFIGURATION_ENDPOINT, query, 0, 1);
-
+  public Future<OrderMappingsView> postCustomMapping(OrderMappings orderMappings) {
+    return pgClient.withConn(conn ->
+      orderMappingsDao.save(orderMappings, conn)
+        .map(savedMapping -> new OrderMappingsView()
+          .withMappingType(OrderMappingsView.MappingType.CUSTOM)
+          .withOrderMappings(savedMapping))
+    );
   }
 
-  private OrderMappingsView buildOrderMappingsViewResponse(JsonObject entries, String orderType) {
+  public Future<Void> putCustomMapping(String orderType, OrderMappings updatedOrderMappings) {
+    return pgClient.withConn(conn ->
+      orderMappingsDao.updateByOrderType(orderType, updatedOrderMappings, conn));
+  }
+
+  public Future<Void> deleteCustomMapping(String orderType) {
+    return pgClient.withTrans(conn -> orderMappingsDao.getByOrderType(orderType, conn)
+      .compose(orderMappings -> {
+        if (orderMappings == null) {
+          logger.warn("deleteCustomMapping:: Mapping not found for orderType={}", orderType);
+          return Future.failedFuture(new HttpException(404, ORDER_MAPPINGS_RECORD_NOT_FOUND));
+        }
+        String id = orderMappings.getId();
+        return orderMappingsDao.delete(id, conn);
+      }));
+  }
+
+  private OrderMappingsView buildOrderMappingsViewResponse(OrderMappings customMapping, String orderType) {
     var omvResponse = new OrderMappingsView();
-    if (entries.getJsonArray(CONFIG_FIELD).isEmpty()) {
+    if (customMapping == null) {
       return omvResponse
         .withOrderMappings(loadDefaultMappingByType(orderType))
         .withMappingType(OrderMappingsView.MappingType.DEFAULT);
-    }
-    else {
-      var config = entries.getJsonArray(CONFIG_FIELD).getJsonObject(0);
-      var customOrderMappings = Json.decodeValue(config.mapTo(Config.class).getValue(), OrderMappings.class);
+    } else {
       return omvResponse
         .withMappingType(OrderMappingsView.MappingType.CUSTOM)
-        .withOrderMappings(customOrderMappings);
+        .withOrderMappings(customMapping);
     }
   }
 
   /**
-   * Receives a JsonObject as a parameter which contains custom mappings and merges these
+   * Receives a collection of custom mappings from DB and merges these
    * with default mappings, returning a list of all mappings, by first checking if a
    * custom mapping exists for an order type, otherwise uses its default mapping
    *
-   * @param configs Object containing custom mappings
+   * @param orderMappings Collection containing custom mappings from DB
    * @return mappings for each order type, custom if present, otherwise default is returned
    */
-  private OrderMappingsViewCollection buildOrderMappingsViewCollectionResponse(JsonObject configs) {
-    final var customMappings = getCustomMappings(configs.getJsonArray(CONFIG_FIELD));
+  private OrderMappingsViewCollection buildOrderMappingsViewCollectionResponse(List<OrderMappings> orderMappings) {
+    final var customMappings = getCustomMappingsMap(orderMappings);
     var mappings = loadDefaultMappings().stream()
       .map(defMap -> new OrderMappingsView()
         .withMappingType(getMappingType(defMap, customMappings))
@@ -100,83 +114,30 @@ public class GobiCustomMappingsService {
       .map(OrderMappings.OrderType::value)
       .map(this::loadDefaultMappingByType)
       .collect(toList());
-
   }
 
   private OrderMappings loadDefaultMappingByType(String orderType) {
     URL mappingJson = ClassLoader.getSystemClassLoader().getResource(orderType + ".json");
-    String jsonString;
-    try (InputStream mappingJsonStream = mappingJson.openStream()) {
-       jsonString = new String(mappingJsonStream.readAllBytes(), StandardCharsets.UTF_8);
-      return Json.decodeValue(jsonString, OrderMappings.class);
+    if (mappingJson == null) {
+      logger.error("loadDefaultMappingByType:: Mapping file not found for orderType={}", orderType);
+      throw new HttpException(500, ERROR_READING_DEFAULT_MAPPING_FILE);
+    }
 
+    try (InputStream mappingJsonStream = mappingJson.openStream()) {
+      String jsonString = new String(mappingJsonStream.readAllBytes(), StandardCharsets.UTF_8);
+      return Json.decodeValue(jsonString, OrderMappings.class);
     } catch (IOException e) {
-      logger.error(String.format("Exception when reading a mappingJson file %s", e.getMessage()));
+      logger.error("loadDefaultMappingByType:: Exception when reading a mappingJson file: {}", e.getMessage());
       throw new HttpException(500, ERROR_READING_DEFAULT_MAPPING_FILE);
     }
   }
 
-
-  public Future<OrderMappingsView> postCustomMapping(OrderMappings orderMappings) {
-    Config configEntry = buildCustomMappingConfigurationEntry(orderMappings, UUID.randomUUID().toString());
-    return restClient.post(CONFIGURATION_ENDPOINT, JsonObject.mapFrom(configEntry))
-      .map(createdConfig -> {
-        var entry = createdConfig.mapTo(Config.class);
-        var createdOrderMappings = Json.decodeValue(entry.getValue(), OrderMappings.class);
-        return new OrderMappingsView()
-        .withMappingType(OrderMappingsView.MappingType.CUSTOM)
-        .withOrderMappings(createdOrderMappings);
-      });
-  }
-
-  public Future<Void> putCustomMapping(String orderType, OrderMappings orderMappings) {
-    return getCustomMappingConfigByOrderType(orderType)
-      .compose(configEntries -> {
-        if (!configEntries.getJsonArray(CONFIG_FIELD).isEmpty()) {
-          var config = configEntries.getJsonArray(CONFIG_FIELD).getJsonObject(0).mapTo(Config.class);
-          Config configEntryForUpdate = buildCustomMappingConfigurationEntry(orderMappings, config.getId());
-
-          return restClient.handlePutRequest(CONFIGURATION_ENDPOINT + "/" + config.getId(), JsonObject.mapFrom(configEntryForUpdate));
-        }
-        throw new HttpException(404, ORDER_MAPPINGS_RECORD_NOT_FOUND);
-      });
-  }
-
-  public Future<Void> deleteCustomMapping(String orderType) {
-    return getCustomMappingConfigByOrderType(orderType)
-      .compose(configEntries -> {
-      if (!configEntries.getJsonArray(CONFIG_FIELD).isEmpty()) {
-        var config = configEntries.getJsonArray(CONFIG_FIELD).getJsonObject(0).mapTo(Config.class);
-        return restClient.delete(CONFIGURATION_ENDPOINT + "/" + config.getId());
-      }
-      throw new HttpException(404, ORDER_MAPPINGS_RECORD_NOT_FOUND);
-    });
-  }
-
-  private Config buildCustomMappingConfigurationEntry(OrderMappings orderMappings, String id) {
-    return new Config()
-      .withId(id)
-      .withModule("GOBI")
-      .withConfigName("orderMappings")
-      .withValue(JsonObject.mapFrom(orderMappings).encode())
-      .withEnabled(true)
-      .withCode("gobi.order." + orderMappings.getOrderType());
-  }
-
-  private Map<OrderMappings.OrderType, OrderMappings> getCustomMappings(JsonArray configArray) {
+  private Map<OrderMappings.OrderType, OrderMappings> getCustomMappingsMap(List<OrderMappings> customMappingsList) {
     final var customMappings = new HashMap<OrderMappings.OrderType, OrderMappings>();
-    for (Object configObj : configArray) {
-      if (configObj instanceof JsonObject config) {
-        var orderType = extractMappingOrderType(config.getString("code"));
-        var customOrderMappings = Json.decodeValue(config.mapTo(Config.class).getValue(), OrderMappings.class);
-        customMappings.put(orderType, customOrderMappings);
-      }
+    for (OrderMappings mapping : customMappingsList) {
+      customMappings.put(mapping.getOrderType(), mapping);
     }
     return customMappings;
-  }
-
-  private OrderMappings.OrderType extractMappingOrderType(String code) {
-    return OrderMappings.OrderType.fromValue(code.substring(code.lastIndexOf(".") + 1));
   }
 
   private OrderMappingsView.MappingType getMappingType(OrderMappings mapping, Map<OrderMappings.OrderType, OrderMappings> customMappings) {
@@ -186,5 +147,4 @@ public class GobiCustomMappingsService {
   private OrderMappings getMapping(OrderMappings mapping, Map<OrderMappings.OrderType, OrderMappings> customMappings) {
     return Optional.ofNullable(customMappings.get(mapping.getOrderType())).orElse(mapping);
   }
-
 }

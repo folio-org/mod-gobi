@@ -1,0 +1,16 @@
+{
+  "tables": [
+    {
+      "tableName": "order_mappings",
+      "fromModuleVersion": "mod-gobi-3.1.0",
+      "withOptimisticLocking": "failOnConflict",
+      "withMetadata": false,
+      "uniqueIndex": [
+        {
+          "fieldName": "orderType",
+          "caseSensitive": false
+        }
+      ]
+    }
+  ]
+}

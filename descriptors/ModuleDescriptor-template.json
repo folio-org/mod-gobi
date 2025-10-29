@@ -3,6 +3,26 @@
   "name": "GOBI® Module",
   "provides": [
     {
+      "id": "_tenant",
+      "version": "2.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/_/tenant"
+        },
+        {
+          "methods": [
+            "GET",
+            "DELETE"
+          ],
+          "pathPattern": "/_/tenant/{id}"
+        }
+      ]
+    },
+    {
       "id": "gobi",
       "version": "1.12",
       "handlers": [
@@ -67,9 +87,6 @@
           "pathPattern": "/gobi/orders/custom-mappings",
           "permissionsRequired": [
             "gobi.custom-mappings.collection.get"
-          ],
-          "modulePermissions": [
-            "configuration.entries.collection.get"
           ]
         },
         {
@@ -79,9 +96,6 @@
           "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
           "permissionsRequired": [
             "gobi.custom-mappings.item.get"
-          ],
-          "modulePermissions": [
-            "configuration.entries.collection.get"
           ]
         },
         {
@@ -91,9 +105,6 @@
           "pathPattern": "/gobi/orders/custom-mappings",
           "permissionsRequired": [
             "gobi.custom-mappings.item.post"
-          ],
-          "modulePermissions": [
-            "configuration.entries.item.post"
           ]
         },
         {
@@ -103,10 +114,6 @@
           "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
           "permissionsRequired": [
             "gobi.custom-mappings.item.put"
-          ],
-          "modulePermissions": [
-            "configuration.entries.collection.get",
-            "configuration.entries.item.put"
           ]
         },
         {
@@ -116,10 +123,6 @@
           "pathPattern": "/gobi/orders/custom-mappings/{orderType}",
           "permissionsRequired": [
             "gobi.custom-mappings.item.delete"
-          ],
-          "modulePermissions": [
-            "configuration.entries.collection.get",
-            "configuration.entries.item.delete"
           ]
         },
         {
@@ -305,10 +308,15 @@
       }
     },
     "env": [
-      {
-        "name": "JAVA_OPTIONS",
-        "value": "-XX:MaxRAMPercentage=66.0"
-      }
+      { "name": "JAVA_OPTIONS", "value": "-XX:MaxRAMPercentage=66.0" },
+      { "name": "DB_HOST", "value": "postgres" },
+      { "name": "DB_PORT", "value": "5432" },
+      { "name": "DB_USERNAME", "value": "folio_admin" },
+      { "name": "DB_PASSWORD", "value": "folio_admin" },
+      { "name": "DB_DATABASE", "value": "okapi_modules" },
+      { "name": "DB_QUERYTIMEOUT", "value": "60000" },
+      { "name": "DB_CHARSET", "value": "UTF-8" },
+      { "name": "DB_MAXPOOLSIZE", "value": "5" }
     ]
   }
 }

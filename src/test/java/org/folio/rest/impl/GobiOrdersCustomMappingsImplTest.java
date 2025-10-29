@@ -1,237 +1,216 @@
 package org.folio.rest.impl;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.folio.rest.RestVerticle.OKAPI_HEADER_TENANT;
 import static org.folio.rest.jaxrs.model.OrderMappings.OrderType.LISTED_PRINT_MONOGRAPH;
-import static org.folio.rest.tools.utils.NetworkUtils.nextFreePort;
-import static org.folio.rest.utils.TestUtils.getMockData;
-
-import java.io.IOException;
-import java.util.UUID;
-
-import org.folio.rest.ResourcePaths;
-import org.folio.rest.RestVerticle;
-import org.folio.rest.jaxrs.model.Configs;
-import org.folio.rest.jaxrs.model.OrderMappings;
-import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
+import org.folio.rest.jaxrs.model.DataSource;
+import org.folio.rest.jaxrs.model.Mapping;
+import org.folio.rest.jaxrs.model.OrderMappings;
+import org.folio.rest.jaxrs.model.OrderMappings.OrderType;
+import org.folio.rest.jaxrs.model.OrderMappingsView;
+import org.folio.rest.jaxrs.model.OrderMappingsView.MappingType;
+import org.folio.rest.jaxrs.model.OrderMappingsViewCollection;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @Log4j2
-@RunWith(VertxUnitRunner.class)
-public class GobiOrdersCustomMappingsImplTest {
-  private static final int OKAPI_PORT = nextFreePort();
-  private static Vertx vertx;
-  protected static RequestSpecification spec;
+class GobiOrdersCustomMappingsImplTest extends BaseIntegrationTest {
 
-  String jsonConfigs = getMockData("ConfigData/success.json");
-  String orderMappingString = new JsonObject(jsonConfigs).mapTo(Configs.class)
-    .getConfigs()
-    .get(0)
-    .getValue();
-  OrderMappings orderMappingJson = Json.decodeValue(orderMappingString, OrderMappings.class);
-  @Rule
-  public WireMockRule wireMockServer = new WireMockRule(WireMockConfiguration.wireMockConfig()
-    .dynamicPort()
-    .notifier(new ConsoleNotifier(true)));
+  private static final String MAPPINGS_PATH = "/gobi/orders/custom-mappings";
+  protected RequestSpecification spec;
 
-  public GobiOrdersCustomMappingsImplTest() throws IOException {
-  }
-
-  @BeforeClass
-  public static void setUpOnce(TestContext context) {
-    vertx = Vertx.vertx();
-
-    final JsonObject conf = new JsonObject();
-    conf.put("http.port", OKAPI_PORT);
-
-    final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
-    Async async = context.async();
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, h -> async.complete());
-    async.await();
-
-    RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    log.info("GOBI Integration Service Test Setup Done using port {}", OKAPI_PORT);
-  }
-
-  @Before
-  public void setUpForEach() {
+  @BeforeEach
+  void setUpForEach() {
     spec = new RequestSpecBuilder().setContentType(ContentType.JSON)
-      .addHeader("x-okapi-url", "http://localhost:" + wireMockServer.port())
-      .addHeader(OKAPI_HEADER_TENANT, "GobiOrdersCustomMappingsImplTest")
-      .addHeader(RestVerticle.OKAPI_USERID_HEADER, UUID.randomUUID().toString())
+      .addHeader(OKAPI_HEADER_TENANT, TENANT_ID)
+      .addHeader("X-Okapi-User-Id", UUID.randomUUID().toString())
       .addHeader("Accept", "text/plain, application/json")
-      .setBaseUri("http://localhost:" + OKAPI_PORT)
+      .setBaseUri("http://localhost")
+      .setPort(okapiPort)
       .build();
   }
 
-  @AfterClass
-  public static void tearDownOnce(TestContext context) {
-    log.info("GOBI Integration Service Testing Complete");
-    Async async = context.async();
-
-    vertx.close(v -> async.complete());
-    async.await();
-  }
-
-  @Test
-  public void testGetGobiOrdersCustomMappings() {
-    WireMock.stubFor(WireMock.get(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.ok()
-        .withBody(jsonConfigs)));
-
-    RestAssured.with()
+  @AfterEach
+  void cleanup() {
+    OrderMappingsViewCollection collection = RestAssured.with()
       .spec(spec)
-      .get("/gobi/orders/custom-mappings")
+      .get(MAPPINGS_PATH)
       .then()
       .statusCode(200)
-      .contentType(APPLICATION_JSON)
-      .body(Matchers.notNullValue());
+      .contentType(ContentType.JSON)
+      .extract().as(OrderMappingsViewCollection.class);
+
+    collection.getOrderMappingsViews().stream()
+      .filter(view -> MappingType.CUSTOM == view.getMappingType())
+      .forEach(view -> {
+        OrderType orderType = view.getOrderMappings().getOrderType();
+        log.info("Cleaning up mapping for order type: {}", orderType);
+        RestAssured.with()
+          .spec(spec)
+          .delete(MAPPINGS_PATH + "/" + orderType.value())
+          .then()
+          .statusCode(200);
+    });
   }
 
   @Test
-  public void testPostGobiOrdersCustomMappings() {
-    var config = new JsonObject(jsonConfigs).mapTo(Configs.class)
-      .getConfigs()
-      .get(0);
-    var configAsString = JsonObject.mapFrom(config)
-      .encodePrettily();
-    var ordMappingsAsString = JsonObject.mapFrom(orderMappingJson)
-      .encodePrettily();
-
-    WireMock.stubFor(WireMock.post(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT))
-      .willReturn(WireMock.ok().withBody(configAsString)));
-
-    RestAssured.with()
+  void testGetGobiOrdersCustomMappings() {
+    // Action
+    OrderMappingsViewCollection collection = RestAssured.with()
       .spec(spec)
-      .body(ordMappingsAsString)
-      .post("/gobi/orders/custom-mappings")
+      .get(MAPPINGS_PATH)
+      .then()
+      .statusCode(200)
+      .contentType(ContentType.JSON)
+      .extract().as(OrderMappingsViewCollection.class);
+
+    // Assert
+    assertNotNull(collection);
+    assertNotNull(collection.getOrderMappingsViews());
+    assertFalse(collection.getOrderMappingsViews().isEmpty());
+    // All mappings should be of type DEFAULT initially
+    collection.getOrderMappingsViews().forEach(view -> assertEquals(OrderMappingsView.MappingType.DEFAULT, view.getMappingType()));
+  }
+
+  @Test
+  void testPostAndGetCustomMapping() {
+    // Arrange
+    OrderMappings newMapping = createSampleOrderMapping(OrderType.LISTED_ELECTRONIC_MONOGRAPH);
+
+    // Action: POST the custom mapping
+    OrderMappingsView createdView = RestAssured.with()
+      .spec(spec)
+      .body(JsonObject.mapFrom(newMapping).encode())
+      .post(MAPPINGS_PATH)
       .then()
       .statusCode(201)
-      .contentType(APPLICATION_JSON)
-      .body(Matchers.notNullValue());
-  }
+      .contentType(ContentType.JSON)
+      .extract().as(OrderMappingsView.class);
 
-  @Test
-  public void testDeleteGobiOrdersCustomMappingsByOrderType() {
-    WireMock.stubFor(WireMock.get(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.okJson(jsonConfigs)
-        .withBody(jsonConfigs)));
+    // Assert: Check the created mapping
+    assertNotNull(createdView);
+    assertNotNull(createdView.getOrderMappings().getId());
+    assertEquals(OrderMappingsView.MappingType.CUSTOM, createdView.getMappingType());
 
-    WireMock.stubFor(WireMock.delete(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.noContent()));
-
-    RestAssured.with()
+    // Action: GET the mapping by type and verify it's custom
+    OrderMappingsView retrievedView = RestAssured.with()
       .spec(spec)
-      .delete("/gobi/orders/custom-mappings/" + LISTED_PRINT_MONOGRAPH)
+      .get(MAPPINGS_PATH + "/" + newMapping.getOrderType().value())
       .then()
       .statusCode(200)
-      .contentType(APPLICATION_JSON)
-      .body(Matchers.notNullValue());
+      .extract().as(OrderMappingsView.class);
+
+    // Assert: Check the retrieved mapping
+    assertEquals(createdView.getOrderMappings().getId(), retrievedView.getOrderMappings().getId());
+    assertEquals(OrderMappingsView.MappingType.CUSTOM, retrievedView.getMappingType());
   }
 
   @Test
-  public void testDeleteGobiOrdersCustomMappingsByOrderTypeBadRequest() {
-    WireMock.stubFor(WireMock.get(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.okJson(jsonConfigs)
-        .withBody(jsonConfigs)));
-
-    WireMock.stubFor(WireMock.delete(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.badRequest()));
+  void testDeleteGobiOrdersCustomMappingsByOrderType() {
+    // Arrange
+    OrderMappings newMapping = createSampleOrderMapping(LISTED_PRINT_MONOGRAPH);
 
     RestAssured.with()
       .spec(spec)
-      .delete("/gobi/orders/custom-mappings/" + LISTED_PRINT_MONOGRAPH)
+      .body(JsonObject.mapFrom(newMapping).encode())
+      .post(MAPPINGS_PATH)
       .then()
-      .statusCode(400)
-      .contentType(APPLICATION_JSON)
-      .body(Matchers.notNullValue());
+      .statusCode(201);
+
+    // Action: Delete the mapping
+    RestAssured.with()
+      .spec(spec)
+      .delete(MAPPINGS_PATH + "/" + LISTED_PRINT_MONOGRAPH.value())
+      .then()
+      .statusCode(200);
+
+    // Assert: Verify it's gone (should return default mapping)
+    OrderMappingsView view = RestAssured.with()
+      .spec(spec)
+      .get(MAPPINGS_PATH + "/" + LISTED_PRINT_MONOGRAPH.value())
+      .then()
+      .statusCode(200)
+      .extract().as(OrderMappingsView.class);
+
+    assertEquals(OrderMappingsView.MappingType.DEFAULT, view.getMappingType());
   }
 
   @Test
-  public void testPutGobiOrdersCustomMappingsByOrderType() {
-    WireMock.stubFor(WireMock.get(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.ok()
-        .withBody(jsonConfigs)));
+  void testPutGobiOrdersCustomMappingsByOrderType() {
+    // Arrange
+    OrderMappings newMapping = createSampleOrderMapping(LISTED_PRINT_MONOGRAPH);
 
-    WireMock.stubFor(WireMock.put(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.noContent()));
+    OrderMappingsView createdView = RestAssured.with()
+      .spec(spec)
+      .body(JsonObject.mapFrom(newMapping).encode())
+      .post(MAPPINGS_PATH)
+      .then()
+      .statusCode(201)
+      .extract().as(OrderMappingsView.class);
+
+    // Action: Update the mapping
+    OrderMappings updatedMapping = createdView.getOrderMappings();
+    updatedMapping.getMappings().getFirst().setField(Mapping.Field.CONTRIBUTOR);
 
     RestAssured.with()
       .spec(spec)
-      .body(JsonObject.mapFrom(orderMappingJson)
-        .encodePrettily())
-      .put("/gobi/orders/custom-mappings/" + LISTED_PRINT_MONOGRAPH)
+      .body(JsonObject.mapFrom(updatedMapping).encode())
+      .put(MAPPINGS_PATH + "/" + LISTED_PRINT_MONOGRAPH.value())
       .then()
       .statusCode(204);
-  }
 
-  @Test
-  public void testGetGobiOrdersCustomMappingsByOrderType() {
-    WireMock.stubFor(WireMock.get(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.ok()
-        .withBody(jsonConfigs)));
-
-    RestAssured.with()
+    // Assert: Verify the update
+    OrderMappingsView retrievedView = RestAssured.with()
       .spec(spec)
-      .get("/gobi/orders/custom-mappings/" + LISTED_PRINT_MONOGRAPH)
+      .get(MAPPINGS_PATH + "/" + LISTED_PRINT_MONOGRAPH.value())
       .then()
       .statusCode(200)
-      .contentType(APPLICATION_JSON)
-      .body(Matchers.notNullValue());
+      .extract().as(OrderMappingsView.class);
 
+    assertEquals(Mapping.Field.CONTRIBUTOR, retrievedView.getOrderMappings().getMappings().getFirst().getField());
   }
 
   @Test
-  public void testGetGobiOrdersCustomMappingsByOrderTypeEmptyConfig() {
-    WireMock.stubFor(WireMock.get(urlMatching(ResourcePaths.CONFIGURATION_ENDPOINT + ".*"))
-      .willReturn(WireMock.ok()
-        .withBody("{\"configs\": []}")));
-
-    RestAssured.with()
+  void testGetGobiOrdersCustomMappingsByOrderType_Default() {
+    // Action & Assert: Get a mapping that has no custom version
+    OrderMappingsView view = RestAssured.with()
       .spec(spec)
-      .get("/gobi/orders/custom-mappings/" + LISTED_PRINT_MONOGRAPH)
+      .get(MAPPINGS_PATH + "/" + LISTED_PRINT_MONOGRAPH.value())
       .then()
       .statusCode(200)
-      .contentType(APPLICATION_JSON)
-      .body(Matchers.notNullValue());
+      .contentType(ContentType.JSON)
+      .extract().as(OrderMappingsView.class);
 
+    assertEquals(OrderMappingsView.MappingType.DEFAULT, view.getMappingType());
+    assertNotNull(view.getOrderMappings());
   }
 
-  @Test
-  public void testGetGobiOrdersCustomMappingsByOrderTypeServerError() {
-    wireMockServer.stop();
+  private OrderMappings createSampleOrderMapping(OrderType orderType) {
+    OrderMappings orderMappings = new OrderMappings();
+    orderMappings.setOrderType(orderType);
 
-    RestAssured.with()
-      .spec(spec)
-      .get("/gobi/orders/custom-mappings/" + LISTED_PRINT_MONOGRAPH)
-      .then()
-      .statusCode(500)
-      .contentType(APPLICATION_JSON)
-      .body(Matchers.notNullValue());
+    List<Mapping> mappings = new ArrayList<>();
+    Mapping mapping = new Mapping();
+    mapping.setField(Mapping.Field.VENDOR);
+    DataSource dataSource = new DataSource();
+    dataSource.setFrom("//vendor");
+    mapping.setDataSource(dataSource);
+    mappings.add(mapping);
+
+    orderMappings.setMappings(mappings);
+    return orderMappings;
   }
-
 }

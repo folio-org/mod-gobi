@@ -128,7 +128,7 @@ public class DataSourceResolver {
     if (o == null) {
       if (defValue instanceof DataSourceResolver) {
         if (translateDefValue) {
-          return ((DataSourceResolver) defValue).resolve(doc).thenApply(v -> applyTranslation(v.toString()));
+          return ((DataSourceResolver) defValue).resolve(doc).thenCompose(v -> applyTranslation(v.toString()));
         } else {
           return ((DataSourceResolver) defValue).resolve(doc);
         }
