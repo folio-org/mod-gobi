@@ -32,8 +32,8 @@ traits:
   validate: !include raml-util/traits/validation.raml
 
 /gobi/orders/custom-mappings:
-  displayName: Acquisition methods
-  description: Acquisition methods APIs
+  displayName: Gobi Custom Mappings
+  description: Gobi Custom Mappings APIs
   type:
     collection:
       exampleCollection: !include acq-models/mod-gobi/examples/orders_mapping.sample
@@ -41,7 +41,7 @@ traits:
       schemaCollection: order-mappings-view-collection
       schemaItem: order-mappings
   get:
-    description: Get list of acquisition methods
+    description: Get list of custom mappings
     is: [
       searchable: { description: "with valid searchable fields: for example code", example: "[\"value\", \"Purchase At Vendor System\", \"=\"]" },
       pageable
@@ -51,8 +51,8 @@ traits:
       orderType:
         description: The order type
         type: string
-    displayName: Acquisition method
-    description: Get, Delete or Update a specific acquisition method
+    displayName: Custom mapping
+    description: Get, Delete or Update a specific custom mapping
     type:
       collection-item:
         exampleItem: !include acq-models/mod-gobi/examples/orders_mapping.sample
