@@ -3,6 +3,8 @@ package org.folio.dao;
 import io.vertx.core.Future;
 import java.util.List;
 import java.util.UUID;
+
+import io.vertx.pgclient.PgException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.gobi.exceptions.HttpException;
@@ -51,7 +53,13 @@ public class OrderMappingsDaoImpl implements OrderMappingsDao {
 
     String id = orderMappings.getId();
     return conn.saveAndReturnUpdatedEntity(TABLE_NAME, id, orderMappings)
-      .onFailure(t -> log.error("save:: Failed to save order mapping", t));
+      .recover(t -> {
+        log.error("save:: Failed to save order mapping", t);
+        if (t instanceof PgException pgException && "23505".equals(pgException.getSqlState())) {
+          return Future.failedFuture(new HttpException(409, "Order mapping with this orderType already exists"));
+        }
+        return Future.failedFuture(t);
+      });
   }
 
   @Override
