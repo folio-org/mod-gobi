@@ -1,4 +1,11 @@
 {
+  "scripts": [
+    {
+      "run": "after",
+      "snippetPath": "migrate_configuration_data_to_order_mappings.ftl",
+      "fromModuleVersion": "mod-gobi-3.1.0"
+    }
+  ],
   "tables": [
     {
       "tableName": "order_mappings",
