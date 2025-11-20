@@ -5,7 +5,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static org.folio.rest.ResourcePaths.ACQUISITION_METHOD_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ACQUISITION_UNIT_ENDPOINT;
-import static org.folio.rest.ResourcePaths.CONFIGURATION_ENDPOINT;
+import static org.folio.rest.ResourcePaths.SETTINGS_ENDPOINT;
 import static org.folio.rest.ResourcePaths.CONTRIBUTOR_NAME_TYPES_ENDPOINT;
 import static org.folio.rest.ResourcePaths.EXPENSE_CLASS_ENDPOINT;
 import static org.folio.rest.ResourcePaths.FUNDS_ENDPOINT;
@@ -45,14 +45,14 @@ public class LookupService {
   public static final String ACQ_METHODS_NAME = "acquisitionMethods";
   public static final String DEFAULT_ACQ_METHOD_VALUE = "Purchase At Vendor System";
   public static final String ACQ_METHODS_QUERY = "value==(%s OR "+ DEFAULT_ACQ_METHOD_VALUE +")";
-  public static final String CONFIGURATION_ADDRESS_QUERY = "module==(TENANT or tenant) AND configName==tenant.addresses AND value==*%s*";
+  public static final String SETTINGS_ADDRESS_QUERY = "scope==ui-tenant-settings.addresses.manage AND value==*%s*";
   public static final String PO_LINE_NUMBER_QUERY = "poLineNumber==%s";
   public static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
   public static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
   public static final String CHECK_ACQ_UNIT_IS_NOT_DELETED = " and isDeleted==false";
   public static final String CQL_NAME_CRITERIA = "name==%s";
   public static final int FIRST_ELEM = 0;
-  public static final String CONFIGS = "configs";
+  public static final String ITEMS = "items";
   public static final String PREFIXES = "prefixes";
   public static final String SUFFIXES = "suffixes";
   public static final String PO_LINES = "poLines";
@@ -291,11 +291,11 @@ public class LookupService {
 
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
     logger.debug("lookupConfigAddress:: Trying to look up config address by name: {}", shipToName);
-    final String query = HelperUtils.encodeValue(String.format(CONFIGURATION_ADDRESS_QUERY, shipToName));
-    String endpoint = String.format(CONFIGURATION_ENDPOINT + QUERY, query);
+    final String query = HelperUtils.encodeValue(String.format(SETTINGS_ADDRESS_QUERY, shipToName));
+    String endpoint = String.format(SETTINGS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(addressConfig ->  {
-        JsonArray addressJsonArray = addressConfig.getJsonArray(CONFIGS);
+        JsonArray addressJsonArray = addressConfig.getJsonArray(ITEMS);
         if(!addressJsonArray.isEmpty()) {
           JsonObject address = addressJsonArray.getJsonObject(FIRST_ELEM);
           return address.getString(ID);
@@ -304,7 +304,7 @@ public class LookupService {
         return null;
       })
       .exceptionally(t -> {
-        logger.error("Exception looking up address ID from configuration with shipToName: {}", shipToName, t);
+        logger.error("Exception looking up address ID from settings with shipToName: {}", shipToName, t);
         return null;
       });
   }

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -153,7 +154,8 @@ public class LookupServiceTest {
     var address = getMockData("PostGobiOrdersHelper/valid_address_collection.json");
     LookupService lookupService = new LookupService(restClient, settingsRetriever);
     doReturn(succeededFuture(new JsonObject(address)))
-      .when(restClient).handleGetRequest(anyString());
+      .when(restClient).handleGetRequest(argThat(endpoint -> endpoint.startsWith("/settings/entries")));
+
     var jsonAddress = lookupService.lookupConfigAddress("address").join();
 
     assertNotNull(jsonAddress);
@@ -164,7 +166,8 @@ public class LookupServiceTest {
     var address = getMockData("PostGobiOrdersHelper/empty_address.json");
     LookupService lookupService = new LookupService(restClient, settingsRetriever);
     doReturn(succeededFuture(new JsonObject(address)))
-      .when(restClient).handleGetRequest(anyString());
+      .when(restClient).handleGetRequest(argThat(endpoint -> endpoint.startsWith("/settings/entries")));
+
     var jsonAddress = lookupService.lookupConfigAddress("address").join();
 
     assertNull(jsonAddress);
