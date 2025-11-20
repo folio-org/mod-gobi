@@ -63,7 +63,8 @@
             "inventory-storage.identifier-types.collection.get",
             "inventory.items.item.get",
             "organizations-storage.organizations.collection.get",
-            "configuration.entries.collection.get",
+            "settings.entries.collection.get",
+            "mod-settings.global.read.ui-tenant-settings.addresses.manage",
             "finance.funds.collection.get",
             "finance.expense-classes.collection.get",
             "orders.acquisition-methods.collection.get",
@@ -161,8 +162,8 @@
       "version": "13.0"
     },
     {
-      "id": "configuration",
-      "version": "2.0"
+      "id": "settings",
+      "version": "1.2"
     },
     {
       "id": "contributor-name-types",
