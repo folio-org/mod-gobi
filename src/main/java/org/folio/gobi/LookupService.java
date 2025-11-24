@@ -45,7 +45,7 @@ public class LookupService {
   public static final String ACQ_METHODS_NAME = "acquisitionMethods";
   public static final String DEFAULT_ACQ_METHOD_VALUE = "Purchase At Vendor System";
   public static final String ACQ_METHODS_QUERY = "value==(%s OR "+ DEFAULT_ACQ_METHOD_VALUE +")";
-  public static final String SETTINGS_ADDRESS_QUERY = "scope==ui-tenant-settings.addresses.manage AND value==*%s*";
+  public static final String SETTINGS_ADDRESS_QUERY = "scope==ui-tenant-settings.addresses.manage";
   public static final String PO_LINE_NUMBER_QUERY = "poLineNumber==%s";
   public static final String UNSPECIFIED_MATERIAL_NAME = "unspecified";
   public static final String CHECK_ORGANIZATION_ISVENDOR = " and isVendor==true";
@@ -291,14 +291,19 @@ public class LookupService {
 
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
     logger.debug("lookupConfigAddress:: Trying to look up config address by name: {}", shipToName);
-    final String query = HelperUtils.encodeValue(String.format(SETTINGS_ADDRESS_QUERY, shipToName));
+    final String query = HelperUtils.encodeValue(SETTINGS_ADDRESS_QUERY);
     String endpoint = String.format(SETTINGS_ENDPOINT + QUERY, query);
     return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
       .thenApply(addressConfig ->  {
         JsonArray addressJsonArray = addressConfig.getJsonArray(ITEMS);
-        if(!addressJsonArray.isEmpty()) {
-          JsonObject address = addressJsonArray.getJsonObject(FIRST_ELEM);
-          return address.getString(ID);
+        for (int i = 0; i < addressJsonArray.size(); i++) {
+          JsonObject item = addressJsonArray.getJsonObject(i);
+          JsonObject value = item.getJsonObject("value");
+          if (value != null && shipToName.equals(value.getString(NAME))) {
+            String addressId = item.getString(ID);
+            logger.info("lookupConfigAddress:: found address id: {}", addressId);
+            return addressId;
+          }
         }
         logger.warn("lookupConfigAddress:: Config address with name '{}' not found", shipToName);
         return null;
