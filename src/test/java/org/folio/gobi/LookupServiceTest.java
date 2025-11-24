@@ -156,7 +156,7 @@ public class LookupServiceTest {
     doReturn(succeededFuture(new JsonObject(address)))
       .when(restClient).handleGetRequest(argThat(endpoint -> endpoint.startsWith("/settings/entries")));
 
-    var jsonAddress = lookupService.lookupConfigAddress("address").join();
+    var jsonAddress = lookupService.lookupConfigAddress("Test Address").join();
 
     assertNotNull(jsonAddress);
   }
