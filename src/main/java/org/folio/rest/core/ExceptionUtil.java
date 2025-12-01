@@ -17,7 +17,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ExceptionUtil {
 
-  private static final String ERROR_CAUSE = "cause";
+  static final String ERROR_CAUSE = "cause";
 
   public static Errors convertToErrors(Throwable throwable) {
     var cause = throwable.getCause() == null ? throwable : throwable.getCause();
