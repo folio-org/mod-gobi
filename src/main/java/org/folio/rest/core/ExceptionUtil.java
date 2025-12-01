@@ -1,0 +1,61 @@
+package org.folio.rest.core;
+
+import static org.folio.gobi.exceptions.ErrorCodes.GENERIC_ERROR_CODE;
+
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.folio.gobi.exceptions.HttpException;
+import org.folio.rest.jaxrs.model.Error;
+import org.folio.rest.jaxrs.model.Errors;
+
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonObject;
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
+public class ExceptionUtil {
+
+  static final String ERROR_CAUSE = "cause";
+
+  public static Errors convertToErrors(Throwable throwable) {
+    var cause = throwable.getCause() == null ? throwable : throwable.getCause();
+    return cause instanceof HttpException httpException
+      ? getErrors(httpException.getErrors().getErrors())
+      : getErrors(List.of(GENERIC_ERROR_CODE.toError().withAdditionalProperty(ERROR_CAUSE, cause.getMessage())));
+  }
+
+  public static HttpException getHttpException(int statusCode, String error) {
+    if (isErrorMessageJson(error)) {
+      return new HttpException(statusCode,  new JsonObject(error).mapTo(Errors.class));
+    }
+    return new HttpException(statusCode, error);
+  }
+
+  private static Errors getErrors(List<Error> errors) {
+    if (CollectionUtils.isEmpty(errors)) {
+      return new Errors().withErrors(Collections.emptyList()).withTotalRecords(0);
+    }
+    return new Errors()
+      .withErrors(errors.stream().map(ExceptionUtil::getError).toList())
+      .withTotalRecords(errors.size());
+  }
+
+  private static Error getError(Error error) {
+    if (isErrorMessageJson(error.getMessage())) {
+      return new JsonObject(error.getMessage()).mapTo(Error.class);
+    }
+    return error;
+  }
+
+  private static boolean isErrorMessageJson(String errorMessage) {
+    try {
+      new JsonObject(errorMessage);
+      return true;
+    } catch (DecodeException e) {
+      return false;
+    }
+  }
+
+}
