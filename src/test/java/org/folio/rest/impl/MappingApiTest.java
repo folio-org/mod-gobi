@@ -40,9 +40,7 @@ public class MappingApiTest {
     conf.put("http.port", OKAPI_PORT);
 
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, (f)->{
-      context.completeNow();
-    });
+    vertx.deployVerticle(RestVerticle.class.getName(), opt).onComplete(f -> context.completeNow());
     checkVertxContextCompletion(context);
     RestAssured.port = OKAPI_PORT;
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
@@ -52,9 +50,7 @@ public class MappingApiTest {
   @AfterAll
   public static void tearDownOnce(VertxTestContext context) throws Throwable {
     logger.info("GOBI Integration Service Testing Complete");
-    vertx.close(v -> {
-      context.completeNow();
-    });
+    vertx.close().onComplete(v -> context.completeNow());
     TestUtils.checkVertxContextCompletion(context);
   }
 

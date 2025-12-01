@@ -57,7 +57,7 @@ public abstract class BaseIntegrationTest {
 
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
 
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, context.succeeding(id -> {
+    vertx.deployVerticle(RestVerticle.class.getName(), opt).onComplete(id -> {
       String tenantJobId = RestAssured
         .given()
           .header(OKAPI_HEADER_TENANT, TENANT_ID)
@@ -80,7 +80,7 @@ public abstract class BaseIntegrationTest {
           .body(not(hasKey("error")));
 
       context.completeNow();
-    }));
+    });
   }
 
   @AfterAll
