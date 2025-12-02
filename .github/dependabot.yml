@@ -16,3 +16,4 @@ updates:
     ignore:
       - dependency-name: "org.glassfish.jaxb:jaxb-runtime"
       - dependency-name: "org.codehaus.mojo:jaxb2-maven-plugin"
+      - dependency-name: "com.fasterxml.jackson:jackson-bom" # Temporary ignore until Jenkins supports new Docker 29+
