@@ -77,7 +77,7 @@
     <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
     <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
     <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
-    <maven-release-plugin.version>3.2.0</maven-release-plugin.version>
+    <maven-release-plugin.version>3.3.0</maven-release-plugin.version>
     <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
@@ -89,7 +89,7 @@
     <junit-bom.version>6.0.1</junit-bom.version>
     <mockito.version>5.20.0</mockito.version>
     <tomakehurst-wiremock.version>3.0.1</tomakehurst-wiremock.version>
-    <testcontainers.version>1.20.6</testcontainers.version>
+    <testcontainers.version>2.0.2</testcontainers.version>
 
     <!--Sonar properties-->
     <sonar.exclusions>**/models/**.java, **/domain/**.java</sonar.exclusions>
