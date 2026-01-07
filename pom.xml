@@ -53,9 +53,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--Dependency Properties-->
-    <raml-module-builder.version>35.3.0</raml-module-builder.version>
+    <raml-module-builder.version>35.3.2</raml-module-builder.version>
     <java.version>17</java.version>
-    <vertx.version>4.5.10</vertx.version>
+    <vertx.version>4.5.23</vertx.version>
     <log4j.version>2.24.1</log4j.version>
     <aspectj.version>1.9.22.1</aspectj.version>
     <jackson-bom.version>2.18.0</jackson-bom.version>
