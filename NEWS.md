@@ -1,5 +1,15 @@
 ## 3.0.0 - Unreleased
 
+## 2.9.1 - Released (Ramson R2 2024 Bugfix)
+The primary focus of this release was to implement RMB logging improvements and security fixes
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v2.9.0...v2.9.1)
+
+### Stories
+* [MODGOBI-238] (https://folio-org.atlassian.net/browse/MODGOBI-238) - Ramsons CSP - RMB 35.3.2 Vertx 4.5.23 fixing CVE-2025-67735 netty CRLF
+* [MODBOGI-236] (https://folio-org.atlassian.net/browse/MODGOBI-236) - Ramsons CSP - RMB Logging release - RMB 35.3.1
+
+
 ## 2.9.0 - Released (Ramson R2 2024)
 The primary focus of this release was to update location translation and dependencies
 
