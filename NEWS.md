@@ -1,5 +1,14 @@
 ## 3.1.0 - Unreleased
 
+## 3.0.2 - (Sunflower R1 2025 Hot Hix)
+The primary focus of the release was to update to RMB 35.4.2 and Vertx 4.5.23
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v3.0.1...v3.0.2)
+
+### Bug fixes
+* [MODGOBI-239] (https://folio-org.atlassian.net/browse/MODGOBI-239) - Sunflower CSP - RMB 35.4.2 Vertx 4.5.23 fixing CVE-2025-67735 netty CRLF
+* [MODGOBI-237] (https://folio-org.atlassian.net/browse/MODGOBI-237) - Sunflower CSP - RMB Logging release
+
 ## 3.0.1 - (Sunflower R1 2025 Hot Hix)
 The primary focus of this release was to fix issues with populating tenantId for non ECS envs.
 
