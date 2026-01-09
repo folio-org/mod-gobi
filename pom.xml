@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-gobi</artifactId>
-  <version>3.0.2-SNAPSHOT</version>
+  <version>3.0.2</version>
 
   <name>GOBI Integration</name>
   <description>GOBI® (Global Online Bibliographic Information) is the leading web-based acquisitions tool for finding, ordering and
@@ -20,7 +20,7 @@
     <url>https://github.com/folio-org/mod-gobi.git</url>
     <connection>scm:git:git://github.com/folio-org/mod-gobi.git</connection>
     <developerConnection>scm:git:git@github.com:folio-org/mod-gobi.git</developerConnection>
-    <tag>v3.0.0</tag>
+    <tag>v3.0.2</tag>
   </scm>
 
   <issueManagement>
