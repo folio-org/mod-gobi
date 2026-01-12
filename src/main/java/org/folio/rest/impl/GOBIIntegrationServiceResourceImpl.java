@@ -34,10 +34,7 @@ public class GOBIIntegrationServiceResourceImpl implements Gobi {
   @Override
   public void postGobiOrders(String entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler, Context vertxContext) {
-
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, vertxContext);
-
-    logger.info("postGobiOrders:: Trying to parse request: \n {}", entity);
     helper.parseXML(entity)
       .thenCompose(document -> {
         logger.info("postGobiOrders:: XML content successfully parsed");

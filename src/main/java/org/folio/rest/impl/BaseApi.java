@@ -33,7 +33,6 @@ public class BaseApi {
   }
 
   public Response buildResponseWithLocation(String okapi, String endpoint, Object body) {
-    logger.debug("buildResponseWithLocation:: Trying to build response with location endpoint: {}, body: {}, for cache okapi: {}", body, endpoint, okapi);
     try {
       return Response.created(new URI(okapi + endpoint))
         .header(CONTENT_TYPE, APPLICATION_JSON)

@@ -44,7 +44,6 @@ public class RestClient {
   }
 
   public Future<JsonObject> handleGetRequest(String endpoint) {
-    log.debug("Trying to get '{}' object", endpoint);
     return webClient.getAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
       .send()
       .compose(RestClient::convertHttpResponse)
@@ -58,9 +57,6 @@ public class RestClient {
    * @param endpoint   endpoint
    */
   public Future<Void> handlePutRequest(String endpoint, JsonObject recordData) {
-    if (log.isDebugEnabled()) {
-      log.debug("Trying to put '{}' object with data: {}", endpoint, recordData.encodePrettily());
-    }
     return webClient.putAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
       .sendJsonObject(recordData)
       .compose(RestClient::convertHttpResponse)
@@ -68,9 +64,6 @@ public class RestClient {
   }
 
   public Future<JsonObject> post(String endpoint, JsonObject recordData) {
-    if (log.isDebugEnabled()) {
-      log.debug("Trying to post '{}' object with body: {}", endpoint, recordData.encodePrettily());
-    }
     return webClient.postAbs(okapiURL + endpoint).putHeaders(okapiHeaders)
       .sendJsonObject(recordData)
       .compose(RestClient::convertHttpResponse)

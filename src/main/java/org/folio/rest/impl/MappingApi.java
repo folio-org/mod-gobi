@@ -36,7 +36,7 @@ public class MappingApi implements GobiOrdersMappings {
       FolioOrderFields fields = mappingDetailsService.retrieveFields();
       asyncResultHandler.handle(Future.succeededFuture(Response.ok(fields, APPLICATION_JSON).build()));
     } catch (Exception e) {
-      logger.error(String.format("Error when getting mappings fields %s", e.getMessage()));
+      logger.error("Error when getting mappings fields: {}", e.getMessage());
       asyncResultHandler.handle(Future.succeededFuture(Response.serverError().build()));
     }
   }
@@ -48,7 +48,7 @@ public class MappingApi implements GobiOrdersMappings {
       FolioOrderTranslators translators = mappingDetailsService.retrieveTranslators();
       asyncResultHandler.handle(Future.succeededFuture(Response.ok(translators, APPLICATION_JSON).build()));
     } catch (Exception e) {
-      logger.error(String.format("Error when getting mappings translators %s", e.getMessage()));
+      logger.error("Error when getting mappings translators: {}", e.getMessage());
       asyncResultHandler.handle(Future.succeededFuture(Response.serverError().build()));
     }
   }
@@ -60,7 +60,7 @@ public class MappingApi implements GobiOrdersMappings {
       List<OrderMappings.OrderType> types = mappingDetailsService.retrieveMappingsTypes();
       asyncResultHandler.handle(Future.succeededFuture(Response.ok(types, APPLICATION_JSON).build()));
     } catch (Exception e) {
-      logger.error(String.format("Error when getting mappings types %s", e.getMessage()));
+      logger.error("Error when getting mappings types: {}", e.getMessage());
       asyncResultHandler.handle(Future.succeededFuture(Response.serverError().build()));
     }
   }
