@@ -126,7 +126,7 @@ public class PostGobiOrdersHelper {
     try {
       return CompletableFuture.completedFuture(parser.parse(entity));
     } catch (GobiPurchaseOrderParserException e) {
-      logger.error("Failed to parse GobiPurchaseOrder: {}", entity, e);
+      logger.error("Failed to parse GobiPurchaseOrder", e);
       return CompletableFuture.failedFuture(e);
     }
   }
@@ -161,10 +161,7 @@ public class PostGobiOrdersHelper {
   private CompletableFuture<String> placeOrder(CompositePurchaseOrder compPO) {
     try {
       return restClient.post(ORDERS_ENDPOINT, JsonObject.mapFrom(compPO))
-        .map(body -> {
-          logger.debug("Response from mod-orders: \n {}", body::encodePrettily);
-          return body.getJsonArray("poLines").getJsonObject(FIRST_ELEM).getString("poLineNumber");
-        })
+        .map(body -> body.getJsonArray("poLines").getJsonObject(FIRST_ELEM).getString("poLineNumber"))
         .toCompletionStage().toCompletableFuture();
     } catch (Exception e) {
       String errorMessage = String.format("Exception calling %s on %s", HttpMethod.POST, ORDERS_ENDPOINT);
