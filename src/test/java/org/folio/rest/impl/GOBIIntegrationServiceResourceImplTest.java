@@ -105,12 +105,12 @@ public class GOBIIntegrationServiceResourceImplTest extends BaseIntegrationTest 
   private final String PO_LISTED_ELECTRONIC_MONOGRAPH_BAD_DATA_PATH = MOCK_DATA_ROOT_PATH + "/po_listed_electronic_monograph_bad_data.xml";
 
   private static final String CUSTOM_LISTED_ELECTRONIC_SERIAL_MAPPING = "MappingHelper/Custom_ListedElectronicSerial.json";
-  private static final  String VENDOR_MOCK_DATA =  "MockData/GOBI_organization.json";
-  private static final  String ORDER_MOCK_DATA =  "MockData/purchaseOrders.json";
-  private static final  String COMPOSITE_ORDER_MOCK_DATA =  "MockData/compositePurchaseOrder.json";
-  private static final  String VALID_EXPENSE_CLASS =  "PostGobiOrdersHelper/valid_expenseClasses.json";
-  private static final  String VALID_ACQUISITION_METHOD =  "PostGobiOrdersHelper/valid_acquisition_methods.json";
-  private static final  String VALID_ACQUISITION_UNITS =  "PostGobiOrdersHelper/acquisitions_units.json";
+  private static final String VENDOR_MOCK_DATA =  "MockData/GOBI_organization.json";
+  private static final String ORDER_MOCK_DATA =  "MockData/purchaseOrders.json";
+  private static final String COMPOSITE_ORDER_MOCK_DATA =  "MockData/compositePurchaseOrder.json";
+  private static final String VALID_EXPENSE_CLASS =  "PostGobiOrdersHelper/valid_expenseClasses.json";
+  private static final String VALID_ACQUISITION_METHOD =  "PostGobiOrdersHelper/valid_acquisition_methods.json";
+  private static final String VALID_ACQUISITION_UNITS =  "PostGobiOrdersHelper/acquisitions_units.json";
 
   private static final String LOCATION = "LOCATION";
   private static final String FUNDS = "FUNDS";
@@ -998,7 +998,7 @@ public class GOBIIntegrationServiceResourceImplTest extends BaseIntegrationTest 
     }
 
     public void close() {
-      vertx.close(res -> {
+      vertx.close().onComplete(res -> {
         if (res.failed()) {
           logger.error("Failed to shut down mock server", res.cause());
         } else {
@@ -1054,14 +1054,14 @@ public class GOBIIntegrationServiceResourceImplTest extends BaseIntegrationTest 
       // Setup Mock Server...
       HttpServer server = vertx.createHttpServer();
 
-      server.requestHandler(defineRoutes()).listen(port, listeningHandler);
+      server.requestHandler(defineRoutes()).listen(port).onComplete(listeningHandler);
 
     }
 
     private void handlePostPurchaseOrder(RoutingContext ctx) {
-      logger.info("Handle Post Purchase Order got: {}", ctx.getBodyAsString());
+      logger.info("Handle Post Purchase Order got: {}", ctx.body().asString());
 
-      JsonObject compPO = ctx.getBodyAsJson();
+      JsonObject compPO = ctx.body().asJsonObject();
 
       compPO.put(ID, randomUUID().toString());
       String poNumber = "PO_" + randomDigits(10);
@@ -1255,7 +1255,7 @@ public class GOBIIntegrationServiceResourceImplTest extends BaseIntegrationTest 
         .path());
       String putInstruction = ctx.request()
         .getHeader(MOCK_OKAPI_PUT_ORDER_HEADER);
-      addServerRqRsData(HttpMethod.PUT, COMPOSITE_PURCHASE_ORDER, ctx.getBodyAsJson());
+      addServerRqRsData(HttpMethod.PUT, COMPOSITE_PURCHASE_ORDER, ctx.body().asJsonObject());
 
       if (putInstruction.equals(MOCK_INSTRUCTION_PUT_FAIL)) {
         ctx.response()

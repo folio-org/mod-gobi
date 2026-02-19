@@ -1,34 +1,26 @@
 package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
-import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LOCATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static org.folio.gobi.exceptions.ErrorCodes.GENERIC_ERROR_CODE;
+import static org.folio.rest.core.ExceptionUtil.convertToErrors;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
-
 import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.gobi.exceptions.HttpException;
-import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Errors;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.JsonObject;
 
 public class BaseApi {
   private final Logger logger = LogManager.getLogger(this.getClass());
-  private static final String ERROR_CAUSE = "cause";
 
   public Response buildOkResponse(Object body) {
     return Response.ok(body, APPLICATION_JSON)
@@ -41,7 +33,6 @@ public class BaseApi {
   }
 
   public Response buildResponseWithLocation(String okapi, String endpoint, Object body) {
-    logger.debug("buildResponseWithLocation:: Trying to build response with location endpoint: {}, body: {}, for cache okapi: {}", body, endpoint, okapi);
     try {
       return Response.created(new URI(okapi + endpoint))
         .header(CONTENT_TYPE, APPLICATION_JSON)
@@ -94,44 +85,6 @@ public class BaseApi {
       responseBuilder = javax.ws.rs.core.Response.status(INTERNAL_SERVER_ERROR);
     }
     return responseBuilder;
-  }
-
-  public Errors convertToErrors(Throwable throwable) {
-    final Throwable cause = throwable.getCause() == null ? throwable : throwable.getCause();
-    Errors errors;
-
-    if (cause instanceof HttpException) {
-      errors = ((HttpException) cause).getErrors();
-      List<Error> errorList = errors.getErrors()
-        .stream()
-        .map(this::mapToError)
-        .collect(toList());
-
-      errors.setErrors(errorList);
-      errors.setTotalRecords(errorList.size());
-    } else {
-      errors = new Errors().withErrors(Collections.singletonList(GENERIC_ERROR_CODE.toError()
-        .withAdditionalProperty(ERROR_CAUSE, cause.getMessage())))
-        .withTotalRecords(1);
-    }
-    return errors;
-  }
-
-  public boolean isErrorMessageJson(String errorMessage) {
-    try {
-      new JsonObject(errorMessage);
-      return true;
-    }
-    catch (DecodeException e) {
-      return false;
-    }
-  }
-
-  private Error mapToError(Error error) {
-    if (isErrorMessageJson(error.getMessage())) {
-      return new JsonObject(error.getMessage()).mapTo(Error.class);
-    }
-    return error;
   }
 
 }

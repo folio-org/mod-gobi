@@ -59,7 +59,6 @@ public class GobiPurchaseOrderParser {
   }
 
   public Document parse(String data) throws GobiPurchaseOrderParserException {
-    logger.debug("parse:: Trying to parse data: {}", data);
     Document doc;
     try {
       final InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
@@ -81,7 +80,7 @@ public class GobiPurchaseOrderParser {
     } catch (Exception e) {
       final Throwable cause = e.getCause();
       final String message = (cause != null) ? cause.getMessage() : e.getMessage();
-      logger.error("Unable to parse Gobi Purchase Order with data '{}'  ", data, e);
+      logger.error("Unable to parse Gobi Purchase Order", e);
       throw new GobiPurchaseOrderParserException(message, e);
     }
     return doc;

@@ -40,7 +40,7 @@ public class MappingDetailsService {
       String jsonString = new String(mappingJsonStream.readAllBytes(), StandardCharsets.UTF_8);
       mappingsProperties = new JsonObject(jsonString).getJsonObject(PROPERTIES);
     } catch (IOException e) {
-      logger.error(String.format("Exception when reading a mappingJson file %s", e.getMessage()));
+      logger.error("Exception when reading a mappingJson file: {}", e.getMessage());
     }
   }
 
