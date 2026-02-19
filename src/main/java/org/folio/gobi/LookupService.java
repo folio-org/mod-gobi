@@ -297,7 +297,7 @@ public class LookupService {
           for (int i = 0; i < addressJsonArray.size(); i++) {
             JsonObject address = addressJsonArray.getJsonObject(i);
             String addressName = address.getString(NAME);
-            if (addressName != null && addressName.equals(shipToName)) {
+            if (addressName != null && addressName.equalsIgnoreCase(shipToName)) {
               logger.info("lookupConfigAddress:: Found address with name '{}' matching '{}'", addressName, shipToName);
               return address.getString(ID);
             }
