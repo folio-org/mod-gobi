@@ -3,7 +3,11 @@
     {
       "id": "588b5c42-8634-4af7-bc9b-5e0116ed96b6",
       "name": "Test address",
-      "address": "10 Estes Street, Ipswich, MA 01938, USA"
+      "address": "10 Estes Street, Ipswich, MA 01938, USA",
+      "metadata": {
+        "createdDate": "2025-06-19T00:00:00.000+0000",
+        "createdByUserId": "28d1057c-d137-11e8-a8d5-f2801f1b9fd1"
+      }
     }
   ]
 }
