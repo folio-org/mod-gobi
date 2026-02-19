@@ -154,7 +154,7 @@ public class LookupServiceTest {
     var address = getMockData("PostGobiOrdersHelper/valid_address_collection.json");
     LookupService lookupService = new LookupService(restClient, settingsRetriever);
     doReturn(succeededFuture(new JsonObject(address)))
-      .when(restClient).handleGetRequest(argThat(endpoint -> endpoint.startsWith("/settings/entries")));
+      .when(restClient).handleGetRequest(argThat(endpoint -> endpoint.equals("/tenant-addresses")));
 
     var jsonAddress = lookupService.lookupConfigAddress("address").join();
 
@@ -166,7 +166,7 @@ public class LookupServiceTest {
     var address = getMockData("PostGobiOrdersHelper/empty_address.json");
     LookupService lookupService = new LookupService(restClient, settingsRetriever);
     doReturn(succeededFuture(new JsonObject(address)))
-      .when(restClient).handleGetRequest(argThat(endpoint -> endpoint.startsWith("/settings/entries")));
+      .when(restClient).handleGetRequest(argThat(endpoint -> endpoint.equals("/tenant-addresses")));
 
     var jsonAddress = lookupService.lookupConfigAddress("address").join();
 
