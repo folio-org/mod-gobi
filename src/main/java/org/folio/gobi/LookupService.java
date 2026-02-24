@@ -290,18 +290,15 @@ public class LookupService {
 
   public CompletableFuture<String> lookupConfigAddress(String shipToName) {
     logger.debug("lookupConfigAddress:: Trying to look up config address by name: {}", shipToName);
-    return restClient.handleGetRequest(TENANT_ADDRESSES_ENDPOINT).toCompletionStage().toCompletableFuture()
-      .thenApply(addressesResponse ->  {
+    String query = HelperUtils.encodeValue(String.format(CQL_NAME_CRITERIA, shipToName));
+    String endpoint = String.format(TENANT_ADDRESSES_ENDPOINT + QUERY, query);
+    return restClient.handleGetRequest(endpoint).toCompletionStage().toCompletableFuture()
+      .thenApply(addressesResponse -> {
         JsonArray addressJsonArray = addressesResponse.getJsonArray(ADDRESSES);
-        if(addressJsonArray != null && !addressJsonArray.isEmpty()) {
-          for (int i = 0; i < addressJsonArray.size(); i++) {
-            JsonObject address = addressJsonArray.getJsonObject(i);
-            String addressName = address.getString(NAME);
-            if (addressName != null && addressName.equalsIgnoreCase(shipToName)) {
-              logger.info("lookupConfigAddress:: Found address with name '{}' matching '{}'", addressName, shipToName);
-              return address.getString(ID);
-            }
-          }
+        if (addressJsonArray != null && !addressJsonArray.isEmpty()) {
+          String addressId = addressJsonArray.getJsonObject(FIRST_ELEM).getString(ID);
+          logger.info("lookupConfigAddress:: Found address with name '{}', id: {}", shipToName, addressId);
+          return addressId;
         }
         logger.warn("lookupConfigAddress:: Config address with name '{}' not found", shipToName);
         return null;
