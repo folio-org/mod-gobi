@@ -68,8 +68,8 @@
             "finance.expense-classes.collection.get",
             "orders.acquisition-methods.collection.get",
             "orders.item.approve",
-            "orders.acquisitions-units-assignments.assign",
-            "orders.acquisitions-units-assignments.manage",
+            "orders.acquisitions-units-assignments.create.execute",
+            "orders.acquisitions-units-assignments.manage.execute",
             "consortium-search.locations.collection.get",
             "orders-storage.settings.collection.get"
           ]
