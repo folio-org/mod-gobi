@@ -58,15 +58,15 @@
 
     <!--Dependency Properties-->
     <raml-module-builder.version>36.0.0-SNAPSHOT</raml-module-builder.version>
-    <vertx.version>5.0.5</vertx.version>
-    <log4j.version>2.25.2</log4j.version>
-    <aspectj.version>1.9.25</aspectj.version>
+    <vertx.version>5.0.8</vertx.version>
+    <log4j.version>2.25.3</log4j.version>
+    <aspectj.version>1.9.25.1</aspectj.version>
     <jackson-bom.version>2.20.1</jackson-bom.version>
     <lombok.version>1.18.42</lombok.version>
     <joda-time.version>2.14.0</joda-time.version>
 
     <!--Folio dependencies properties-->
-    <mod-configuration-client.version>5.12.0</mod-configuration-client.version>
+    <mod-configuration-client.version>5.12.1</mod-configuration-client.version>
     <folio-module-descriptor-validator.version>1.0.1</folio-module-descriptor-validator.version>
     <folio-isbn-util.version>1.8.0</folio-isbn-util.version>
 
@@ -86,10 +86,10 @@
     <!--Test Scope dependencies-->
     <rest-assured.version>5.5.6</rest-assured.version>
     <jmockit.version>1.50</jmockit.version>
-    <junit-bom.version>6.0.1</junit-bom.version>
+    <junit-bom.version>6.0.3</junit-bom.version>
     <mockito.version>5.20.0</mockito.version>
     <tomakehurst-wiremock.version>3.0.1</tomakehurst-wiremock.version>
-    <testcontainers.version>1.20.6</testcontainers.version>
+    <testcontainers.version>2.0.3</testcontainers.version>
 
     <!--Sonar properties-->
     <sonar.exclusions>**/models/**.java, **/domain/**.java</sonar.exclusions>
