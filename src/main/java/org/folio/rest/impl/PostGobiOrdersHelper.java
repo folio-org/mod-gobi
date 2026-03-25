@@ -6,6 +6,7 @@ import static org.folio.gobi.LookupService.QUERY;
 import static org.folio.rest.ResourcePaths.ORDERS_BY_ID_ENDPOINT;
 import static org.folio.rest.ResourcePaths.ORDERS_ENDPOINT;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond400WithApplicationXml;
+import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond422WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.Gobi.PostGobiOrdersResponse.respond500WithApplicationXml;
 import static org.folio.rest.jaxrs.resource.GobiOrdersCustomMappings.GetGobiOrdersCustomMappingsResponse.respond401WithTextPlain;
 
@@ -23,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.folio.dao.OrderMappingsDao;
 import org.folio.dao.OrderMappingsDaoImpl;
 import org.folio.gobi.DataSourceResolver;
+import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.gobi.GobiPurchaseOrderParser;
 import org.folio.gobi.GobiResponseWriter;
@@ -254,28 +256,29 @@ public class PostGobiOrdersHelper {
   }
 
   private static Response mapExceptionToResponse(Throwable t) {
+    return switch (t) {
+      case HttpException e -> switch (e.getCode()) {
+        case 400 -> respond400WithApplicationXml(writeGobiResponse(e));
+        case 401 -> respond401WithTextPlain(e.getMessage());
+        case 422 -> respond422WithApplicationXml(writeGobiResponse(e.getErrors()));
+        default -> respond500WithApplicationXml(writeGobiResponse(e.getErrors()));
+      };
+      case GobiPurchaseOrderParserException parserException -> respond400WithApplicationXml(writeGobiResponse(CODE_INVALID_XML, parserException.getMessage()));
+      case GobiException gobiException -> respond500WithApplicationXml(writeGobiResponse(gobiException.getErrorCode().getCode(), gobiException.getMessage()));
+      default -> respond500WithApplicationXml(t.getMessage());
+    };
+  }
 
-    String message = t.getMessage();
+  private static BinaryOutStream writeGobiResponse(HttpException httpException) {
+    var message = StringUtils.isNotBlank(httpException.getMessage())
+      ? httpException.getMessage()
+      : httpException.getErrors().getErrors().getFirst().getMessage();
+    return writeGobiResponse(CODE_BAD_REQUEST, message);
+  }
 
-    if (t instanceof HttpException) {
-      switch (((HttpException) t).getCode()) {
-        case 400:
-          return respond400WithApplicationXml(writeGobiResponse(CODE_BAD_REQUEST, message));
-        case 401:
-          return respond401WithTextPlain(message);
-      }
-    }
-
-    if (t instanceof GobiPurchaseOrderParserException) {
-      return respond400WithApplicationXml(writeGobiResponse(CODE_INVALID_XML, message));
-    }
-
-    if (t instanceof GobiException) {
-      String errorCode = ((GobiException) t).getErrorCode().getCode();
-      return respond500WithApplicationXml(writeGobiResponse(errorCode, message));
-    }
-
-    return respond500WithApplicationXml(message);
+  private static BinaryOutStream writeGobiResponse(Errors errors) {
+    var error = errors.getErrors().getFirst();
+    return writeGobiResponse(error.getCode(), error.getMessage());
   }
 
   private static BinaryOutStream writeGobiResponse(String errorCode, String message) {

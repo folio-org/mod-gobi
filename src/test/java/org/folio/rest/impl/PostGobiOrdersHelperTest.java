@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -21,20 +22,20 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.gobi.DataSourceResolver;
+import org.folio.gobi.exceptions.ErrorCodes;
+import org.folio.gobi.exceptions.GobiException;
 import org.folio.gobi.exceptions.GobiPurchaseOrderParserException;
 import org.folio.gobi.exceptions.HttpException;
 import org.folio.rest.gobi.model.GobiResponse;
-import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.Mapping;
 import org.folio.rest.jaxrs.model.OrderMappings;
 import org.folio.rest.tools.utils.BinaryOutStream;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Document;
 
 import io.vertx.core.AsyncResult;
@@ -47,7 +48,6 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class PostGobiOrdersHelperTest {
 
-  private static final Logger logger = LogManager.getLogger(PostGobiOrdersHelperTest.class);
   Map<String, String> okapiHeaders = new HashMap<>();
 
   private Unmarshaller jaxbUnmarshaller;
@@ -57,46 +57,99 @@ public class PostGobiOrdersHelperTest {
     jaxbUnmarshaller = JAXBContext.newInstance(GobiResponse.class).createUnmarshaller();
   }
 
-  @Test
-  void testHandleErrorHttpClientBadRequest(VertxTestContext context) throws Throwable {
-    logger.info("Begin: Testing handleError on HttpException bad request");
+  // -- handleError tests covering each branch of mapExceptionToResponse --
 
-    Throwable t = new Throwable("invalid foo");
+  @Test
+  void testHandleErrorHttpException400(VertxTestContext context) throws Throwable {
+    String msg = "invalid foo";
 
     Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
       assertEquals(400, response.result().getStatus());
 
       try {
-        String body = new String(((BinaryOutStream) response.result().getEntity()).getData());
-        GobiResponse gobiResp = (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
-
+        GobiResponse gobiResp = parseGobiXmlResponse(response.result());
         assertEquals(CODE_BAD_REQUEST, gobiResp.getError().getCode());
-        assertEquals(t.toString(), gobiResp.getError().getMessage());
+        assertEquals(msg, gobiResp.getError().getMessage());
         context.completeNow();
       } catch (JAXBException e) {
         fail(e.getMessage());
       }
-
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
-    helper.handleError(new CompletionException(new HttpException(400, t, new Errors())));
+    helper.handleError(new CompletionException(new HttpException(400, msg)));
+    checkVertxContextCompletion(context);
+  }
+
+  @Test
+  void testHandleErrorHttpException401(VertxTestContext context) throws Throwable {
+    String msg = "requires permission foo.bar.get";
+
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      assertEquals(401, response.result().getStatus());
+      assertEquals(msg, response.result().getEntity());
+      context.completeNow();
+    };
+
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
+    helper.handleError(new CompletionException(new HttpException(401, msg)));
+    checkVertxContextCompletion(context);
+  }
+
+  @Test
+  void testHandleErrorHttpException422(VertxTestContext context) throws Throwable {
+    String msg = "validation failed";
+
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      assertEquals(422, response.result().getStatus());
+
+      try {
+        GobiResponse gobiResp = parseGobiXmlResponse(response.result());
+        assertEquals("genericError", gobiResp.getError().getCode());
+        assertEquals(msg, gobiResp.getError().getMessage());
+        context.completeNow();
+      } catch (JAXBException e) {
+        fail(e.getMessage());
+      }
+    };
+
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
+    helper.handleError(new CompletionException(new HttpException(422, msg)));
+    checkVertxContextCompletion(context);
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {500, 501})
+  void testHandleErrorHttpExceptionDefault(int httpCode, VertxTestContext context) throws Throwable {
+    String msg = "server error";
+
+    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
+      assertEquals(500, response.result().getStatus());
+
+      try {
+        GobiResponse gobiResp = parseGobiXmlResponse(response.result());
+        assertEquals("genericError", gobiResp.getError().getCode());
+        assertEquals(msg, gobiResp.getError().getMessage());
+        context.completeNow();
+      } catch (JAXBException e) {
+        fail(e.getMessage());
+      }
+    };
+
+    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
+    helper.handleError(new CompletionException(new HttpException(httpCode, msg)));
     checkVertxContextCompletion(context);
   }
 
   @Test
   void testHandleErrorGobiPurchaseOrderParserException(VertxTestContext context) throws Throwable {
-    logger.info("Begin: Testing handleError on HttpException bad request");
-
     String msg = "invalid gobi request xml";
 
     Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
       assertEquals(400, response.result().getStatus());
 
       try {
-        String body = new String(((BinaryOutStream) response.result().getEntity()).getData());
-        GobiResponse gobiResp = (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
-
+        GobiResponse gobiResp = parseGobiXmlResponse(response.result());
         assertEquals(CODE_INVALID_XML, gobiResp.getError().getCode());
         assertEquals(msg, gobiResp.getError().getMessage());
         context.completeNow();
@@ -110,63 +163,31 @@ public class PostGobiOrdersHelperTest {
     checkVertxContextCompletion(context);
   }
 
-
   @Test
-  void testHandleErrorHttpClientUnauthorized(VertxTestContext context) throws Throwable {
-    logger.info("Begin: Testing handleError on HttpException 401");
-
-    String msg = "requires permission foo.bar.get";
-
-    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
-      assertEquals(401, response.result().getStatus());
-      assertEquals(msg, response.result().getEntity());
-      context.completeNow();
-    };
-
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
-    helper.handleError(new CompletionException(new HttpException(401, msg)));
-    checkVertxContextCompletion(context);
-
-  }
-
-  @Test
-  void testHandleErrorHttpClientInternalServerError(VertxTestContext context) throws Throwable {
-    logger.info("Begin: Testing handleError on HttpException 500");
-
-    String msg = "you zigged when you should have zagged";
+  void testHandleErrorGobiException(VertxTestContext context) throws Throwable {
+    Throwable cause = new RuntimeException("bad mapping");
+    GobiException gobiException = new GobiException(ErrorCodes.INVALID_ORDER_MAPPING_FILE, cause);
 
     Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
       assertEquals(500, response.result().getStatus());
-      assertEquals(msg, response.result().getEntity());
-      context.completeNow();
+
+      try {
+        GobiResponse gobiResp = parseGobiXmlResponse(response.result());
+        assertEquals(ErrorCodes.INVALID_ORDER_MAPPING_FILE.getCode(), gobiResp.getError().getCode());
+        assertEquals(gobiException.getMessage(), gobiResp.getError().getMessage());
+        context.completeNow();
+      } catch (JAXBException e) {
+        fail(e.getMessage());
+      }
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
-    helper.handleError(new CompletionException(new HttpException(500, msg)));
-    checkVertxContextCompletion(context);
-  }
-
-  @Test
-  void testHandleErrorHttpClientNotImplemented(VertxTestContext context) throws Throwable {
-    logger.info("Begin: Testing handleError on HttpException 501");
-
-    String msg = "not implemented";
-
-    Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
-      Assertions.assertEquals(500, response.result().getStatus());
-      Assertions.assertEquals(msg, response.result().getEntity());
-      context.completeNow();
-    };
-
-    PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
-    helper.handleError(new CompletionException(new HttpException(501, msg)));
+    helper.handleError(new CompletionException(gobiException));
     checkVertxContextCompletion(context);
   }
 
   @Test
   void testHandleErrorGenericThrowable(VertxTestContext context) {
-    logger.info("Begin: Testing handleError on generic Throwable");
-
     Throwable expected = new Throwable("whoops!");
 
     Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
@@ -177,13 +198,17 @@ public class PostGobiOrdersHelperTest {
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
     helper.handleError(expected);
-
   }
+
+  private GobiResponse parseGobiXmlResponse(javax.ws.rs.core.Response response) throws JAXBException {
+    String body = new String(((BinaryOutStream) response.getEntity()).getData());
+    return (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
+  }
+
+  // -- getOrderType / lookupOrderMappings tests --
 
   @Test
   void testGetOrderType() throws Exception {
-    logger.info("Begin: Testing for valid order type in the GOBI order XML");
-
     String[] orderFiles = {
         "GOBIIntegrationServiceResourceImpl/po_listed_electronic_monograph.xml",
         "GOBIIntegrationServiceResourceImpl/po_listed_electronic_serial.xml",
@@ -215,14 +240,10 @@ public class PostGobiOrdersHelperTest {
       .parse(data);
 
     assertThrows(IllegalArgumentException.class, () -> PostGobiOrdersHelper.getOrderType(doc));
-    logger.info("Got expected IllegalArgumentException for unknown order type");
-
   }
 
   @Test
   public final void testLookupOrderMappings(VertxTestContext context) {
-    logger.info("Begin: Testing for Order Mappings lookup using mocking");
-
     final Vertx vertx = Vertx.vertx();
     Map<String, String> okapiHeaders = new HashMap<>();
     okapiHeaders.put("x-okapi-tenant", "testLookupOrderMappings");
@@ -278,8 +299,6 @@ public class PostGobiOrdersHelperTest {
 
   @Test
   public final void testLookupDefaultOrderMappingsFailed() {
-    logger.info("Begin: Testing for Order Mappings lookup failure using mocking");
-
     final Vertx vertx = Vertx.vertx();
     var headers = Map.of("x-okapi-tenant", "testLookupOrderMappingsFailed");
 
