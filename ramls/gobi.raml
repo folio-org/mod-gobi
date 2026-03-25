@@ -92,6 +92,11 @@ documentation:
           body:
             text/plain:
               example: Access Denied
+        422:
+          description: Unprocessable Entity, e.g. due to invalid order format
+          body:
+            application/xml:
+              example: !include examples/error.xml
         500:
           description: |
             Internal server error, e.g. due to misconfiguration
