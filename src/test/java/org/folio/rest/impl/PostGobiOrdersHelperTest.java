@@ -137,8 +137,17 @@ public class PostGobiOrdersHelperTest {
 
     Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
       assertEquals(500, response.result().getStatus());
-      assertEquals(msg, response.result().getEntity());
-      context.completeNow();
+
+      try {
+        String body = new String(((BinaryOutStream) response.result().getEntity()).getData());
+        GobiResponse gobiResp = (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
+
+        assertEquals("genericError", gobiResp.getError().getCode());
+        assertEquals(msg, gobiResp.getError().getMessage());
+        context.completeNow();
+      } catch (JAXBException e) {
+        fail(e.getMessage());
+      }
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
@@ -153,9 +162,18 @@ public class PostGobiOrdersHelperTest {
     String msg = "not implemented";
 
     Handler<AsyncResult<javax.ws.rs.core.Response>> asyncResultHandler = response -> {
-      Assertions.assertEquals(500, response.result().getStatus());
-      Assertions.assertEquals(msg, response.result().getEntity());
-      context.completeNow();
+      assertEquals(500, response.result().getStatus());
+
+      try {
+        String body = new String(((BinaryOutStream) response.result().getEntity()).getData());
+        GobiResponse gobiResp = (GobiResponse) jaxbUnmarshaller.unmarshal(new StringReader(body));
+
+        assertEquals("genericError", gobiResp.getError().getCode());
+        assertEquals(msg, gobiResp.getError().getMessage());
+        context.completeNow();
+      } catch (JAXBException e) {
+        fail(e.getMessage());
+      }
     };
 
     PostGobiOrdersHelper helper = new PostGobiOrdersHelper(asyncResultHandler, okapiHeaders, Vertx.vertx().getOrCreateContext());
