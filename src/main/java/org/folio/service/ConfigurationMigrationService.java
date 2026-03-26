@@ -4,6 +4,7 @@ import static org.folio.gobi.HelperUtils.encodeValue;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -121,11 +122,10 @@ public class ConfigurationMigrationService {
       .put("orderType", valueJson.getValue("orderType"))
       .put("mappings", valueJson.getValue("mappings"));
 
-    String sql = "INSERT INTO " + ORDER_MAPPINGS_TABLE + " (id, jsonb) VALUES ('" + id + "', '"
-      + mappingJsonb.encode().replace("'", "''")
-      + "'::jsonb) ON CONFLICT (lower(f_unaccent(jsonb->>'orderType'::text))) DO NOTHING";
+    String sql = "INSERT INTO " + ORDER_MAPPINGS_TABLE + " (id, jsonb) VALUES ($1, $2::jsonb) "
+      + "ON CONFLICT (lower(f_unaccent(jsonb->>'orderType'::text))) DO NOTHING";
 
-    return pgClient.execute(sql, Tuple.tuple())
+    return pgClient.execute(sql, Tuple.of(UUID.fromString(id), mappingJsonb.encode()))
       .onSuccess(rows -> log.info("Successfully migrated order mapping with id: {}", id))
       .onFailure(e -> log.error("Failed to insert order mapping with id: {}", id, e))
       .mapEmpty();
