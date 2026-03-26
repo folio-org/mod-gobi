@@ -8,9 +8,8 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.dbschema.Versioned;
 import org.folio.gobi.exceptions.HttpException;
-import org.folio.okapi.common.ModuleId;
-import org.folio.okapi.common.SemVer;
 import org.folio.okapi.common.WebClientFactory;
 import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.persist.PostgresClient;
@@ -30,7 +29,7 @@ public class ConfigurationMigrationService {
   private static final String OKAPI_URL = "x-okapi-url";
   private static final String CONFIGURATIONS_ENTRIES_ENDPOINT = "/configurations/entries";
   private static final String ORDER_MAPPINGS_TABLE = "order_mappings";
-  private static final SemVer MIGRATION_TARGET_VERSION = new SemVer("3.1.0");
+  private static final String MIGRATION_TARGET_VERSION = "3.1.0";
   private static final List<String> MIGRATED_CODES = List.of(
     "gobi.order.ListedElectronicMonograph",
     "gobi.order.ListedPrintMonograph",
@@ -94,36 +93,43 @@ public class ConfigurationMigrationService {
     if (moduleFrom == null || moduleTo == null) {
       return false;
     }
-    SemVer moduleFromVersion = new ModuleId(moduleFrom).getSemVer();
-    SemVer moduleToVersion = new ModuleId(moduleTo).getSemVer();
-    return moduleFromVersion.compareTo(MIGRATION_TARGET_VERSION) < 0
-      && moduleToVersion.compareTo(MIGRATION_TARGET_VERSION) >= 0;
+    return isNewForVersion(moduleFrom, MIGRATION_TARGET_VERSION)
+      && !isNewForVersion(moduleTo, MIGRATION_TARGET_VERSION);
+  }
+
+  // Uses the same version comparison as schema.json's fromModuleVersion.
+  // Correctly handles SNAPSHOT suffixes, e.g. 3.1.0-SNAPSHOT.123 is treated as 3.1.0.
+  private boolean isNewForVersion(String moduleId, String version) {
+    var since = new Versioned() { };
+    since.setFromModuleVersion(version);
+    return since.isNewForThisInstall(moduleId);
   }
 
   private Future<Void> insertConfigurationData(JsonArray configs, String tenantId, Context vertxContext) {
     PostgresClient pgClient = PostgresClient.getInstance(vertxContext.owner(), tenantId);
+    String schemaName = pgClient.getSchemaName();
     Future<Void> future = Future.succeededFuture();
 
     for (int i = 0; i < configs.size(); i++) {
       JsonObject config = configs.getJsonObject(i);
       String code = config.getString("code");
       if (MIGRATED_CODES.contains(code)) {
-        future = future.compose(v -> insertOrderMapping(pgClient, config));
+        future = future.compose(v -> insertOrderMapping(pgClient, schemaName, config));
       }
     }
 
     return future;
   }
 
-  private Future<Void> insertOrderMapping(PostgresClient pgClient, JsonObject config) {
+  private Future<Void> insertOrderMapping(PostgresClient pgClient, String schemaName, JsonObject config) {
     String id = config.getString("id");
     JsonObject valueJson = new JsonObject(config.getString("value"));
     JsonObject mappingJsonb = new JsonObject()
       .put("orderType", valueJson.getValue("orderType"))
       .put("mappings", valueJson.getValue("mappings"));
 
-    String sql = "INSERT INTO " + ORDER_MAPPINGS_TABLE + " (id, jsonb) VALUES ($1, $2::jsonb) "
-      + "ON CONFLICT (lower(f_unaccent(jsonb->>'orderType'::text))) DO NOTHING";
+    String sql = "INSERT INTO " + schemaName + "." + ORDER_MAPPINGS_TABLE + " (id, jsonb) VALUES ($1, $2::jsonb) "
+      + "ON CONFLICT (lower(" + schemaName + ".f_unaccent(jsonb->>'orderType'::text))) DO NOTHING";
 
     return pgClient.execute(sql, Tuple.of(UUID.fromString(id), mappingJsonb.encode()))
       .onSuccess(rows -> log.info("Successfully migrated order mapping with id: {}", id))

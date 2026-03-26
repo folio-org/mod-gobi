@@ -72,6 +72,7 @@ class ConfigurationMigrationServiceTest {
     postgresClientMock = mockStatic(PostgresClient.class);
     postgresClientMock.when(() -> PostgresClient.getInstance(vertx, TENANT_ID))
       .thenReturn(pgClient);
+    when(pgClient.getSchemaName()).thenReturn(TENANT_ID + "_mod_gobi");
   }
 
   @AfterEach
@@ -124,6 +125,22 @@ class ConfigurationMigrationServiceTest {
   }
 
   @Test
+  void migrateConfigurationData_snapshotModuleTo_migrationTriggered() {
+    var attributes = new TenantAttributes()
+      .withModuleFrom(MODULE_FROM_BEFORE_TARGET)
+      .withModuleTo("mod-gobi-3.1.0-SNAPSHOT.123");
+
+    mockWebClient();
+    mockHttpResponse(200, new JsonObject()
+      .put("configs", new JsonArray())
+      .put("totalRecords", 0));
+
+    var result = service.migrateConfigurationData(attributes, TENANT_ID, headers, vertxContext);
+
+    assertTrue(result.succeeded());
+  }
+
+  @Test
   void migrateConfigurationData_noOkapiUrl_skipped() {
     var attributes = new TenantAttributes()
       .withModuleFrom(MODULE_FROM_BEFORE_TARGET)
@@ -169,7 +186,7 @@ class ConfigurationMigrationServiceTest {
     verify(pgClient).execute(sqlCaptor.capture(), tupleCaptor.capture());
 
     String sql = sqlCaptor.getValue();
-    assertTrue(sql.contains("INSERT INTO order_mappings"));
+    assertTrue(sql.contains("INSERT INTO " + TENANT_ID + "_mod_gobi.order_mappings"));
     assertTrue(sql.contains("ON CONFLICT"));
 
     String tupleJson = tupleCaptor.getValue().get(String.class, 1);
