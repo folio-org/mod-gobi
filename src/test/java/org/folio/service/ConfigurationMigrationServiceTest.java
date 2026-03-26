@@ -165,12 +165,15 @@ class ConfigurationMigrationServiceTest {
     assertTrue(result.succeeded());
 
     var sqlCaptor = ArgumentCaptor.forClass(String.class);
-    verify(pgClient).execute(sqlCaptor.capture(), any(Tuple.class));
+    var tupleCaptor = ArgumentCaptor.forClass(Tuple.class);
+    verify(pgClient).execute(sqlCaptor.capture(), tupleCaptor.capture());
 
     String sql = sqlCaptor.getValue();
     assertTrue(sql.contains("INSERT INTO order_mappings"));
-    assertTrue(sql.contains("ListedElectronicMonograph"));
     assertTrue(sql.contains("ON CONFLICT"));
+
+    String tupleJson = tupleCaptor.getValue().get(String.class, 1);
+    assertTrue(tupleJson.contains("ListedElectronicMonograph"));
   }
 
   @Test
