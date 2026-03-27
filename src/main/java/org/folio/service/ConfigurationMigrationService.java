@@ -122,10 +122,10 @@ public class ConfigurationMigrationService {
       .put("orderType", valueJson.getValue("orderType"))
       .put("mappings", valueJson.getValue("mappings"));
 
-    String sql = "INSERT INTO " + schemaName + "." + ORDER_MAPPINGS_TABLE + " (id, jsonb) VALUES ($1, $2::jsonb) "
+    String sql = "INSERT INTO " + schemaName + "." + ORDER_MAPPINGS_TABLE + " (id, jsonb) VALUES ($1, $2) "
       + "ON CONFLICT (lower(" + schemaName + ".f_unaccent(jsonb->>'orderType'::text))) DO NOTHING";
 
-    return pgClient.execute(sql, Tuple.of(UUID.fromString(id), mappingJsonb.encode()))
+    return pgClient.execute(sql, Tuple.of(UUID.fromString(id), mappingJsonb))
       .onSuccess(rows -> log.info("Successfully migrated order mapping with id: {}", id))
       .onFailure(e -> log.error("Failed to insert order mapping with id: {}", id, e))
       .mapEmpty();

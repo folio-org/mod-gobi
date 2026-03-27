@@ -1,6 +1,7 @@
 package org.folio.service;
 
 import static org.folio.rest.RestVerticle.OKAPI_HEADER_TENANT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -183,8 +184,8 @@ class ConfigurationMigrationServiceTest {
     assertTrue(sql.contains("INSERT INTO " + TENANT_ID + "_mod_gobi.order_mappings"));
     assertTrue(sql.contains("ON CONFLICT"));
 
-    String tupleJson = tupleCaptor.getValue().get(String.class, 1);
-    assertTrue(tupleJson.contains("ListedElectronicMonograph"));
+    JsonObject tupleJson = tupleCaptor.getValue().get(JsonObject.class, 1);
+    assertEquals("ListedElectronicMonograph", tupleJson.getString("orderType"));
   }
 
   @Test
