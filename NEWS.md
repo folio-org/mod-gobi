@@ -1,4 +1,28 @@
-## 3.1.0 - Unreleased
+## 3.1.0 - Released (Trillium R1 2025)
+The primary focus of this release was to upgrade to Vert.x 5.0, replace mod-configuration usage, introduce DB-backed custom mappings and improve error handling.
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v3.0.0...v3.1.0)
+
+### Stories
+* [MODGOBI-243](https://folio-org.atlassian.net/browse/MODGOBI-243) - Fix migrate_configuration_data_to_settings.ftl cannot read mod_configuration db table
+* [MODGOBI-242](https://folio-org.atlassian.net/browse/MODGOBI-242) - Update GitHub Workflows for Maven
+* [MODGOBI-241](https://folio-org.atlassian.net/browse/MODGOBI-241) - Use GET/PUT /tenant-addresses to work with tenant addresses
+* [MODGOBI-240](https://folio-org.atlassian.net/browse/MODGOBI-240) - Improve error handling and messaging for unsuccessful requests
+* [MODGOBI-231](https://folio-org.atlassian.net/browse/MODGOBI-231) - Upgrade module to Vert.x 5.0
+* [MODGOBI-226](https://folio-org.atlassian.net/browse/MODGOBI-226) - Setup dependabot for your module
+* [MODGOBI-219](https://folio-org.atlassian.net/browse/MODGOBI-219) - Sensitive data in logs cleanup
+* [MODGOBI-218](https://folio-org.atlassian.net/browse/MODGOBI-218) - Create migration script for existing custom mapping configs
+* [MODGOBI-217](https://folio-org.atlassian.net/browse/MODGOBI-217) - Improvements after running karate tests
+* [MODGOBI-216](https://folio-org.atlassian.net/browse/MODGOBI-216) - Replace mod-configuration for retrieving configuration address
+* [MODGOBI-208](https://folio-org.atlassian.net/browse/MODGOBI-208) - Adjust receiving workflow based on receipt status
+* [MODGOBI-193](https://folio-org.atlassian.net/browse/MODGOBI-193) - Add 'Suppress from discovery' configuration for instance
+
+### Dependencies
+* Bump `raml-module-builder` from `35.4.0` to `36.0.0`
+* Bump `vertx` from `4.5.13` to `5.0.8`
+* Bump `log4j` from `2.24.3` to `2.25.3`
+* Bump `jackson-bom` from `2.18.2` to `2.20.1`
+* Bump `folio-isbn-util` from `1.7.1` to `1.8.0`
 
 ## 3.0.0 - (Sunflower R1 2025)
 The primary focus of this release was to simplify mappings and do dependencies upgrade including Java 21
