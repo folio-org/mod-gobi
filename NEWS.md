@@ -1,5 +1,13 @@
 ## 3.1.0 - Unreleased
 
+## 3.0.3 - (Sunflower R1 2025 Hot Hix)
+The primary focus of the release was to fix issue with populating expense class for POLs created via GOBI API
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v3.0.2...v3.0.3)
+
+### Bug fixes
+* [MODGOBI-248] (https://folio-org.atlassian.net/browse/MODGOBI-248) - POLs created via GOBI API do not consistently populate the expense class
+
 ## 3.0.2 - (Sunflower R1 2025 Hot Hix)
 The primary focus of the release was to update to RMB 35.4.2 and Vertx 4.5.23
 
