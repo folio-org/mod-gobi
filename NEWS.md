@@ -1,3 +1,11 @@
+## 3.1.1 - (Trillium R1 2026 Hot Hix)
+The primary focus of the release was to fix issue with populating expense class for POLs created via GOBI API
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v3.1.0...v3.1.1)
+
+### Bug fixes
+* [MODGOBI-249] (https://folio-org.atlassian.net/browse/MODGOBI-249) - Trillium - POLs created via GOBI API do not consistently populate the expense class
+
 ## 3.1.0 - Released (Trillium R1 2025)
 The primary focus of this release was to upgrade to Vert.x 5.0, replace mod-configuration usage, introduce DB-backed custom mappings and improve error handling.
 
