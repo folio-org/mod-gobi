@@ -824,23 +824,26 @@ public class Mapper {
     FundDistribution fundDistribution, Document doc) {
     Optional.ofNullable(mappings.get(Mapping.Field.FUND_ID))
       .ifPresent(fundIdField -> futures.add(fundIdField.resolve(doc)
-        .thenAccept(fundIdObject -> {
-
-          if (StringUtils.isNotEmpty((String) fundIdObject)) {
-            fundDistribution.setFundId((String) fundIdObject);
-
-            Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
-              .ifPresent(fundCodeField -> futures.add(fundCodeField.resolve(doc)
-                .thenCompose(fundCodeObject -> fundCodeResolver(mappings, fundDistribution, doc, (String) fundCodeObject))
-                .exceptionally(Mapper::logException)));
-
-            Optional.ofNullable(mappings.get(Mapping.Field.FUND_PERCENTAGE))
-              .ifPresent(fundPercentageField -> futures.add(fundPercentageField.resolve(doc)
-                .thenAccept(percentage -> fundDistribution.withDistributionType(FundDistribution.DistributionType.PERCENTAGE)
-                  .setValue((Double) percentage))
-                .exceptionally(Mapper::logException)));
-
+        .thenCompose(fundIdObject -> {
+          if (StringUtils.isEmpty((String) fundIdObject)) {
+            return completedFuture(null);
           }
+          fundDistribution.setFundId((String) fundIdObject);
+
+          List<CompletableFuture<?>> innerFutures = new ArrayList<>();
+
+          Optional.ofNullable(mappings.get(Mapping.Field.FUND_CODE))
+            .ifPresent(fundCodeField -> innerFutures.add(fundCodeField.resolve(doc)
+              .thenCompose(fundCodeObject -> fundCodeResolver(mappings, fundDistribution, doc, (String) fundCodeObject))
+              .exceptionally(Mapper::logException)));
+
+          Optional.ofNullable(mappings.get(Mapping.Field.FUND_PERCENTAGE))
+            .ifPresent(fundPercentageField -> innerFutures.add(fundPercentageField.resolve(doc)
+              .thenAccept(percentage -> fundDistribution.withDistributionType(FundDistribution.DistributionType.PERCENTAGE)
+                .setValue((Double) percentage))
+              .exceptionally(Mapper::logException)));
+
+          return CompletableFuture.allOf(innerFutures.toArray(new CompletableFuture<?>[0]));
         })
         .exceptionally(Mapper::logException)));
   }

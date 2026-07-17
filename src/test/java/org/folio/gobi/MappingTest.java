@@ -2,6 +2,9 @@ package org.folio.gobi;
 
 import static org.folio.rest.jaxrs.model.Mapping.Field.BILL_TO;
 import static org.folio.rest.jaxrs.model.Mapping.Field.EXCHANGE_RATE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.EXPENSE_CLASS;
+import static org.folio.rest.jaxrs.model.Mapping.Field.FUND_CODE;
+import static org.folio.rest.jaxrs.model.Mapping.Field.FUND_ID;
 import static org.folio.rest.jaxrs.model.Mapping.Field.LINKED_PACKAGE;
 import static org.folio.rest.jaxrs.model.Mapping.Field.LOCATION;
 import static org.folio.rest.jaxrs.model.Mapping.Field.PO_LINE_ORDER_FORMAT;
@@ -12,6 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -32,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.folio.gobi.domain.LocationTranslationResult;
 import org.folio.rest.acq.model.CompositePoLine;
 import org.folio.rest.acq.model.CompositePurchaseOrder;
+import org.folio.rest.acq.model.FundDistribution;
 import org.folio.rest.acq.model.Location;
 import org.folio.rest.jaxrs.model.DataSource.Translation;
 import org.folio.rest.jaxrs.model.Mapping;
@@ -304,4 +309,52 @@ public class MappingTest {
     assertNotNull(bindingResult.getError(PREFIX));
   }
 
+  @Test
+  void shouldWaitForExpenseClassLookupWhenFundIdLookupResolvesAsync() throws Exception {
+    // Regression: mapFundDistribution used to register FUND_CODE / EXPENSE_CLASS futures
+    // inside a .thenAccept fired only when FUND_ID resolved, so the outer allOf snapshot
+    // did not await them. When lookups were slow (as in production), the PO Line was sent
+    // to mod-orders with expenseClassId=null even though the mapping and budget were correct.
+    LookupService lookupService = Mockito.mock(LookupService.class);
+    String fundId = UUID.randomUUID().toString();
+    String expenseClassId = UUID.randomUUID().toString();
+
+    CompletableFuture<String> fundIdFuture = new CompletableFuture<>();
+    CompletableFuture<String> expenseClassFuture = new CompletableFuture<>();
+    Mockito.doReturn(fundIdFuture).when(lookupService).lookupFundId("USHIST");
+    Mockito.doReturn(expenseClassFuture).when(lookupService).lookupExpenseClassId("GOBI");
+
+    InputStream data = this.getClass().getClassLoader().getResourceAsStream(MODGOBI152_PO_LISTED_PRINT_MONOGRAPH_PATH);
+    Document gobiOrder = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(data);
+
+    Map<Mapping.Field, DataSourceResolver> mappings = new EnumMap<>(Mapping.Field.class);
+    mappings.put(PO_LINE_ORDER_FORMAT,
+      DataSourceResolver.builder().withLookupService(lookupService).withDefault("Physical Resource").build());
+    mappings.put(FUND_ID,
+      DataSourceResolver.builder().withLookupService(lookupService)
+        .withFrom("//FundCode").withTranslation(Translation.LOOKUP_FUND_ID).build());
+    mappings.put(FUND_CODE,
+      DataSourceResolver.builder().withLookupService(lookupService).withFrom("//FundCode").build());
+    mappings.put(EXPENSE_CLASS,
+      DataSourceResolver.builder().withLookupService(lookupService)
+        .withFrom("//LocalData[Description='LocalData2']/Value")
+        .withTranslation(Translation.LOOKUP_EXPENSE_CLASS_ID).build());
+
+    Mapper mapper = new Mapper(lookupService);
+    var mapFuture = mapper.map(mappings, gobiOrder);
+
+    fundIdFuture.complete(fundId);
+    assertFalse(mapFuture.isDone(),
+      "map() must not complete before the EXPENSE_CLASS lookup resolves");
+
+    expenseClassFuture.complete(expenseClassId);
+    var bindingResult = mapFuture.get();
+
+    CompositePurchaseOrder compPO = bindingResult.getResult();
+    CompositePoLine pol = compPO.getCompositePoLines().getFirst();
+    FundDistribution fd = pol.getFundDistribution().getFirst();
+    assertEquals(fundId, fd.getFundId());
+    assertEquals(expenseClassId, fd.getExpenseClassId());
+    assertEquals("USHIST", fd.getCode());
+  }
 }
