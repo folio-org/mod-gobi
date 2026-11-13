@@ -156,8 +156,8 @@
       },
       {
         "name": "JAVA_OPTIONS",
-        "value": null,
-        "description": "JVM options read by the run-java.sh entrypoint: heap sizing from the java block and -Dhttp.port (RMB default 8081), which must match the sidecar's MODULE_URL",
+        "value": "-Dhttp.port=8082",
+        "description": "JVM options for the module process. -Dhttp.port=8082 moves RMB off its default port 8081, which the Eureka sidecar uses; it must match the sidecar's MODULE_URL. Heap sizing comes from the java block.",
         "type": "CONFIG",
         "essential": false
       },
