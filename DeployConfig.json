@@ -219,13 +219,6 @@
         "essential": true
       },
       {
-        "name": "JAVA_OPTS",
-        "value": null,
-        "description": "JVM options for the sidecar process, including the sizing from the java block",
-        "type": "CONFIG",
-        "essential": false
-      },
-      {
         "name": "MODULE_NAME",
         "value": "mod-gobi",
         "description": "Name of the backend module the sidecar fronts",
