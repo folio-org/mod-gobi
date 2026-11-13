@@ -1,3 +1,8 @@
+## WIP
+
+### Stories
+* [MODGOBI-252](https://folio-org.atlassian.net/browse/MODGOBI-252) - Upgrade from Java 21 to Java 25
+
 ## 3.1.0 - Released (Trillium R1 2025)
 The primary focus of this release was to upgrade to Vert.x 5.0, replace mod-configuration usage, introduce DB-backed custom mappings and improve error handling.
 
