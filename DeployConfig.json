@@ -135,15 +135,15 @@
       },
       {
         "name": "DB_RECONNECTATTEMPTS",
-        "value": null,
-        "description": "Number of retries after a failed database connect; reconnecting is disabled when unset",
+        "value": "0",
+        "description": "Number of reconnect attempts when a database connection cannot be established (Vert.x default 0)",
         "type": "DB",
         "essential": false
       },
       {
         "name": "DB_RECONNECTINTERVAL",
-        "value": null,
-        "description": "Delay in milliseconds between reconnect attempts",
+        "value": "1000",
+        "description": "Interval in milliseconds between database reconnect attempts (Vert.x default)",
         "type": "DB",
         "essential": false
       },
