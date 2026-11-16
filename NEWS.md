@@ -1,3 +1,11 @@
+## 3.1.2 - Released (Trillium R1 2026 - Bugfix)
+The primary focus of this release was to add DeployConfig.json for configuration management (ADR-0013)
+
+[Full Changelog](https://github.com/folio-org/mod-gobi/compare/v3.1.1...v3.1.2)
+
+### Stories
+* [MODGOBI-251](https://folio-org.atlassian.net/browse/MODGOBI-251) - Add DeployConfig.json to mod-gobi (ADR-0013 Configuration Management)
+
 ## 3.1.1 - (Trillium R1 2026 Hot Hix)
 The primary focus of the release was to fix issue with populating expense class for POLs created via GOBI API
 
